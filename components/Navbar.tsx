@@ -63,8 +63,8 @@ const Navbar: React.FC = () => {
         <div className="bg-zinc-950 py-2 hidden md:block border-b border-white/5">
           <div className="container mx-auto px-6 flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">
             <div className="flex gap-10">
-              <a href="tel:6047121994" className="flex items-center gap-2 hover:text-white transition-colors">
-                <Phone size={12} className="text-[#D4AF37]" /> (604) 712-1994
+              <a href="tel:7789706007" className="flex items-center gap-2 hover:text-white transition-colors">
+                <Phone size={12} className="text-[#D4AF37]" /> (778) 970-6007
               </a>
               <a href="/directions" className="flex items-center gap-2 hover:text-white transition-colors">
                 <MapPin size={12} className="text-[#D4AF37]" /> Langley Bypass, BC

@@ -58,9 +58,9 @@ const Footer: React.FC = () => {
           <div className="lg:col-span-3">
             <h4 className="text-[#D4AF37] font-black uppercase tracking-[0.4em] text-[10px] mb-8">Contact Hub</h4>
             <div className="flex flex-col gap-6 text-zinc-400">
-              <a href="tel:6047121994" className="flex items-center gap-4 hover:text-white group">
+              <a href="tel:7789706007" className="flex items-center gap-4 hover:text-white group">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Phone size={16} /></div>
-                <span className="text-xs font-bold">(604) 712-1994</span>
+                <span className="text-xs font-bold">(778) 970-6007</span>
               </a>
               <a href="mailto:info@whip4you.ca" className="flex items-center gap-4 hover:text-white group">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Mail size={16} /></div>
@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ENTER DIGITAL IDENTITY" 
-                  className="w-full bg-zinc-900 border border-white/5 p-5 pr-14 rounded-2xl outline-none focus:border-[#D4AF37] transition-all text-[10px] font-black uppercase tracking-widest placeholder:text-zinc-700"
+                  className="w-full bg-zinc-900 border border-white/5 p-5 pr-14 rounded-2xl outline-none focus:border-[#D4AF37] transition-all text-[10px] font-black uppercase tracking-widest placeholder:text-zinc-700 text-white"
                 />
                 <button type="submit" className="absolute right-3 top-3 w-10 h-10 bg-white text-black rounded-xl flex items-center justify-center hover:bg-[#D4AF37] transition-all group-focus-within:bg-[#D4AF37]">
                   <Send size={16} />
@@ -109,11 +109,12 @@ const Footer: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-6">
+            <Link to="/admin" className="text-zinc-600 text-[9px] font-black uppercase tracking-widest hover:text-white transition-colors">Admin Access</Link>
             <Link to="/privacy" className="text-zinc-600 text-[9px] font-black uppercase tracking-widest hover:text-white transition-colors">Privacy Hub</Link>
             <div className="flex items-center gap-3">
               <span className="text-zinc-800 text-[8px] font-black uppercase tracking-widest">Engine by</span>
               <div className="bg-white px-2 py-0.5 rounded shadow-lg">
-                <span className="text-black font-black italic tracking-tighter text-[10px] display-font">Pranav.dev</span>
+                <span className="text-black font-black italic tracking-tighter text-[10px] display-font">AUTOBUNNY</span>
               </div>
             </div>
           </div>

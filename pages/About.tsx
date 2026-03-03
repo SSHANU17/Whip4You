@@ -33,7 +33,7 @@ const About: React.FC = () => {
                 Wholesale Pricing, <br/><span className="gold-text italic">Redefined.</span>
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                For years, the "wholesale" advantage was locked behind dealer licenses. We founded Whip4You with a simple mission: break those walls down. 
+                For years, the "wholesale" advantage was locked behind dealer licenses. We founded Whip4You with a simple mission: break those walls down. Founded by <span className="text-black font-bold">Amanjot Singh</span>, we bring transparency and value to the forefront of the luxury automotive experience.
               </p>
               <div className="space-y-6">
                 <div className="flex gap-4 p-6 rounded-3xl bg-gray-50 border border-gray-100">

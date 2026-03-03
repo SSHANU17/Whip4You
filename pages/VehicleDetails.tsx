@@ -5,22 +5,40 @@ import {
   ChevronLeft, Share2, Printer, Heart, 
   Gauge, Settings, Fuel, Palette, 
   CheckCircle2, ArrowRight, Phone, MessageSquare,
-  Info, X, ShieldCheck, Search, FileCheck
+  Info, X, ShieldCheck, Search, FileCheck, Loader2
 } from 'lucide-react';
-import { mockVehicles } from '../data/mockVehicles.ts';
+import { api } from '../api.ts';
+import { Vehicle } from '../types.ts';
 
 const VehicleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const vehicle = mockVehicles.find(v => v.id === id);
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isFeeInfoOpen, setIsFeeInfoOpen] = useState(false);
 
   useEffect(() => {
-    // Check local storage for favorites
-    const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
-    setIsFavorite(favorites.includes(id));
+    if (id) {
+      setLoading(true);
+      api.getVehicleById(id)
+        .then(data => {
+          setVehicle(data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
+      setIsFavorite(favorites.includes(id));
+    }
   }, [id]);
 
   const toggleFavorite = () => {
@@ -54,6 +72,15 @@ const VehicleDetails: React.FC = () => {
       alert('Link copied to clipboard!');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-off-white flex flex-col items-center justify-center gap-6">
+        <Loader2 className="text-[#D4AF37] animate-spin" size={48} />
+        <p className="font-bold text-black brand-font uppercase tracking-widest text-xs">Accessing Vehicle Data...</p>
+      </div>
+    );
+  }
 
   if (!vehicle) {
     return (
@@ -179,13 +206,13 @@ const VehicleDetails: React.FC = () => {
 
                 <div className="space-y-4">
                   <Link 
-                    to={`/apply?vehicleId=${vehicle.id}`} 
+                    to={`/apply?vehicleId=${vehicle._id || vehicle.id}`} 
                     className="block w-full text-center bg-black text-white py-6 rounded-3xl font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl"
                   >
                     Initiate Approval
                   </Link>
                   <Link 
-                    to={`/contact?vehicleId=${vehicle.id}`} 
+                    to={`/contact?vehicleId=${vehicle._id || vehicle.id}`} 
                     className="block w-full text-center bg-white text-black py-6 rounded-3xl font-black uppercase tracking-[0.3em] text-[10px] border-2 border-black hover:bg-black hover:text-white transition-all shadow-md"
                   >
                     Direct Inquiry
@@ -193,9 +220,9 @@ const VehicleDetails: React.FC = () => {
                 </div>
 
                 <div className="mt-12 pt-10 border-t border-zinc-100 space-y-6">
-                   <a href="tel:6047121994" className="flex items-center gap-5 text-sm font-bold text-black hover:text-[#D4AF37] transition-colors group">
+                   <a href="tel:7789706007" className="flex items-center gap-5 text-sm font-bold text-black hover:text-[#D4AF37] transition-colors group">
                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Phone size={20} /></div>
-                     (604) 712-1994
+                     (778) 970-6007
                    </a>
                    <div className="flex items-center gap-5 text-sm font-bold text-black group">
                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><MessageSquare size={20} /></div>

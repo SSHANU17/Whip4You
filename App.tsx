@@ -144,8 +144,8 @@ const App: React.FC = () => {
             <Route path="/finance" element={<Finance />} />
             <Route path="/calculator" element={<LoanCalculator />} />
             <Route path="/apply" element={<Finance />} />
-            <Route path="/car-finder" element={<Contact type="CarFinder" />} />
-            <Route path="/trade-in" element={<Contact type="TradeIn" />} />
+            <Route path="/car-finder" element={<Contact type="Car Finder" />} />
+            <Route path="/trade-in" element={<Contact type="Trade-In" />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
             <Route path="/directions" element={<Contact />} />

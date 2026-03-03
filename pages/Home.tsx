@@ -11,8 +11,9 @@ import { api } from '../api.ts';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [formType, setFormType] = useState<'General' | 'CarFinder' | 'TradeIn'>('General');
+  const [formType, setFormType] = useState<'General' | 'Car Finder' | 'Trade-In'>('General');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
 
@@ -23,20 +24,25 @@ const Home: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     const formData = new FormData(e.target as HTMLFormElement);
     const data = Object.fromEntries(formData.entries());
     
     try {
       await api.createLead({
         type: formType,
-        name: data.name,
-        phone: data.phone,
-        message: data.message,
+        name: data.name as string,
+        email: data.email as string,
+        phone: data.phone as string,
+        message: data.message as string,
         details: formType !== 'General' ? data : {}
       });
       setSubmitted(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err.message || 'Failed to transmit inquiry. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,10 +105,17 @@ const Home: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <input name="name" required placeholder="John Doe" className="w-full bg-zinc-50 p-6 rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium text-black placeholder:text-zinc-400" />
-                    <input name="phone" required type="tel" placeholder="(604) 000-0000" className="w-full bg-zinc-50 p-6 rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium text-black placeholder:text-zinc-400" />
+                    <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-zinc-50 p-6 rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium text-black placeholder:text-zinc-400" />
+                    <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-zinc-50 p-6 rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium text-black placeholder:text-zinc-400" />
                   </div>
                   <textarea name="message" rows={4} className="w-full bg-zinc-50 p-6 rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium resize-none text-black placeholder:text-zinc-400" placeholder="Request specifics..."></textarea>
-                  <button type="submit" className="w-full bg-black text-white py-7 rounded-[30px] font-black uppercase tracking-[0.5em] text-xs hover:bg-[#D4AF37] transition-all">TRANSMIT INQUIRY</button>
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-black text-white py-7 rounded-[30px] font-black uppercase tracking-[0.5em] text-xs hover:bg-[#D4AF37] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'TRANSMITTING...' : 'TRANSMIT INQUIRY'}
+                  </button>
                 </form>
               </div>
             )}
@@ -115,7 +128,7 @@ const Home: React.FC = () => {
           <h2 className="text-4xl md:text-6xl font-black mb-24 brand-font italic uppercase">Member Experiences</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {reviews.map((review, i) => (
-              <div key={i} className="bg-black p-12 rounded-[50px] border border-white/5 text-left group relative overflow-hidden">
+              <div key={review._id || review.id || i} className="bg-black p-12 rounded-[50px] border border-white/5 text-left group relative overflow-hidden">
                 <div className="flex gap-1 mb-8">
                   {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < review.rating ? '#D4AF37' : 'none'} className={i < review.rating ? 'text-[#D4AF37]' : 'text-zinc-800'} />)}
                 </div>

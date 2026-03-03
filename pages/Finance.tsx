@@ -13,12 +13,14 @@ import {
   Search,
   ArrowRightLeft
 } from 'lucide-react';
+import { api } from '../api.ts';
 
 const Finance: React.FC = () => {
   const location = useLocation();
   const formRef = useRef<HTMLDivElement>(null);
-  const [formType, setFormType] = useState<'General' | 'CarFinder' | 'TradeIn'>('General');
+  const [formType, setFormType] = useState<'Finance' | 'Car Finder' | 'Trade-In'>('Finance');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isLive, setIsLive] = useState(false);
 
   // Auto-scroll to form if URL is /apply
@@ -33,9 +35,29 @@ const Finance: React.FC = () => {
     }
   }, [location.pathname]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      await api.createLead({
+        type: formType,
+        name: data.name as string,
+        email: data.email as string,
+        phone: data.phone as string,
+        message: (data.message as string) || `Finance application for ${formType}`,
+        details: data
+      });
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+      console.error('Finance lead submission failed', err);
+      alert(err.message || 'Submission failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -172,9 +194,9 @@ const Finance: React.FC = () => {
                 {/* Tabs */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-12 bg-gray-50 p-2 rounded-[24px] md:rounded-[32px]">
                   {[
-                    { id: 'General', label: 'Finance Request', icon: <Send size={16} /> },
-                    { id: 'CarFinder', label: 'Vehicle Search', icon: <Search size={16} /> },
-                    { id: 'TradeIn', label: 'Trade-In Appraisal', icon: <ArrowRightLeft size={16} /> }
+                    { id: 'Finance', label: 'Finance Request', icon: <Send size={16} /> },
+                    { id: 'Car Finder', label: 'Vehicle Search', icon: <Search size={16} /> },
+                    { id: 'Trade-In', label: 'Trade-In Appraisal', icon: <ArrowRightLeft size={16} /> }
                   ].map(tab => (
                     <button 
                       key={tab.id}
@@ -190,15 +212,19 @@ const Finance: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Full Name</label>
-                      <input required type="text" placeholder="John Doe" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
+                      <input name="name" required type="text" placeholder="John Doe" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Email Address</label>
+                      <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Phone Number</label>
-                      <input required type="tel" placeholder="(604) 000-0000" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
+                      <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
                     </div>
                   </div>
 
-                  {formType === 'TradeIn' && (
+                  {formType === 'Trade-In' && (
                     <div className="bg-off-white p-8 rounded-[32px] border border-gray-100 animate-in slide-in-from-top-4 duration-500">
                       <h4 className="font-bold mb-6 uppercase tracking-[0.2em] text-[10px] md:text-xs flex items-center gap-3 text-black">
                         <ArrowRightLeft size={14} className="text-[#D4AF37]" /> Current Vehicle Details
@@ -215,8 +241,12 @@ const Finance: React.FC = () => {
                     <textarea rows={3} className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black placeholder:text-zinc-400" placeholder="Employment, preferred monthly budget, or questions..."></textarea>
                   </div>
 
-                  <button type="submit" className="w-full bg-black text-white py-6 rounded-3xl font-bold uppercase tracking-[0.4em] text-xs hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl active:scale-95">
-                    Submit Secure Application
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-black text-white py-6 rounded-3xl font-bold uppercase tracking-[0.4em] text-xs hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'TRANSMITTING...' : 'Submit Secure Application'}
                   </button>
                   <p className="text-center text-[9px] text-gray-400 uppercase tracking-widest">Your data is protected with 256-bit SSL encryption</p>
                 </form>

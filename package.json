@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "start": "vite preview",
+    "dev:backend": "cd backend && npm run dev",
+    "start:backend": "cd backend && npm run start"
   },
   "dependencies": {
     "@google/genai": "^1.38.0",
@@ -15,9 +19,10 @@
     "react-router-dom": "^7.13.0"
   },
   "devDependencies": {
+    "@types/node": "^25.3.3",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^5.1.2",
+    "@vitejs/plugin-react": "^5.1.4",
     "terser": "^5.31.0",
     "typescript": "^5.0.0",
     "vite": "^6.0.0"

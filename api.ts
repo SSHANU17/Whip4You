@@ -1,85 +1,147 @@
 
-import { mockVehicles } from './data/mockVehicles.ts';
-import { MOCK_REVIEWS } from './constants.tsx';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
-/**
- * Mock API service that uses local data to prevent 404s when a backend is not present.
- */
+const handleResponse = async (res: Response) => {
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'An unexpected error occurred' }));
+    throw new Error(error.message || `Request failed with status ${res.status}`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+};
+
+const getHeaders = () => {
+  const token = localStorage.getItem('w4y_admin_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
+
 export const api = {
   // Auth
   login: async (credentials: any) => {
-    if (credentials.email === 'admin@whip4you.ca' && credentials.password === 'admin123') {
-      return { token: 'mock-jwt-token', user: { email: credentials.email, name: 'Admin' } };
-    }
-    throw new Error('Invalid credentials');
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    });
+    return handleResponse(res);
   },
 
   // Vehicles
   getVehicles: async () => {
-    return mockVehicles;
+    const res = await fetch(`${API_BASE}/vehicles`);
+    return handleResponse(res);
   },
   
   getVehicleById: async (id: string) => {
-    const vehicle = mockVehicles.find(v => v.id === id);
-    if (!vehicle) throw new Error('Vehicle not found');
-    return vehicle;
+    const res = await fetch(`${API_BASE}/vehicles/${id}`);
+    return handleResponse(res);
   },
 
   createVehicle: async (data: any) => {
-    console.log('Mock Create Vehicle:', data);
-    return { ...data, id: Math.random().toString(36).substr(2, 9) };
+    const res = await fetch(`${API_BASE}/vehicles`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(res);
+  },
+
+  updateVehicle: async (id: string, data: any) => {
+    const res = await fetch(`${API_BASE}/vehicles/${id}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(res);
   },
 
   deleteVehicle: async (id: string) => {
-    console.log('Mock Delete Vehicle:', id);
-    return true;
+    const res = await fetch(`${API_BASE}/vehicles/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    return handleResponse(res);
   },
 
   // Leads
   getLeads: async () => {
-    return JSON.parse(localStorage.getItem('w4y_leads') || '[]');
+    const res = await fetch(`${API_BASE}/leads`, {
+      headers: getHeaders()
+    });
+    return handleResponse(res);
   },
 
   createLead: async (data: any) => {
-    const leads = JSON.parse(localStorage.getItem('w4y_leads') || '[]');
-    const newLead = { ...data, _id: Date.now().toString(), createdAt: new Date().toISOString(), status: 'open', priority: 'Medium' };
-    localStorage.setItem('w4y_leads', JSON.stringify([...leads, newLead]));
-    return newLead;
+    const res = await fetch(`${API_BASE}/leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return handleResponse(res);
   },
 
   updateLead: async (id: string, data: any) => {
-    const leads = JSON.parse(localStorage.getItem('w4y_leads') || '[]');
-    const updated = leads.map((l: any) => l._id === id ? { ...l, ...data } : l);
-    localStorage.setItem('w4y_leads', JSON.stringify(updated));
-    return updated.find((l: any) => l._id === id);
+    const res = await fetch(`${API_BASE}/leads/${id}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(res);
   },
 
   // Reviews
   getReviews: async () => {
-    return MOCK_REVIEWS;
+    const res = await fetch(`${API_BASE}/reviews`);
+    return handleResponse(res);
   },
 
   getAdminReviews: async () => {
-    return MOCK_REVIEWS;
+    const res = await fetch(`${API_BASE}/reviews/admin`, {
+      headers: getHeaders()
+    });
+    return handleResponse(res);
   },
 
   updateReview: async (id: string, data: any) => {
-    console.log('Mock Update Review:', id, data);
-    return { id, ...data };
+    const res = await fetch(`${API_BASE}/reviews/${id}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(res);
   },
 
   // Config
   getConfig: async () => {
-    const config = JSON.parse(localStorage.getItem('w4y_config') || 'null');
-    return config || {
-      heroHeadline: 'DRIVING DREAMS',
-      promoRate: '5.99',
-      specialistStatus: 'Online'
-    };
+    const res = await fetch(`${API_BASE}/config`);
+    return handleResponse(res);
   },
 
   updateConfig: async (data: any) => {
-    localStorage.setItem('w4y_config', JSON.stringify(data));
-    return data;
+    const res = await fetch(`${API_BASE}/config`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(res);
+  },
+  
+  uploadImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const token = localStorage.getItem('w4y_admin_token');
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: formData
+    });
+    
+    return handleResponse(res);
   },
 };

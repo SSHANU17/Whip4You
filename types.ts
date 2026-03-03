@@ -1,5 +1,6 @@
 
 export interface Vehicle {
+  _id?: string;
   id: string;
   vin: string;
   stockNumber: string;
@@ -22,8 +23,9 @@ export interface Vehicle {
 }
 
 export interface ContactForm {
+  _id?: string;
   id: string;
-  type: 'General' | 'TestDrive' | 'TradeIn' | 'Finance' | 'CarFinder';
+  type: 'General' | 'Test-Drive' | 'Trade-In' | 'Finance' | 'Car Finder';
   name: string;
   email: string;
   phone: string;
@@ -34,6 +36,7 @@ export interface ContactForm {
 }
 
 export interface Review {
+  _id?: string;
   id: string;
   name: string;
   rating: number;

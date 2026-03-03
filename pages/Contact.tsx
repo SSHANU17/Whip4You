@@ -8,18 +8,20 @@ import {
   Facebook, Instagram, Youtube, Navigation,
   Info, Sparkles, TrendingUp
 } from 'lucide-react';
-import { mockVehicles } from '../data/mockVehicles.ts';
+import { api } from '../api.ts';
+import { Vehicle } from '../types.ts';
 
 interface ContactProps {
-  type?: 'General' | 'CarFinder' | 'TradeIn';
+  type?: 'General' | 'Car Finder' | 'Trade-In';
 }
 
 const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
   const [searchParams] = useSearchParams();
   const [formType, setFormType] = useState(type);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isLive, setIsLive] = useState(false);
-  const [vehicleContext, setVehicleContext] = useState<any>(null);
+  const [vehicleContext, setVehicleContext] = useState<Vehicle | null>(null);
   
   // Trade-In Simulation State
   const [tradeModel, setTradeModel] = useState('');
@@ -35,8 +37,9 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
     // Check for vehicle ID in URL
     const vId = searchParams.get('vehicleId');
     if (vId) {
-      const v = mockVehicles.find(item => item.id === vId);
-      if (v) setVehicleContext(v);
+      api.getVehicleById(vId).then(v => {
+        if (v) setVehicleContext(v);
+      }).catch(err => console.error(err));
     }
 
     setFormType(type);
@@ -44,7 +47,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
 
   // Appraisal Simulation Logic
   useEffect(() => {
-    if (formType === 'TradeIn' && tradeModel.length > 3 && tradeYear.length === 4) {
+    if (formType === 'Trade-In' && tradeModel.length > 3 && tradeYear.length === 4) {
       const baseValue = Math.random() * (45000 - 8000) + 8000;
       setAppraisalRange({
         min: Math.floor(baseValue * 0.9),
@@ -55,10 +58,33 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
     }
   }, [tradeModel, tradeYear, formType]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setLoading(true);
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      await api.createLead({
+        type: formType,
+        name: data.name as string,
+        email: data.email as string,
+        phone: data.phone as string,
+        message: (data.message as string) || (vehicleContext ? `Interested in ${vehicleContext.year} ${vehicleContext.make}` : ''),
+        details: {
+          ...data,
+          vehicleId: vehicleContext?._id || vehicleContext?.id,
+          appraisalRange: appraisalRange
+        }
+      });
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+      console.error('Lead submission failed', err);
+      alert(err.message || 'Submission failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -111,7 +137,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           <div className="lg:col-span-4 space-y-6">
-            <a href="tel:6047121994" className="block group">
+            <a href="tel:7789706007" className="block group">
               <div className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-xl hover:shadow-2xl transition-all border border-gray-100 flex items-center justify-between">
                 <div className="flex items-center gap-4 md:gap-6">
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black text-[#D4AF37] flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors shrink-0">
@@ -119,7 +145,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Call Hub</h4>
-                    <p className="text-lg md:text-xl font-bold group-hover:text-[#D4AF37] transition-colors truncate font-display text-black">(604) 712-1994</p>
+                    <p className="text-lg md:text-xl font-bold group-hover:text-[#D4AF37] transition-colors truncate font-display text-black">(778) 970-6007</p>
                   </div>
                 </div>
               </div>
@@ -175,8 +201,8 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-10 md:mb-12 bg-gray-50 p-2 rounded-[24px] md:rounded-[32px]">
                 {[
                   { id: 'General', label: 'General', icon: <Send size={14} /> },
-                  { id: 'CarFinder', label: 'Finder', icon: <Search size={14} /> },
-                  { id: 'TradeIn', label: 'Trade-In', icon: <ArrowRightLeft size={14} /> }
+                  { id: 'Car Finder', label: 'Finder', icon: <Search size={14} /> },
+                  { id: 'Trade-In', label: 'Trade-In', icon: <ArrowRightLeft size={14} /> }
                 ].map(tab => (
                   <button 
                     key={tab.id}
@@ -192,15 +218,19 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Identity</label>
-                    <input required type="text" placeholder="Your Name" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
+                    <input name="name" required type="text" placeholder="Your Name" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Email Address</label>
+                    <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Mobile</label>
-                    <input required type="tel" placeholder="(604) 000-0000" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
+                    <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
                   </div>
                 </div>
 
-                {formType === 'TradeIn' && (
+                {formType === 'Trade-In' && (
                   <div className="bg-zinc-50 p-8 rounded-[35px] border border-zinc-200 animate-in slide-in-from-top-6 duration-500">
                      <h4 className="font-bold mb-8 uppercase tracking-[0.4em] text-[10px] flex items-center gap-4 text-black">
                         <TrendingUp size={14} className="text-[#D4AF37]" /> Live Appraisal Simulator
@@ -248,8 +278,12 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   ></textarea>
                 </div>
 
-                <button type="submit" className="w-full bg-black text-white py-6 rounded-3xl font-bold uppercase tracking-[0.5em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-2xl active:scale-95">
-                  Send Transmission
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full bg-black text-white py-6 rounded-3xl font-bold uppercase tracking-[0.5em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-2xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'TRANSMITTING...' : 'Send Transmission'}
                 </button>
               </form>
             </div>

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Heart, Trash2, ArrowRight, Wallet } from 'lucide-react';
+import { X, Heart, Trash2, ArrowRight, Wallet, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { mockVehicles } from '../data/mockVehicles.ts';
+import { api } from '../api.ts';
 import { Vehicle } from '../types.ts';
 
 interface GarageDrawerProps {
@@ -12,11 +12,25 @@ interface GarageDrawerProps {
 
 const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
   const [savedCars, setSavedCars] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const loadFavorites = () => {
-    const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
-    const filtered = mockVehicles.filter(v => favorites.includes(v.id));
-    setSavedCars(filtered);
+  const loadFavorites = async () => {
+    setLoading(true);
+    try {
+      const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
+      if (favorites.length === 0) {
+        setSavedCars([]);
+        setLoading(false);
+        return;
+      }
+      const allVehicles = await api.getVehicles();
+      const filtered = allVehicles.filter((v: Vehicle) => favorites.includes(v._id || v.id));
+      setSavedCars(filtered);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -48,7 +62,12 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-8">
-          {savedCars.length === 0 ? (
+          {loading ? (
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+              <Loader2 className="text-[#D4AF37] animate-spin" size={32} />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Syncing Collection...</p>
+            </div>
+          ) : savedCars.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
               <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-200">
                 <Heart size={40} />
@@ -63,7 +82,7 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
             </div>
           ) : (
             savedCars.map(car => (
-              <div key={car.id} className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500">
+              <div key={car._id || car.id} className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500">
                 <img src={car.images[0]} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
@@ -74,10 +93,10 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
                     <span className="font-bold text-[#D4AF37] brand-font italic">${typeof car.price === 'number' ? car.price.toLocaleString() : car.price}</span>
                   </div>
                   <div className="flex gap-2">
-                    <Link to={`/vehicle/${car.id}`} onClick={onClose} className="flex-1 bg-zinc-50 text-center py-3 rounded-xl text-[9px] font-black uppercase tracking-widest text-black hover:bg-black hover:text-white transition-all">
+                    <Link to={`/vehicle/${car._id || car.id}`} onClick={onClose} className="flex-1 bg-zinc-50 text-center py-3 rounded-xl text-[9px] font-black uppercase tracking-widest text-black hover:bg-black hover:text-white transition-all">
                       View Asset
                     </Link>
-                    <button onClick={() => removeFavorite(car.id)} className="p-3 bg-zinc-50 rounded-xl text-zinc-400 hover:text-red-500 transition-colors">
+                    <button onClick={() => removeFavorite(car._id || car.id)} className="p-3 bg-zinc-50 rounded-xl text-zinc-400 hover:text-red-500 transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </div>

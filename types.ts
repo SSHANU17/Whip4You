@@ -10,15 +10,17 @@ export interface Vehicle {
   trim: string;
   price: number | 'Call For Price';
   mileage: number;
-  bodyType: 'Sedan' | 'Coupe' | 'SUV' | 'Hatchback' | 'Mini-Van' | 'Truck' | 'Commercial';
+  bodyType: 'Sedan' | 'Coupe' | 'SUV' | 'Hatchback' | 'Mini-Van' | 'Van' | 'Truck' | 'Commercial' | 'Convertible';
   transmission: string;
   engine: string;
+  drivetrain?: string;
   fuelType: string;
   exteriorColor: string;
   interiorColor: string;
   features: string[];
   images: string[];
-  status: 'Available' | 'Sold';
+  status: 'Available' | 'Pending' | 'Sold';
+  condition?: 'New' | 'Used' | 'Certified';
   description: string;
 }
 

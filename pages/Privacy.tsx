@@ -63,7 +63,7 @@ const Privacy: React.FC = () => {
               <h4 className="text-black font-bold uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 <FileText size={16} className="text-[#D4AF37]" /> Contact Data Officer
               </h4>
-              <p className="text-sm">For questions regarding your data or to request deletion, please contact our privacy hub at <a href="mailto:privacy@whip4you.ca" className="text-black font-bold underline">privacy@whip4you.ca</a></p>
+              <p className="text-sm">For questions regarding your data or to request deletion, please contact our privacy hub at <a href="mailto:Whip4youauto@gmail.com" className="text-black font-bold underline">Whip4youauto@gmail.com</a></p>
             </section>
           </article>
         </div>

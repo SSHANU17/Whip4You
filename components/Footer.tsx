@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
   const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
-    const isSubscribed = localStorage.getItem('w4y_subscribed') === 'true';
+    const isSubscribed = localStorage.getItem('w4u_subscribed') === 'true';
     if (isSubscribed) setSubscribed(true);
   }, []);
 
@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
     e.preventDefault();
     if (email) {
       setSubscribed(true);
-      localStorage.setItem('w4y_subscribed', 'true');
+      localStorage.setItem('w4u_subscribed', 'true');
       setTimeout(() => {
         // Reset local visual state to show success but stay subscribed in storage
         setEmail('');
@@ -62,9 +62,9 @@ const Footer: React.FC = () => {
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Phone size={16} /></div>
                 <span className="text-xs font-bold">(778) 970-6007</span>
               </a>
-              <a href="mailto:info@whip4you.ca" className="flex items-center gap-4 hover:text-white group">
+              <a href="mailto:Whip4youauto@gmail.com" className="flex items-center gap-4 hover:text-white group">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Mail size={16} /></div>
-                <span className="text-xs font-bold">info@whip4you.ca</span>
+                <span className="text-xs font-bold">Whip4youauto@gmail.com</span>
               </a>
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center flex-shrink-0"><MapPin size={16} /></div>

@@ -8,17 +8,13 @@ import {
   ShieldCheck, 
   ArrowRight,
   BarChart3,
-  Users,
-  Send,
-  Search,
-  ArrowRightLeft
+  Users
 } from 'lucide-react';
 import { api } from '../api.ts';
 
 const Finance: React.FC = () => {
   const location = useLocation();
   const formRef = useRef<HTMLDivElement>(null);
-  const [formType, setFormType] = useState<'Finance' | 'Car Finder' | 'Trade-In'>('Finance');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isLive, setIsLive] = useState(false);
@@ -40,15 +36,22 @@ const Finance: React.FC = () => {
     setLoading(true);
     const formData = new FormData(e.target as HTMLFormElement);
     const data = Object.fromEntries(formData.entries());
+    const normalizedDetails = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => String(value).trim().length > 0)
+    );
+
+    const message =
+      String(data.message || '').trim() ||
+      'Finance application request from application hub.';
 
     try {
       await api.createLead({
-        type: formType,
+        type: 'Finance',
         name: data.name as string,
         email: data.email as string,
         phone: data.phone as string,
-        message: (data.message as string) || `Finance application for ${formType}`,
-        details: data
+        message,
+        details: normalizedDetails
       });
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -108,9 +111,9 @@ const Finance: React.FC = () => {
             {creditTiers.map((tier, idx) => (
               <div key={idx} className="bg-white p-10 rounded-3xl shadow-xl border border-gray-100 transform hover:-translate-y-2 transition-all duration-300">
                 <div className="mb-6">{tier.icon}</div>
-                <h3 className="text-2xl font-bold mb-2">{tier.tier}</h3>
-                <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-xs mb-4">{tier.benefit}</p>
-                <p className="text-gray-500 text-sm leading-relaxed">{tier.details}</p>
+                <h3 className="text-2xl font-bold mb-2 text-zinc-900">{tier.tier}</h3>
+                <p className="text-amber-700 font-black uppercase tracking-widest text-xs mb-4">{tier.benefit}</p>
+                <p className="text-zinc-700 text-sm leading-relaxed font-medium">{tier.details}</p>
               </div>
             ))}
           </div>
@@ -140,7 +143,7 @@ const Finance: React.FC = () => {
               </div>
             </div>
             <div className="bg-black p-12 rounded-[40px] text-white shadow-2xl relative">
-              <div className="absolute inset-0 gold-gradient opacity-5 rounded-[40px]"></div>
+              <div className="absolute inset-0 gold-gradient opacity-5 rounded-[40px] pointer-events-none"></div>
               <h3 className="text-3xl font-bold mb-6 brand-font italic">Ready to drive?</h3>
               <p className="text-gray-400 mb-10 leading-relaxed">Join thousands of happy drivers in BC who secured their dream car through our simple financing process.</p>
               
@@ -191,21 +194,10 @@ const Finance: React.FC = () => {
               </div>
             ) : (
               <div className="bg-white p-6 md:p-16 rounded-[40px] md:rounded-[60px] shadow-2xl border border-gray-100">
-                {/* Tabs */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-12 bg-gray-50 p-2 rounded-[24px] md:rounded-[32px]">
-                  {[
-                    { id: 'Finance', label: 'Finance Request', icon: <Send size={16} /> },
-                    { id: 'Car Finder', label: 'Vehicle Search', icon: <Search size={16} /> },
-                    { id: 'Trade-In', label: 'Trade-In Appraisal', icon: <ArrowRightLeft size={16} /> }
-                  ].map(tab => (
-                    <button 
-                      key={tab.id}
-                      onClick={() => setFormType(tab.id as any)}
-                      className={`flex items-center justify-center gap-3 px-4 py-4 md:py-5 rounded-[20px] md:rounded-[24px] font-bold uppercase tracking-widest text-[9px] md:text-[10px] transition-all ${formType === tab.id ? 'bg-black text-[#D4AF37] shadow-lg' : 'text-gray-400 hover:text-black'}`}
-                    >
-                      {tab.icon} {tab.label}
-                    </button>
-                  ))}
+                <div className="mb-12 bg-gray-50 p-2 rounded-[24px] md:rounded-[32px]">
+                  <div className="flex items-center justify-center px-4 py-4 md:py-5 rounded-[20px] md:rounded-[24px] font-bold uppercase tracking-widest text-[9px] md:text-[10px] bg-black text-[#D4AF37] shadow-lg">
+                    Finance Request
+                  </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
@@ -224,21 +216,9 @@ const Finance: React.FC = () => {
                     </div>
                   </div>
 
-                  {formType === 'Trade-In' && (
-                    <div className="bg-off-white p-8 rounded-[32px] border border-gray-100 animate-in slide-in-from-top-4 duration-500">
-                      <h4 className="font-bold mb-6 uppercase tracking-[0.2em] text-[10px] md:text-xs flex items-center gap-3 text-black">
-                        <ArrowRightLeft size={14} className="text-[#D4AF37]" /> Current Vehicle Details
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input placeholder="Year/Make/Model" className="bg-white p-4 rounded-xl border border-gray-100 text-sm outline-none text-black placeholder:text-zinc-400" />
-                        <input placeholder="Mileage (KM)" className="bg-white p-4 rounded-xl border border-gray-100 text-sm outline-none text-black placeholder:text-zinc-400" />
-                      </div>
-                    </div>
-                  )}
-
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Additional Information</label>
-                    <textarea rows={3} className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black placeholder:text-zinc-400" placeholder="Employment, preferred monthly budget, or questions..."></textarea>
+                    <textarea name="message" rows={3} className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black placeholder:text-zinc-400" placeholder="Employment, preferred monthly budget, or questions..."></textarea>
                   </div>
 
                   <button 

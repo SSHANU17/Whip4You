@@ -11,7 +11,7 @@ const handleResponse = async (res: Response) => {
 };
 
 const getHeaders = () => {
-  const token = localStorage.getItem('w4y_admin_token');
+  const token = localStorage.getItem('w4u_admin_token');
   return {
     'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -133,7 +133,7 @@ export const api = {
     const formData = new FormData();
     formData.append('image', file);
     
-    const token = localStorage.getItem('w4y_admin_token');
+    const token = localStorage.getItem('w4u_admin_token');
     const res = await fetch(`${API_BASE}/upload`, {
       method: 'POST',
       headers: {

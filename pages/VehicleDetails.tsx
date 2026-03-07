@@ -36,20 +36,20 @@ const VehicleDetails: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
+      const favorites = JSON.parse(localStorage.getItem('w4u_favorites') || '[]');
       setIsFavorite(favorites.includes(id));
     }
   }, [id]);
 
   const toggleFavorite = () => {
-    const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
+    const favorites = JSON.parse(localStorage.getItem('w4u_favorites') || '[]');
     let newFavorites;
     if (isFavorite) {
       newFavorites = favorites.filter((favId: string) => favId !== id);
     } else {
       newFavorites = [...favorites, id];
     }
-    localStorage.setItem('w4y_favorites', JSON.stringify(newFavorites));
+    localStorage.setItem('w4u_favorites', JSON.stringify(newFavorites));
     setIsFavorite(!isFavorite);
     
     // Dispatch custom event to notify Navbar

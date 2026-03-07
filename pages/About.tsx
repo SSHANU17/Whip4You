@@ -16,7 +16,7 @@ const About: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black"></div>
         </div>
         <div className="container mx-auto px-6 relative z-10">
-          <span className="text-[#D4AF37] font-bold uppercase tracking-[0.4em] mb-4 block">The W4Y Story</span>
+          <span className="text-[#D4AF37] font-bold uppercase tracking-[0.4em] mb-4 block">The W4U Story</span>
           <h1 className="text-5xl md:text-8xl font-bold text-white mb-6 brand-font italic">Luxury & Value</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
             Revolutionizing the pre-owned market in British Columbia since 2018.

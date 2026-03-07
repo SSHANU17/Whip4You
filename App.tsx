@@ -15,6 +15,8 @@ import Privacy from './pages/Privacy.tsx';
 import { ENGINE_SOUND_URL } from './constants.tsx';
 import { Play, Loader2 } from 'lucide-react';
 
+const ENTRY_GATE_STORAGE_KEY = 'w4u_has_entered_site';
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -38,8 +40,116 @@ const ENTRY_SLIDES = [
   "https://images.unsplash.com/photo-1542362567-b052cb1301c6?auto=format&fit=crop&q=80&w=2000"
 ];
 
+interface AppFrameProps {
+  hasInteracted: boolean;
+  isStarting: boolean;
+  currentSlide: number;
+  startEngine: () => void;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+}
+
+const AppFrame: React.FC<AppFrameProps> = ({
+  hasInteracted,
+  isStarting,
+  currentSlide,
+  startEngine,
+  audioRef
+}) => {
+  const { pathname } = useLocation();
+  const isAdminRoute = pathname === '/admin';
+  const showEntryGate = !hasInteracted && !isAdminRoute;
+
+  return (
+    <>
+      <ScrollToTop />
+      {showEntryGate && (
+        <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 transition-all duration-1000 overflow-hidden">
+          {/* Background Carousel */}
+          <div className="absolute inset-0 z-0">
+            {ENTRY_SLIDES.map((slide, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+                  currentSlide === index ? 'opacity-40' : 'opacity-0'
+                }`}
+              >
+                <img
+                  src={slide}
+                  className={`w-full h-full object-cover grayscale brightness-50 transition-transform duration-[10000ms] ease-linear ${
+                    currentSlide === index ? 'scale-110' : 'scale-100'
+                  }`}
+                  alt={`Slide ${index}`}
+                />
+                {(index === 1 || index === 3) && (
+                  <div className="absolute inset-0 bg-[#D4AF37]/10 mix-blend-color"></div>
+                )}
+              </div>
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
+            <div className="absolute inset-0 bg-radial-gradient(circle, transparent 20%, black 100%) opacity-60"></div>
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-1000">
+            <div className="gold-gradient p-1 mb-8 rounded-3xl animate-pulse shadow-[0_0_50px_rgba(212,175,55,0.2)]">
+              <div className="bg-black p-8 md:p-12 rounded-[22px] flex flex-col items-center">
+                 <span className="text-6xl md:text-8xl font-bold brand-font text-white mb-4 italic tracking-tighter">W4U</span>
+                 <p className="text-[#D4AF37] font-black uppercase tracking-[0.5em] text-[10px] md:text-sm">WHIP4YOU PREMIUM</p>
+              </div>
+            </div>
+
+            <div className="h-24 flex flex-col items-center justify-center gap-6">
+              {!isStarting ? (
+                <button
+                  onClick={startEngine}
+                  className="group relative flex flex-col items-center gap-4 transition-all hover:scale-105 active:scale-95"
+                >
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-[#D4AF37] flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+                     <Play size={36} fill="currentColor" className="ml-1" />
+                  </div>
+                  <span className="text-white font-black uppercase tracking-[0.4em] text-[9px] md:text-[11px] drop-shadow-lg">Ignite Engine & Enter</span>
+                </button>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="text-[#D4AF37] animate-spin" size={32} />
+                  <span className="text-[#D4AF37] font-black uppercase tracking-widest text-[10px] animate-pulse">Synchronizing Gears...</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <audio ref={audioRef} src={ENGINE_SOUND_URL} preload="auto" />
+        </div>
+      )}
+
+      <div className={`flex flex-col min-h-screen ${showEntryGate ? 'hidden' : 'animate-in fade-in duration-1000'}`}>
+        {!isAdminRoute && <Navbar />}
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/vehicle/:id" element={<VehicleDetails />} />
+            <Route path="/finance" element={<Finance />} />
+            <Route path="/calculator" element={<LoanCalculator />} />
+            <Route path="/apply" element={<Finance />} />
+            <Route path="/car-finder" element={<Contact type="Car Finder" />} />
+            <Route path="/trade-in" element={<Contact type="Trade-In" />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/directions" element={<Contact />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="*" element={<Home />} />
+          </Routes>
+        </main>
+        {!isAdminRoute && <Footer />}
+      </div>
+    </>
+  );
+};
+
 const App: React.FC = () => {
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(
+    () => localStorage.getItem(ENTRY_GATE_STORAGE_KEY) === 'true'
+  );
   const [isStarting, setIsStarting] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -61,101 +171,29 @@ const App: React.FC = () => {
       audioRef.current.volume = 0.6;
       audioRef.current.play().catch(err => {
         console.error("Playback failed", err);
+        localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
         setHasInteracted(true);
       });
       
       setTimeout(() => {
+        localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
         setHasInteracted(true);
       }, 800);
     } else {
+      localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
       setHasInteracted(true);
     }
   };
 
   return (
     <Router>
-      <ScrollToTop />
-      
-      {!hasInteracted && (
-        <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 transition-all duration-1000 overflow-hidden">
-          {/* Background Carousel */}
-          <div className="absolute inset-0 z-0">
-            {ENTRY_SLIDES.map((slide, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
-                  currentSlide === index ? 'opacity-40' : 'opacity-0'
-                }`}
-              >
-                <img 
-                  src={slide} 
-                  className={`w-full h-full object-cover grayscale brightness-50 transition-transform duration-[10000ms] ease-linear ${
-                    currentSlide === index ? 'scale-110' : 'scale-100'
-                  }`}
-                  alt={`Slide ${index}`} 
-                />
-                {(index === 1 || index === 3) && (
-                  <div className="absolute inset-0 bg-[#D4AF37]/10 mix-blend-color"></div>
-                )}
-              </div>
-            ))}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
-            <div className="absolute inset-0 bg-radial-gradient(circle, transparent 20%, black 100%) opacity-60"></div>
-          </div>
-
-          <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-1000">
-            <div className="gold-gradient p-1 mb-8 rounded-3xl animate-pulse shadow-[0_0_50px_rgba(212,175,55,0.2)]">
-              <div className="bg-black p-8 md:p-12 rounded-[22px] flex flex-col items-center">
-                 <span className="text-6xl md:text-8xl font-bold brand-font text-white mb-4 italic tracking-tighter">W4Y</span>
-                 <p className="text-[#D4AF37] font-black uppercase tracking-[0.5em] text-[10px] md:text-sm">WHIP4YOU PREMIUM</p>
-              </div>
-            </div>
-            
-            <div className="h-24 flex flex-col items-center justify-center gap-6">
-              {!isStarting ? (
-                <button 
-                  onClick={startEngine}
-                  className="group relative flex flex-col items-center gap-4 transition-all hover:scale-105 active:scale-95"
-                >
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-[#D4AF37] flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)]">
-                     <Play size={36} fill="currentColor" className="ml-1" />
-                  </div>
-                  <span className="text-white font-black uppercase tracking-[0.4em] text-[9px] md:text-[11px] drop-shadow-lg">Ignite Engine & Enter</span>
-                </button>
-              ) : (
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2 className="text-[#D4AF37] animate-spin" size={32} />
-                  <span className="text-[#D4AF37] font-black uppercase tracking-widest text-[10px] animate-pulse">Synchronizing Gears...</span>
-                </div>
-              )}
-            </div>
-          </div>
-          <audio ref={audioRef} src={ENGINE_SOUND_URL} preload="auto" />
-        </div>
-      )}
-
-      <div className={`flex flex-col min-h-screen ${!hasInteracted ? 'hidden' : 'animate-in fade-in duration-1000'}`}>
-        <Navbar />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/vehicle/:id" element={<VehicleDetails />} />
-            <Route path="/finance" element={<Finance />} />
-            <Route path="/calculator" element={<LoanCalculator />} />
-            <Route path="/apply" element={<Finance />} />
-            <Route path="/car-finder" element={<Contact type="Car Finder" />} />
-            <Route path="/trade-in" element={<Contact type="Trade-In" />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/directions" element={<Contact />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="*" element={<Home />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <AppFrame
+        hasInteracted={hasInteracted}
+        isStarting={isStarting}
+        currentSlide={currentSlide}
+        startEngine={startEngine}
+        audioRef={audioRef}
+      />
     </Router>
   );
 };

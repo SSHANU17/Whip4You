@@ -17,7 +17,7 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
   const loadFavorites = async () => {
     setLoading(true);
     try {
-      const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
+      const favorites = JSON.parse(localStorage.getItem('w4u_favorites') || '[]');
       if (favorites.length === 0) {
         setSavedCars([]);
         setLoading(false);
@@ -38,9 +38,9 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const removeFavorite = (id: string) => {
-    const favorites = JSON.parse(localStorage.getItem('w4y_favorites') || '[]');
+    const favorites = JSON.parse(localStorage.getItem('w4u_favorites') || '[]');
     const newFavorites = favorites.filter((favId: string) => favId !== id);
-    localStorage.setItem('w4y_favorites', JSON.stringify(newFavorites));
+    localStorage.setItem('w4u_favorites', JSON.stringify(newFavorites));
     loadFavorites();
   };
 

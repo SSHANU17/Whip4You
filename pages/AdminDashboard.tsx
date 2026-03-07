@@ -6,7 +6,7 @@ import {
   Phone, Mail, User, MessageSquare, AlertTriangle,
   TrendingUp, BarChart3, Eye, EyeOff, Star, ShieldCheck,
   Percent, DollarSign, Type, ClipboardEdit, Save, Loader2,
-  Menu
+  Menu, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import { api } from '../api';
 import { Vehicle } from '../types';
@@ -23,7 +23,76 @@ interface Lead {
   message: string;
   priority: 'High' | 'Medium' | 'Low';
   remarks?: string;
+  details?: Record<string, unknown>;
 }
+
+const formatDateTime = (value?: string) => {
+  if (!value) return 'N/A';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString();
+};
+
+const formatDetailLabel = (rawKey: string) =>
+  rawKey
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^\w/, (char) => char.toUpperCase());
+
+const stringifyDetailValue = (value: unknown): string => {
+  if (value === null || typeof value === 'undefined') return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '';
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => stringifyDetailValue(item))
+      .filter((item) => item.length > 0)
+      .join(', ');
+  }
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return '';
+    }
+  }
+  return String(value);
+};
+
+const getLeadDetailEntries = (details?: Record<string, unknown>) => {
+  if (!details || typeof details !== 'object') return [];
+  return Object.entries(details)
+    .map(([key, value]) => ({
+      label: formatDetailLabel(key),
+      value: stringifyDetailValue(value)
+    }))
+    .filter((entry) => entry.value.length > 0);
+};
+
+const createInitialVehicleForm = (): Partial<Vehicle> => ({
+  make: '',
+  model: '',
+  year: new Date().getFullYear(),
+  price: 0,
+  mileage: 0,
+  bodyType: 'Sedan',
+  transmission: 'Automatic',
+  fuelType: 'Gasoline',
+  engine: '',
+  drivetrain: 'FWD',
+  exteriorColor: '',
+  interiorColor: '',
+  vin: '',
+  stockNumber: '',
+  images: [],
+  features: [],
+  description: '',
+  condition: 'Used',
+  status: 'Available'
+});
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'leads' | 'reviews' | 'config'>('overview');
@@ -31,7 +100,7 @@ const AdminDashboard: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('w4y_admin_token'));
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('w4u_admin_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -41,21 +110,28 @@ const AdminDashboard: React.FC = () => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [leadRemarks, setLeadRemarks] = useState('');
   const [leadStatus, setLeadStatus] = useState<Lead['status']>('open');
+  const [isUpdatingLead, setIsUpdatingLead] = useState(false);
+  const [leadFeedback, setLeadFeedback] = useState<string | null>(null);
+  const [showCompletedLeads, setShowCompletedLeads] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   // Inventory State
   const [isAddingVehicle, setIsAddingVehicle] = useState(false);
-  const [newVehicle, setNewVehicle] = useState<Partial<Vehicle>>({
-    make: '', model: '', year: new Date().getFullYear(), price: 0,
-    mileage: 0, bodyType: 'Sedan', transmission: 'Automatic',
-    fuelType: 'Gasoline', engine: '', drivetrain: 'FWD',
-    exteriorColor: '', interiorColor: '', vin: '',
-    stockNumber: '', images: [], features: [],
-    description: '', condition: 'Used', status: 'Available'
-  });
+  const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null);
+  const [newVehicle, setNewVehicle] = useState<Partial<Vehicle>>(createInitialVehicleForm());
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [inventoryFeedback, setInventoryFeedback] = useState<string | null>(null);
 
   // Site Configuration State
   const [siteConfig, setSiteConfig] = useState<any>(null);
+  const visibleLeads = useMemo(
+    () => (showCompletedLeads ? leads : leads.filter((lead) => lead.status !== 'done')),
+    [leads, showCompletedLeads]
+  );
+  const leadDetailEntries = useMemo(
+    () => getLeadDetailEntries(selectedLead?.details),
+    [selectedLead?.details]
+  );
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -74,7 +150,7 @@ const AdminDashboard: React.FC = () => {
       }).catch(err => {
         console.error(err);
         setIsLoggedIn(false);
-        localStorage.removeItem('w4y_admin_token');
+        localStorage.removeItem('w4u_admin_token');
       });
     }
   }, [isLoggedIn]);
@@ -84,7 +160,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const data = await api.login({ email, password });
       if (data.token) {
-        localStorage.setItem('w4y_admin_token', data.token);
+        localStorage.setItem('w4u_admin_token', data.token);
         setIsLoggedIn(true);
       } else {
         alert("Authentication failed.");
@@ -94,16 +170,45 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleUpdateLead = async () => {
+  const closeLeadModal = () => {
+    setSelectedLead(null);
+    setLeadFeedback(null);
+    setSaveSuccess(false);
+  };
+
+  const closeVehicleModal = () => {
+    setIsAddingVehicle(false);
+    setEditingVehicleId(null);
+    setInventoryFeedback(null);
+    setNewVehicle(createInitialVehicleForm());
+  };
+
+  const handleUpdateLead = async (statusOverride?: Lead['status']) => {
     if (!selectedLead) return;
     const leadId = selectedLead._id || selectedLead.id;
-    const updated = await api.updateLead(leadId, { status: leadStatus, remarks: leadRemarks });
-    setLeads(prev => prev.map(l => (l._id || l.id) === leadId ? updated : l));
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setSelectedLead(null);
-    }, 800);
+    const statusToSave = statusOverride || leadStatus;
+    setIsUpdatingLead(true);
+    setLeadFeedback(null);
+    try {
+      const updated = await api.updateLead(leadId, { status: statusToSave, remarks: leadRemarks });
+      setLeads(prev => prev.map(l => (l._id || l.id) === leadId ? { ...l, ...updated } : l));
+      const refreshedLeads = await api.getLeads();
+      setLeads(refreshedLeads);
+      setLeadStatus(statusToSave);
+      setSaveSuccess(true);
+      setLeadFeedback('Lead status updated.');
+      setTimeout(() => {
+        setSaveSuccess(false);
+        closeLeadModal();
+        setLeadFeedback(null);
+      }, 900);
+    } catch (err: any) {
+      const message = err?.message || 'Failed to update lead status.';
+      setLeadFeedback(message);
+      alert(message);
+    } finally {
+      setIsUpdatingLead(false);
+    }
   };
 
   const handleUpdateConfig = async () => {
@@ -123,37 +228,93 @@ const AdminDashboard: React.FC = () => {
     if (!file) return;
 
     setUploadingImage(true);
+    setInventoryFeedback(null);
     try {
       const data = await api.uploadImage(file);
       setNewVehicle(prev => ({
         ...prev,
         images: [...(prev.images || []), data.url]
       }));
-    } catch (err) {
-      alert("Image upload failed. Check Cloudinary credentials.");
+      setInventoryFeedback('Image uploaded successfully.');
+    } catch (err: any) {
+      const message = err?.message || 'Image upload failed. Check Cloudinary configuration.';
+      setInventoryFeedback(message);
+      alert(message);
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
   };
 
-  const handleCreateVehicle = async (e: React.FormEvent) => {
+  const handleStartEditVehicle = (vehicle: Vehicle) => {
+    const vehicleId = vehicle._id || vehicle.id;
+    if (!vehicleId) {
+      alert('Unable to edit this vehicle because it has no ID.');
+      return;
+    }
+
+    setInventoryFeedback(null);
+    setEditingVehicleId(vehicleId);
+    setNewVehicle({
+      ...vehicle,
+      price: vehicle.price === 'Call For Price' ? 0 : Number(vehicle.price),
+      images: vehicle.images || [],
+      features: vehicle.features || []
+    });
+    setIsAddingVehicle(true);
+  };
+
+  const handleSaveVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
+    setInventoryFeedback(null);
+
+    const payload = {
+      ...newVehicle,
+      year: Number(newVehicle.year),
+      mileage: Number(newVehicle.mileage),
+      price: newVehicle.price === 'Call For Price' ? 0 : Number(newVehicle.price),
+      images: newVehicle.images || [],
+      features: newVehicle.features || []
+    };
+
     try {
-      const created = await api.createVehicle(newVehicle);
-      setVehicles(prev => [created, ...prev]);
-      setIsAddingVehicle(false);
-      setNewVehicle({
-        make: '', model: '', year: new Date().getFullYear(), price: 0,
-        mileage: 0, bodyType: 'Sedan', transmission: 'Automatic',
-        fuelType: 'Gasoline', engine: '', drivetrain: 'FWD',
-        exteriorColor: '', interiorColor: '', vin: '',
-        stockNumber: '', images: [], features: [],
-        description: '', condition: 'Used', status: 'Available'
-      });
-    } catch (err) {
-      alert("Failed to create vehicle.");
+      if (editingVehicleId) {
+        const updated = await api.updateVehicle(editingVehicleId, payload);
+        setVehicles(prev =>
+          prev.map(v => ((v._id || v.id) === editingVehicleId ? updated : v))
+        );
+      } else {
+        const created = await api.createVehicle(payload);
+        setVehicles(prev => [created, ...prev]);
+      }
+
+      closeVehicleModal();
+    } catch (err: any) {
+      const message = err?.message || `Failed to ${editingVehicleId ? 'update' : 'create'} vehicle.`;
+      setInventoryFeedback(message);
+      alert(message);
     }
   };
+
+  useEffect(() => {
+    if (!selectedLead && !isAddingVehicle) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleEscClose = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (selectedLead) closeLeadModal();
+      if (isAddingVehicle) closeVehicleModal();
+    };
+
+    window.addEventListener('keydown', handleEscClose);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleEscClose);
+    };
+  }, [selectedLead, isAddingVehicle]);
 
   if (!isLoggedIn) {
     return (
@@ -202,7 +363,7 @@ const AdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-off-white flex flex-col lg:flex-row">
       {/* Mobile Header */}
       <div className="lg:hidden bg-black text-white p-6 flex justify-between items-center sticky top-0 z-50">
-        <div className="text-xl font-bold brand-font italic">W4Y <span className="text-[#D4AF37]">SYSTEMS</span></div>
+        <div className="text-xl font-black brand-font italic tracking-[0.15em] text-white">W4U <span className="text-[#D4AF37]">SYSTEMS</span></div>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-[#D4AF37]">
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -216,21 +377,39 @@ const AdminDashboard: React.FC = () => {
         />
       )}
 
-      <aside className={`w-80 bg-black text-white flex flex-col fixed lg:sticky inset-y-0 left-0 h-full z-40 border-r border-white/5 transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="p-12 text-2xl font-bold brand-font italic hidden lg:block">W4Y <span className="text-[#D4AF37]">SYSTEMS</span></div>
-        <nav className="flex-1 px-8 space-y-4 mt-8 lg:mt-0">
+      <aside className={`w-80 ${isSidebarExpanded ? 'lg:w-80' : 'lg:w-24'} bg-black text-white flex flex-col fixed lg:sticky inset-y-0 left-0 h-full z-40 border-r border-white/5 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="hidden lg:flex items-center justify-between p-6 border-b border-white/5">
+          {isSidebarExpanded ? (
+            <div className="text-xl font-black brand-font italic tracking-[0.18em] text-white">W4U <span className="text-[#D4AF37]">SYSTEMS</span></div>
+          ) : (
+            <div className="text-lg font-black brand-font italic text-white">W4U</div>
+          )}
+          <button
+            onClick={() => setIsSidebarExpanded(prev => !prev)}
+            className="p-2 rounded-xl bg-white/5 text-[#D4AF37] hover:bg-white/10 transition-colors"
+            title={isSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+          >
+            {isSidebarExpanded ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
+          </button>
+        </div>
+        <nav className={`flex-1 ${isSidebarExpanded ? 'px-8' : 'px-3'} space-y-4 mt-8 lg:mt-6`}>
           {['overview', 'inventory', 'leads', 'reviews', 'config'].map(id => (
-            <button key={id} onClick={() => { setActiveTab(id as any); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-6 px-8 py-4 rounded-2xl font-black uppercase tracking-[0.3em] text-[9px] ${activeTab === id ? 'bg-[#D4AF37] text-black' : 'text-zinc-500 hover:bg-white/5'}`}>
+            <button key={id} onClick={() => { setActiveTab(id as any); setIsSidebarOpen(false); }} className={`w-full flex items-center ${isSidebarExpanded ? 'gap-6 px-8 justify-start' : 'justify-center px-0'} py-4 rounded-2xl font-black uppercase tracking-[0.3em] text-[9px] ${activeTab === id ? 'bg-[#D4AF37] text-black' : 'text-zinc-300 hover:bg-white/10 hover:text-white'}`}>
               {id === 'overview' && <TrendingUp size={18} />}
               {id === 'inventory' && <Car size={18} />}
               {id === 'leads' && <FileText size={18} />}
               {id === 'reviews' && <Star size={18} />}
               {id === 'config' && <Settings size={18} />}
-              {id.toUpperCase()}
+              <span className={isSidebarExpanded ? '' : 'lg:hidden'}>{id.toUpperCase()}</span>
             </button>
           ))}
         </nav>
-        <div className="p-12"><button onClick={() => { localStorage.removeItem('w4y_admin_token'); setIsLoggedIn(false); }} className="text-red-500 font-bold uppercase tracking-widest text-[9px]">Log Out</button></div>
+        <div className={isSidebarExpanded ? 'p-12' : 'p-4'}>
+          <button onClick={() => { localStorage.removeItem('w4u_admin_token'); setIsLoggedIn(false); }} className="w-full text-red-500 font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2">
+            <LogOut size={14} />
+            <span className={isSidebarExpanded ? '' : 'lg:hidden'}>Log Out</span>
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 p-6 md:p-10 lg:p-16">
@@ -238,10 +417,16 @@ const AdminDashboard: React.FC = () => {
           <>
             {activeTab === 'overview' && (
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-black">Operations Analytics</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-zinc-900">Operations Analytics</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border-l-4 border-[#D4AF37]"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Units</p><h3 className="text-3xl md:text-4xl font-bold">{vehicles.length}</h3></div>
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border-l-4 border-green-500"><p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Live Leads</p><h3 className="text-3xl md:text-4xl font-bold">{leads.filter(l => l.status !== 'done').length}</h3></div>
+                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-[#D4AF37]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Units</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{vehicles.length}</h3>
+                  </div>
+                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Live Leads</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{leads.filter(l => l.status !== 'done').length}</h3>
+                  </div>
                 </div>
               </div>
             )}
@@ -251,7 +436,12 @@ const AdminDashboard: React.FC = () => {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10 md:mb-16">
                   <h1 className="text-3xl md:text-4xl font-bold brand-font italic">Inventory Control</h1>
                   <button 
-                    onClick={() => setIsAddingVehicle(true)}
+                    onClick={() => {
+                      setInventoryFeedback(null);
+                      setEditingVehicleId(null);
+                      setNewVehicle(createInitialVehicleForm());
+                      setIsAddingVehicle(true);
+                    }}
                     className="w-full sm:w-auto gold-gradient text-black px-8 md:px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3"
                   >
                     <Plus size={18} /> Add New Asset
@@ -269,12 +459,18 @@ const AdminDashboard: React.FC = () => {
                         />
                         <div className="min-w-0">
                           <h4 className="font-bold text-lg md:text-xl text-black truncate">{v.year} {v.make} {v.model}</h4>
-                          <p className="text-[9px] font-black uppercase text-zinc-400 tracking-widest truncate">{v.vin} • {v.trim}</p>
+                          <p className="text-[9px] font-black uppercase text-zinc-400 tracking-widest truncate">{v.vin} | {v.trim}</p>
                           <p className="text-[#D4AF37] font-bold mt-1">${v.price.toLocaleString()}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                        <button className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-400 hover:text-black transition-colors"><Edit3 size={18} /></button>
+                        <button
+                          onClick={() => handleStartEditVehicle(v)}
+                          className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-400 hover:text-black transition-colors"
+                          title="Edit vehicle"
+                        >
+                          <Edit3 size={18} />
+                        </button>
                         <button 
                           onClick={async () => {
                             if(confirm('Authorize permanent deletion of this asset?')) {
@@ -295,19 +491,49 @@ const AdminDashboard: React.FC = () => {
 
             {activeTab === 'leads' && (
               <div className="space-y-6">
-                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic">Lead Hub</h1>
-                {leads.map(lead => (
-                  <div key={lead._id || lead.id} className="bg-white p-6 md:p-10 rounded-[30px] md:rounded-[40px] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between border border-zinc-100 gap-6">
-                    <div className="flex items-center gap-6 md:gap-10">
-                      <div className="bg-zinc-950 p-4 rounded-xl text-[#D4AF37] shrink-0"><User size={24} /></div>
-                      <div>
-                        <h4 className="font-bold text-lg text-black">{lead.name}</h4>
-                        <p className="text-[9px] font-black uppercase text-zinc-400">{lead.type} • {lead.priority}</p>
-                      </div>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-10">
+                  <h1 className="text-3xl md:text-4xl font-bold brand-font italic">Lead Hub</h1>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setShowCompletedLeads(prev => !prev)}
+                      className="px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-zinc-200 bg-white hover:border-[#D4AF37] transition-colors flex items-center gap-2"
+                    >
+                      {showCompletedLeads ? <EyeOff size={14} /> : <Eye size={14} />}
+                      {showCompletedLeads ? 'Hide Completed' : 'Show Completed'}
+                    </button>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                      Showing {visibleLeads.length} / {leads.length}
                     </div>
-                    <button onClick={() => { setSelectedLead(lead); setLeadRemarks(lead.remarks || ''); setLeadStatus(lead.status); }} className="w-full sm:w-auto text-[10px] font-black text-[#D4AF37] uppercase tracking-widest border border-[#D4AF37]/20 sm:border-none py-3 sm:py-0 rounded-xl">Process</button>
                   </div>
-                ))}
+                </div>
+
+                {visibleLeads.length === 0 ? (
+                  <div className="bg-white p-10 rounded-[30px] border border-zinc-100 text-center text-zinc-500 font-bold uppercase tracking-widest text-[10px]">
+                    No leads to display for current filter.
+                  </div>
+                ) : (
+                  visibleLeads.map(lead => (
+                    <div key={lead._id || lead.id} className="bg-white p-6 md:p-10 rounded-[30px] md:rounded-[40px] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between border border-zinc-100 gap-6">
+                      <div className="flex items-center gap-6 md:gap-10">
+                        <div className="bg-zinc-950 p-4 rounded-xl text-[#D4AF37] shrink-0"><User size={24} /></div>
+                        <div>
+                          <h4 className="font-bold text-lg text-black">{lead.name}</h4>
+                          <p className="text-[9px] font-black uppercase text-zinc-400">{lead.type} | {lead.priority}</p>
+                          <span className={`inline-flex mt-2 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                            lead.status === 'done'
+                              ? 'bg-green-100 text-green-700'
+                              : lead.status === 'inProgress'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {lead.status === 'inProgress' ? 'In Progress' : lead.status === 'done' ? 'Completed' : 'Open'}
+                          </span>
+                        </div>
+                      </div>
+                      <button onClick={() => { setSelectedLead(lead); setLeadRemarks(lead.remarks || ''); setLeadStatus(lead.status); setLeadFeedback(null); setSaveSuccess(false); }} className="w-full sm:w-auto text-[10px] font-black text-[#D4AF37] uppercase tracking-widest border border-[#D4AF37]/20 sm:border-none py-3 sm:py-0 rounded-xl">Process</button>
+                    </div>
+                  ))
+                )}
               </div>
             )}
 
@@ -338,18 +564,92 @@ const AdminDashboard: React.FC = () => {
       </main>
 
       {selectedLead && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8">
-          <div className="bg-white w-full max-w-2xl rounded-[30px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={closeLeadModal}>
+          <div className="bg-white w-full max-w-2xl rounded-[30px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 md:p-10 border-b border-zinc-100 flex justify-between items-center">
               <h2 className="text-xl md:text-2xl font-bold brand-font italic">Lead Analysis</h2>
-              <button onClick={() => setSelectedLead(null)}><X size={24} className="md:w-8 md:h-8" /></button>
+              <button onClick={closeLeadModal} className="w-9 h-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-700 hover:bg-zinc-200">
+                <X size={20} className="md:w-6 md:h-6" />
+              </button>
             </div>
-            <div className="p-6 md:p-12 space-y-8 md:y-10 overflow-y-auto">
+            <div className="p-6 md:p-12 space-y-8 md:space-y-10 overflow-y-auto">
+              <div className="bg-zinc-50 border border-zinc-200 p-5 rounded-2xl space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Customer</p>
+                    <p className="text-sm font-bold text-black">{selectedLead.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Type</p>
+                    <p className="text-sm font-bold text-black">{selectedLead.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Email</p>
+                    <a href={`mailto:${selectedLead.email}`} className="text-sm font-bold text-black underline decoration-dotted">{selectedLead.email}</a>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Phone</p>
+                    <a href={`tel:${selectedLead.phone}`} className="text-sm font-bold text-black underline decoration-dotted">{selectedLead.phone}</a>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Request</p>
+                  <p className="text-sm text-zinc-700 leading-relaxed">
+                    {selectedLead.message?.trim() || 'No direct message provided. Review request profile below.'}
+                  </p>
+                </div>
+                {leadDetailEntries.length > 0 && (
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">Request Profile</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {leadDetailEntries.map((entry, index) => (
+                        <div key={`${entry.label}-${index}`} className="rounded-xl border border-zinc-200 bg-white p-3">
+                          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">{entry.label}</p>
+                          <p className="text-sm font-semibold text-zinc-800 break-words">{entry.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {leadDetailEntries.length === 0 && !selectedLead.message?.trim() && (
+                  <p className="text-xs font-semibold text-zinc-500">
+                    No structured request profile was attached with this lead.
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Created: {formatDateTime(selectedLead.createdAt)}</span>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                    selectedLead.status === 'done'
+                      ? 'bg-green-100 text-green-700'
+                      : selectedLead.status === 'inProgress'
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {selectedLead.status === 'inProgress' ? 'In Progress' : selectedLead.status === 'done' ? 'Completed' : 'Open'}
+                  </span>
+                </div>
+              </div>
+
+              {leadFeedback && (
+                <div className="bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-bold uppercase tracking-widest p-4 rounded-2xl">
+                  {leadFeedback}
+                </div>
+              )}
               {saveSuccess ? <div className="text-center font-bold text-green-500">Record Synchronized</div> : (
                 <>
-                  <div className="space-y-2"><label className="text-[9px] font-black text-zinc-400">STATUS</label><select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={leadStatus} onChange={e => setLeadStatus(e.target.value as any)}><option value="open">Open</option><option value="inProgress">In Progress</option><option value="done">Done</option></select></div>
+                  <div className="space-y-2"><label className="text-[9px] font-black text-zinc-400">STATUS</label><select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={leadStatus} onChange={e => setLeadStatus(e.target.value as any)}><option value="open">Open</option><option value="inProgress">In Progress</option><option value="done">Completed (Closed)</option></select></div>
                   <div className="space-y-2"><label className="text-[9px] font-black text-zinc-400">REMARKS</label><textarea className="w-full bg-zinc-50 p-5 rounded-2xl h-32 text-black" value={leadRemarks} onChange={e => setLeadRemarks(e.target.value)} /></div>
-                  <button onClick={handleUpdateLead} className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">Authorize CRM Update</button>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button onClick={closeLeadModal} type="button" className="w-full bg-zinc-100 text-zinc-800 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-zinc-200">
+                      Close Panel
+                    </button>
+                    <button onClick={() => handleUpdateLead('done')} type="button" disabled={isUpdatingLead} className="w-full bg-green-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                      Mark Completed
+                    </button>
+                    <button onClick={() => handleUpdateLead()} type="button" disabled={isUpdatingLead} className="w-full bg-black text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 disabled:cursor-not-allowed">
+                      {isUpdatingLead ? 'Updating...' : 'Save Update'}
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -358,13 +658,22 @@ const AdminDashboard: React.FC = () => {
       )}
 
       {isAddingVehicle && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8">
-          <div className="bg-white w-full max-w-4xl rounded-[30px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={closeVehicleModal}>
+          <div className="bg-white w-full max-w-4xl rounded-[30px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 md:p-10 border-b border-zinc-100 flex justify-between items-center bg-white sticky top-0 z-10">
-              <h2 className="text-xl md:text-2xl font-bold brand-font italic">New Asset Registration</h2>
-              <button onClick={() => setIsAddingVehicle(false)}><X size={24} className="md:w-8 md:h-8" /></button>
+              <h2 className="text-xl md:text-2xl font-bold brand-font italic">
+                {editingVehicleId ? 'Edit Asset' : 'New Asset Registration'}
+              </h2>
+              <button onClick={closeVehicleModal}>
+                <X size={24} className="md:w-8 md:h-8" />
+              </button>
             </div>
-            <form onSubmit={handleCreateVehicle} className="p-6 md:p-12 space-y-8 md:space-y-10 overflow-y-auto">
+            <form onSubmit={handleSaveVehicle} className="p-6 md:p-12 space-y-8 md:space-y-10 overflow-y-auto">
+              {inventoryFeedback && (
+                <div className="bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-bold uppercase tracking-widest p-4 rounded-2xl">
+                  {inventoryFeedback}
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-400">MAKE</label>
@@ -399,14 +708,55 @@ const AdminDashboard: React.FC = () => {
                   <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.trim} onChange={e => setNewVehicle({...newVehicle, trim: e.target.value})} />
                 </div>
                 <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-400">FUEL TYPE</label>
+                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.fuelType} onChange={e => setNewVehicle({...newVehicle, fuelType: e.target.value})}>
+                    <option value="Gasoline">Gasoline</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                    <option value="Electric">Electric</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-400">ENGINE</label>
+                  <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" placeholder="2.0L Turbo I4" value={newVehicle.engine} onChange={e => setNewVehicle({...newVehicle, engine: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-400">DRIVETRAIN</label>
+                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.drivetrain || 'FWD'} onChange={e => setNewVehicle({...newVehicle, drivetrain: e.target.value})}>
+                    <option value="FWD">FWD</option>
+                    <option value="RWD">RWD</option>
+                    <option value="AWD">AWD</option>
+                    <option value="4WD">4WD</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-400">CONDITION</label>
+                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.condition || 'Used'} onChange={e => setNewVehicle({...newVehicle, condition: e.target.value as Vehicle['condition']})}>
+                    <option value="Used">Used</option>
+                    <option value="Certified">Certified</option>
+                    <option value="New">New</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-400">STATUS</label>
+                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.status || 'Available'} onChange={e => setNewVehicle({...newVehicle, status: e.target.value as Vehicle['status']})}>
+                    <option value="Available">Available</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Sold">Sold</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-400">BODY TYPE</label>
-                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.bodyType} onChange={e => setNewVehicle({...newVehicle, bodyType: e.target.value})}>
+                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.bodyType} onChange={e => setNewVehicle({...newVehicle, bodyType: e.target.value as Vehicle['bodyType']})}>
                     <option value="Sedan">Sedan</option>
                     <option value="SUV">SUV</option>
                     <option value="Truck">Truck</option>
                     <option value="Coupe">Coupe</option>
                     <option value="Convertible">Convertible</option>
                     <option value="Van">Van</option>
+                    <option value="Mini-Van">Mini-Van</option>
+                    <option value="Commercial">Commercial</option>
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -415,6 +765,14 @@ const AdminDashboard: React.FC = () => {
                     <option value="Automatic">Automatic</option>
                     <option value="Manual">Manual</option>
                   </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-400">EXTERIOR COLOR</label>
+                  <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" placeholder="White" value={newVehicle.exteriorColor} onChange={e => setNewVehicle({...newVehicle, exteriorColor: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-400">INTERIOR COLOR</label>
+                  <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" placeholder="Black" value={newVehicle.interiorColor} onChange={e => setNewVehicle({...newVehicle, interiorColor: e.target.value})} />
                 </div>
               </div>
 
@@ -446,7 +804,9 @@ const AdminDashboard: React.FC = () => {
                 <textarea className="w-full bg-zinc-50 p-5 rounded-2xl h-32 text-black" value={newVehicle.description} onChange={e => setNewVehicle({...newVehicle, description: e.target.value})} />
               </div>
 
-              <button type="submit" className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">Register Asset to Inventory</button>
+              <button type="submit" className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">
+                {editingVehicleId ? 'Save Asset Changes' : 'Register Asset to Inventory'}
+              </button>
             </form>
           </div>
         </div>

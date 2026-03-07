@@ -5,7 +5,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '1',
     vin: 'WP0AA2A9XLS200001',
-    stockNumber: 'W4Y-PORSCHE-01',
+    stockNumber: 'W4U-PORSCHE-01',
     year: 2022,
     make: 'Porsche',
     model: '911',
@@ -29,7 +29,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '2',
     vin: 'WBA53AY00MCJ12345',
-    stockNumber: 'W4Y-BMW-02',
+    stockNumber: 'W4U-BMW-02',
     year: 2021,
     make: 'BMW',
     model: 'M4',
@@ -53,7 +53,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '3',
     vin: '5YJ3E1EB8LF098765',
-    stockNumber: 'W4Y-TESLA-03',
+    stockNumber: 'W4U-TESLA-03',
     year: 2023,
     make: 'Tesla',
     model: 'Model S',
@@ -77,7 +77,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '4',
     vin: 'WA1VAAFX9L1234567',
-    stockNumber: 'W4Y-AUDI-04',
+    stockNumber: 'W4U-AUDI-04',
     year: 2020,
     make: 'Audi',
     model: 'Q7',
@@ -101,7 +101,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '5',
     vin: 'W1NAG6EB3KJ554433',
-    stockNumber: 'W4Y-MERC-05',
+    stockNumber: 'W4U-MERC-05',
     year: 2019,
     make: 'Mercedes-Benz',
     model: 'G-Class',
@@ -125,7 +125,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '6',
     vin: 'SALGV2EF3LA112233',
-    stockNumber: 'W4Y-RR-06',
+    stockNumber: 'W4U-RR-06',
     year: 2022,
     make: 'Land Rover',
     model: 'Range Rover',
@@ -149,7 +149,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '7',
     vin: '1FTFW1RG3MF123456',
-    stockNumber: 'W4Y-FORD-07',
+    stockNumber: 'W4U-FORD-07',
     year: 2021,
     make: 'Ford',
     model: 'F-150',
@@ -173,7 +173,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '8',
     vin: '1GYS4DKL7MR556677',
-    stockNumber: 'W4Y-CAD-08',
+    stockNumber: 'W4U-CAD-08',
     year: 2023,
     make: 'Cadillac',
     model: 'Escalade',
@@ -197,7 +197,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '9',
     vin: 'ZHWUA1ZD5LA000123',
-    stockNumber: 'W4Y-LAMBO-09',
+    stockNumber: 'W4U-LAMBO-09',
     year: 2020,
     make: 'Lamborghini',
     model: 'Huracan',
@@ -221,7 +221,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '10',
     vin: 'JTHYZ16L0MC005544',
-    stockNumber: 'W4Y-LEXUS-10',
+    stockNumber: 'W4U-LEXUS-10',
     year: 2021,
     make: 'Lexus',
     model: 'LC 500',
@@ -245,7 +245,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '11',
     vin: 'JT1E2FA40M0123456',
-    stockNumber: 'W4Y-SUPRA-11',
+    stockNumber: 'W4U-SUPRA-11',
     year: 2022,
     make: 'Toyota',
     model: 'Supra',
@@ -269,7 +269,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '12',
     vin: '1C4HJXEG2PW112233',
-    stockNumber: 'W4Y-JEEP-12',
+    stockNumber: 'W4U-JEEP-12',
     year: 2023,
     make: 'Jeep',
     model: 'Wrangler',
@@ -293,7 +293,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '13',
     vin: 'ZFF67AHE8LA223344',
-    stockNumber: 'W4Y-FERR-13',
+    stockNumber: 'W4U-FERR-13',
     year: 2019,
     make: 'Ferrari',
     model: '488',
@@ -317,7 +317,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '14',
     vin: '1G1YB2D47M5112233',
-    stockNumber: 'W4Y-VETTE-14',
+    stockNumber: 'W4U-VETTE-14',
     year: 2021,
     make: 'Chevrolet',
     model: 'Corvette',
@@ -341,7 +341,7 @@ export const mockVehicles: Vehicle[] = [
   {
     id: '15',
     vin: 'SCA662S55NU001122',
-    stockNumber: 'W4Y-RR-15',
+    stockNumber: 'W4U-RR-15',
     year: 2022,
     make: 'Rolls-Royce',
     model: 'Ghost',

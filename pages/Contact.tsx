@@ -15,6 +15,59 @@ interface ContactProps {
   type?: 'General' | 'Car Finder' | 'Trade-In';
 }
 
+type TradeCondition = 'Excellent' | 'Good' | 'Fair' | 'Needs Work';
+
+const TRADE_CONDITION_MULTIPLIER: Record<TradeCondition, number> = {
+  Excellent: 1.08,
+  Good: 1,
+  Fair: 0.9,
+  'Needs Work': 0.78
+};
+
+const getModelMultiplier = (model: string) => {
+  const normalized = model.trim().toLowerCase();
+  if (!normalized) return 1;
+
+  const hash = normalized.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return 0.92 + ((hash % 17) / 100);
+};
+
+const estimateTradeRange = (
+  yearValue: string,
+  mileageValue: string,
+  modelValue: string,
+  condition: TradeCondition
+) => {
+  const currentYear = new Date().getFullYear();
+  const year = Number(yearValue);
+  const mileage = Number(mileageValue);
+
+  if (
+    !Number.isInteger(year) ||
+    year < 1980 ||
+    year > currentYear + 1 ||
+    modelValue.trim().length < 2
+  ) {
+    return null;
+  }
+
+  const safeMileage = Number.isFinite(mileage) && mileage > 0 ? mileage : 0;
+  const age = Math.max(0, currentYear - year);
+  const baseValue = 42000 * Math.pow(0.86, age);
+  const mileagePenalty = Math.max(0, safeMileage - 60000) * 0.045;
+  const conditionAdjusted =
+    (baseValue - mileagePenalty) *
+    TRADE_CONDITION_MULTIPLIER[condition] *
+    getModelMultiplier(modelValue);
+  const estimate = Math.max(1500, conditionAdjusted);
+  const spread = Math.max(900, estimate * 0.09);
+
+  return {
+    min: Math.max(1000, Math.round((estimate - spread) / 100) * 100),
+    max: Math.max(1200, Math.round((estimate + spread) / 100) * 100)
+  };
+};
+
 const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
   const [searchParams] = useSearchParams();
   const [formType, setFormType] = useState(type);
@@ -26,6 +79,8 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
   // Trade-In Simulation State
   const [tradeModel, setTradeModel] = useState('');
   const [tradeYear, setTradeYear] = useState('');
+  const [tradeMileage, setTradeMileage] = useState('');
+  const [tradeCondition, setTradeCondition] = useState<TradeCondition>('Good');
   const [appraisalRange, setAppraisalRange] = useState<{min: number, max: number} | null>(null);
 
   useEffect(() => {
@@ -47,22 +102,47 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
 
   // Appraisal Simulation Logic
   useEffect(() => {
-    if (formType === 'Trade-In' && tradeModel.length > 3 && tradeYear.length === 4) {
-      const baseValue = Math.random() * (45000 - 8000) + 8000;
-      setAppraisalRange({
-        min: Math.floor(baseValue * 0.9),
-        max: Math.floor(baseValue * 1.1)
-      });
-    } else {
+    if (formType !== 'Trade-In') {
       setAppraisalRange(null);
+      return;
     }
-  }, [tradeModel, tradeYear, formType]);
+
+    setAppraisalRange(estimateTradeRange(tradeYear, tradeMileage, tradeModel, tradeCondition));
+  }, [tradeModel, tradeYear, tradeMileage, tradeCondition, formType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.target as HTMLFormElement);
     const data = Object.fromEntries(formData.entries());
+    const normalizedDetails = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => String(value).trim().length > 0)
+    );
+
+    let message = String(data.message || '').trim();
+
+    if (!message) {
+      if (formType === 'Car Finder') {
+        const finderSummary = [
+          data.finderMakeModel,
+          data.finderBodyType,
+          data.finderBudgetMax ? `up to $${data.finderBudgetMax}` : ''
+        ].filter(Boolean).join(' | ');
+
+        message = finderSummary
+          ? `Car Finder request: ${finderSummary}`
+          : 'Car Finder request from Inquiry Center.';
+      } else if (formType === 'Trade-In') {
+        const tradeSummary = [data.tradeYear, data.tradeMakeModel].filter(Boolean).join(' ');
+        message = tradeSummary
+          ? `Trade-In appraisal request for ${tradeSummary}.`
+          : 'Trade-In appraisal request from Inquiry Center.';
+      } else if (vehicleContext) {
+        message = `Interested in ${vehicleContext.year} ${vehicleContext.make}`;
+      } else {
+        message = 'General inquiry from Inquiry Center.';
+      }
+    }
 
     try {
       await api.createLead({
@@ -70,11 +150,11 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
         name: data.name as string,
         email: data.email as string,
         phone: data.phone as string,
-        message: (data.message as string) || (vehicleContext ? `Interested in ${vehicleContext.year} ${vehicleContext.make}` : ''),
+        message,
         details: {
-          ...data,
+          ...normalizedDetails,
           vehicleId: vehicleContext?._id || vehicleContext?.id,
-          appraisalRange: appraisalRange
+          ...(formType === 'Trade-In' ? { appraisalRange } : {})
         }
       });
       setSubmitted(true);
@@ -171,8 +251,9 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   </div>
                </div>
                <a 
-                 href="https://www.google.com/maps/dir//102-20771+Langley+Bypass,+Langley,+BC+V3A+5E8" 
+                 href="https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8" 
                  target="_blank" 
+                 rel="noreferrer"
                  className="mt-10 md:mt-12 flex items-center justify-center gap-3 bg-white text-black py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-[#D4AF37] transition-all shadow-lg"
                >
                  <Navigation size={16} /> Get Directions
@@ -230,6 +311,78 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   </div>
                 </div>
 
+                {formType === 'Car Finder' && (
+                  <div className="bg-zinc-50 p-8 rounded-[35px] border border-zinc-200 animate-in slide-in-from-top-6 duration-500">
+                     <h4 className="font-bold mb-8 uppercase tracking-[0.4em] text-[10px] flex items-center gap-4 text-black">
+                        <Search size={14} className="text-[#D4AF37]" /> Car Finder Profile
+                     </h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input
+                          name="finderMakeModel"
+                          required
+                          placeholder="Preferred Make / Model"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                        />
+                        <select
+                          name="finderBodyType"
+                          defaultValue=""
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black"
+                        >
+                          <option value="" disabled>Body Type</option>
+                          <option value="Sedan">Sedan</option>
+                          <option value="SUV">SUV</option>
+                          <option value="Coupe">Coupe</option>
+                          <option value="Truck">Truck</option>
+                          <option value="Hatchback">Hatchback</option>
+                          <option value="Van">Van</option>
+                        </select>
+                        <input
+                          name="finderYearFrom"
+                          type="number"
+                          min="1980"
+                          max={new Date().getFullYear() + 1}
+                          placeholder="Year From"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                        />
+                        <input
+                          name="finderYearTo"
+                          type="number"
+                          min="1980"
+                          max={new Date().getFullYear() + 1}
+                          placeholder="Year To"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                        />
+                        <input
+                          name="finderBudgetMin"
+                          type="number"
+                          min="0"
+                          step="500"
+                          placeholder="Budget Min ($)"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                        />
+                        <input
+                          name="finderBudgetMax"
+                          required
+                          type="number"
+                          min="0"
+                          step="500"
+                          placeholder="Budget Max ($)"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                        />
+                        <select
+                          name="finderTimeline"
+                          defaultValue="Within 30 days"
+                          className="md:col-span-2 bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black"
+                        >
+                          <option value="ASAP">ASAP</option>
+                          <option value="Within 30 days">Within 30 days</option>
+                          <option value="1-3 months">1-3 months</option>
+                          <option value="Just researching">Just researching</option>
+                        </select>
+                     </div>
+                  </div>
+                )}
+
                 {formType === 'Trade-In' && (
                   <div className="bg-zinc-50 p-8 rounded-[35px] border border-zinc-200 animate-in slide-in-from-top-6 duration-500">
                      <h4 className="font-bold mb-8 uppercase tracking-[0.4em] text-[10px] flex items-center gap-4 text-black">
@@ -237,16 +390,53 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                      </h4>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <input 
+                          name="tradeYear"
                           placeholder="Vehicle Year" 
+                          type="number"
+                          min="1980"
+                          max={new Date().getFullYear() + 1}
                           value={tradeYear}
                           onChange={(e) => setTradeYear(e.target.value)}
+                          required
                           className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black" 
                         />
                         <input 
+                          name="tradeMakeModel"
                           placeholder="Make/Model" 
                           value={tradeModel}
                           onChange={(e) => setTradeModel(e.target.value)}
+                          required
                           className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black" 
+                        />
+                        <input
+                          name="tradeMileage"
+                          placeholder="Mileage (KM)"
+                          type="number"
+                          min="0"
+                          step="1000"
+                          value={tradeMileage}
+                          onChange={(e) => setTradeMileage(e.target.value)}
+                          required
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black"
+                        />
+                        <select
+                          name="tradeCondition"
+                          value={tradeCondition}
+                          onChange={(e) => setTradeCondition(e.target.value as TradeCondition)}
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black"
+                        >
+                          <option value="Excellent">Excellent</option>
+                          <option value="Good">Good</option>
+                          <option value="Fair">Fair</option>
+                          <option value="Needs Work">Needs Work</option>
+                        </select>
+                        <input
+                          name="tradeLoanBalance"
+                          type="number"
+                          min="0"
+                          step="500"
+                          placeholder="Current Loan Balance (optional)"
+                          className="md:col-span-2 bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
                         />
                      </div>
 
@@ -273,7 +463,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Details</label>
-                  <textarea rows={4} className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black" 
+                  <textarea name="message" rows={4} className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black" 
                     placeholder={vehicleContext ? `I'm interested in the ${vehicleContext.year} ${vehicleContext.make}. Is it still available for a test drive?` : "How can we help?"}
                   ></textarea>
                 </div>

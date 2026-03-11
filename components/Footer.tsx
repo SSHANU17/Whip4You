@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Send, CheckCircle2 } from 'lucide-react';
+import BrandLogo from './BrandLogo.tsx';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -30,7 +31,13 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 mb-24">
           
           <div className="lg:col-span-4">
-            <Link to="/" className="text-3xl font-black brand-font mb-8 block tracking-[0.2em]">WHIP<span className="text-[#D4AF37]">4</span>YOU</Link>
+            <Link to="/" className="mb-8 inline-flex items-center gap-4">
+              <BrandLogo className="h-14 w-14" />
+              <div className="flex flex-col">
+                <span className="text-3xl font-black brand-font tracking-[0.2em]">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.45em] text-[#D4AF37]">Premium Motors</span>
+              </div>
+            </Link>
             <p className="text-zinc-500 leading-relaxed mb-10 font-light text-sm max-w-sm">
               The benchmark for premium pre-owned luxury. Direct wholesale access, uncompromised quality, and transparent BC-wide service since 2018.
             </p>

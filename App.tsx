@@ -14,6 +14,7 @@ import AdminDashboard from './pages/AdminDashboard.tsx';
 import Privacy from './pages/Privacy.tsx';
 import { ENGINE_SOUND_URL } from './constants.tsx';
 import { Play, Loader2 } from 'lucide-react';
+import BrandLogo from './components/BrandLogo.tsx';
 
 const ENTRY_GATE_STORAGE_KEY = 'w4u_has_entered_site';
 
@@ -90,12 +91,8 @@ const AppFrame: React.FC<AppFrameProps> = ({
           </div>
 
           <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-1000">
-            <div className="gold-gradient p-1 mb-8 rounded-3xl animate-pulse shadow-[0_0_50px_rgba(212,175,55,0.2)]">
-              <div className="bg-black p-8 md:p-12 rounded-[22px] flex flex-col items-center">
-                 <span className="text-6xl md:text-8xl font-bold brand-font text-white mb-4 italic tracking-tighter">W4U</span>
-                 <p className="text-[#D4AF37] font-black uppercase tracking-[0.5em] text-[10px] md:text-sm">WHIP4YOU PREMIUM</p>
-              </div>
-            </div>
+            <BrandLogo className="h-40 w-40 md:h-52 md:w-52 mb-8 animate-pulse drop-shadow-[0_0_40px_rgba(212,175,55,0.28)]" />
+            <p className="text-[#D4AF37] font-black uppercase tracking-[0.5em] text-[10px] md:text-sm mb-6">WHIP4YOU PREMIUM</p>
 
             <div className="h-24 flex flex-col items-center justify-center gap-6">
               {!isStarting ? (

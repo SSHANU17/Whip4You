@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ChevronDown, Phone, MapPin, Facebook, Instagram, Heart } from 'lucide-react';
 import GarageDrawer from './GarageDrawer.tsx';
+import BrandLogo from './BrandLogo.tsx';
 
 const DIRECTIONS_URL = 'https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8';
 
@@ -81,11 +82,7 @@ const Navbar: React.FC = () => {
 
         <div className="container mx-auto px-6 py-5 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-4 group">
-            <div className="gold-gradient p-1 rounded-full transition-transform duration-500 group-hover:rotate-[360deg]">
-              <div className="bg-black p-1.5 rounded-full">
-                <span className="text-xl font-black tracking-tighter brand-font italic block w-8 h-8 flex items-center justify-center">W4U</span>
-              </div>
-            </div>
+            <BrandLogo className="h-12 w-12 transition-transform duration-500 group-hover:scale-105" />
             <div className="flex flex-col">
               <span className="text-xl font-bold tracking-[0.2em] brand-font">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
               <span className="text-[8px] font-black uppercase tracking-[0.5em] text-[#D4AF37] leading-none">Premium Motors</span>
@@ -173,7 +170,10 @@ const Navbar: React.FC = () => {
           <div className="lg:hidden bg-black h-screen fixed inset-0 z-50 top-0 overflow-y-auto animate-in fade-in duration-300">
             <div className="flex flex-col p-10 gap-8">
               <div className="flex justify-between items-center mb-10">
-                 <span className="text-2xl font-bold tracking-[0.2em] brand-font">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
+                 <div className="flex items-center gap-3">
+                   <BrandLogo className="h-12 w-12" />
+                   <span className="text-2xl font-bold tracking-[0.2em] brand-font">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
+                 </div>
                  <button onClick={() => setIsOpen(false)} className="text-white"><X size={32} /></button>
               </div>
               {navItems.map((item) => (

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="logoTitle logoDesc">
+  <title id="logoTitle">W4U logo</title>
+  <desc id="logoDesc">Gold W4U monogram inside a double-ring black crest.</desc>
+  <defs>
+    <radialGradient id="disc" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#151008" />
+      <stop offset="58%" stop-color="#070403" />
+      <stop offset="100%" stop-color="#020202" />
+    </radialGradient>
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b67f19" />
+      <stop offset="18%" stop-color="#d9af45" />
+      <stop offset="48%" stop-color="#f7e8a5" />
+      <stop offset="78%" stop-color="#d9af45" />
+      <stop offset="100%" stop-color="#9d6b12" />
+    </linearGradient>
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f9efb6" />
+      <stop offset="52%" stop-color="#e1be5f" />
+      <stop offset="100%" stop-color="#b47b18" />
+    </linearGradient>
+    <filter id="softGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2.4" flood-color="#f1d27a" flood-opacity="0.55" />
+    </filter>
+  </defs>
+
+  <circle cx="100" cy="100" r="96" fill="url(#disc)" />
+  <circle cx="100" cy="100" r="92" fill="none" stroke="url(#goldRing)" stroke-width="7" />
+  <circle cx="100" cy="100" r="84" fill="none" stroke="url(#goldRing)" stroke-width="3.5" opacity="0.98" />
+
+  <g filter="url(#softGlow)">
+    <g
+      fill="url(#goldText)"
+      stroke="#050505"
+      stroke-width="6"
+      paint-order="stroke fill"
+      text-anchor="middle"
+      font-family="Cinzel, Georgia, 'Times New Roman', serif"
+      font-weight="900"
+    >
+      <text x="100" y="76" font-size="78">W</text>
+      <text x="100" y="126" font-size="82">4</text>
+      <text x="100" y="184" font-size="84">U</text>
+    </g>
+  </g>
+
+  <g fill="url(#goldRing)" opacity="0.95">
+    <path d="M29 60l3 9 9 3-9 3-3 9-3-9-9-3 9-3 3-9z" />
+    <path d="M164 30l2 7 7 2-7 2-2 7-2-7-7-2 7-2 2-7z" />
+    <path d="M171 160l3 9 9 3-9 3-3 9-3-9-9-3 9-3 3-9z" />
+  </g>
+</svg>

@@ -68,7 +68,7 @@ const AppFrame: React.FC<AppFrameProps> = ({
     <>
       <ScrollToTop />
       {showEntryGate && (
-        <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 transition-all duration-1000 overflow-hidden">
+        <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-4 sm:p-6 transition-all duration-1000 overflow-hidden min-h-[100dvh]">
           {/* Background Carousel */}
           <div className="absolute inset-0 z-0">
             {ENTRY_SLIDES.map((slide, index) => (
@@ -97,26 +97,26 @@ const AppFrame: React.FC<AppFrameProps> = ({
           {/* carousel arrows for manual control */}
           <button
             onClick={onPrevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
+            className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
             aria-label="Previous slide"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
             onClick={onNextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
+            className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
             aria-label="Next slide"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
           <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-1000">
-            <BrandLogo className="h-40 w-40 md:h-52 md:w-52 mb-8 animate-pulse drop-shadow-[0_0_40px_rgba(212,175,55,0.28)]" />
-            <p className="text-[#D4AF37] font-black uppercase tracking-[0.5em] text-[10px] md:text-sm mb-6">WHIP4YOU PREMIUM</p>
+            <BrandLogo className="h-28 w-28 sm:h-40 sm:w-40 md:h-52 md:w-52 mb-6 sm:mb-8 animate-pulse drop-shadow-[0_0_40px_rgba(212,175,55,0.28)]" />
+            <p className="text-[#D4AF37] font-black uppercase tracking-[0.35em] sm:tracking-[0.5em] text-[9px] md:text-sm mb-6 text-center">WHIP4YOU PREMIUM</p>
 
             <div className="h-24 flex flex-col items-center justify-center gap-6">
               {!isStarting ? (
@@ -127,7 +127,7 @@ const AppFrame: React.FC<AppFrameProps> = ({
                   <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-[#D4AF37] flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)]">
                      <Play size={36} fill="currentColor" className="ml-1" />
                   </div>
-                  <span className="text-white font-black uppercase tracking-[0.4em] text-[9px] md:text-[11px] drop-shadow-lg">Ignite Engine & Enter</span>
+                  <span className="text-white font-black uppercase tracking-[0.25em] sm:tracking-[0.4em] text-[9px] md:text-[11px] drop-shadow-lg text-center">Ignite Engine & Enter</span>
                 </button>
               ) : (
                 <div className="flex flex-col items-center gap-3">

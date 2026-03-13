@@ -37,6 +37,10 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
     if (isOpen) loadFavorites();
   }, [isOpen]);
 
+  if (!isOpen) {
+    return null;
+  }
+
   const removeFavorite = (id: string) => {
     const favorites = JSON.parse(localStorage.getItem('w4u_favorites') || '[]');
     const newFavorites = favorites.filter((favId: string) => favId !== id);
@@ -47,10 +51,10 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
   return (
     <>
       <div 
-        className={`fixed inset-0 z-[1500] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
+        className="fixed inset-0 z-[1500] bg-black/60 backdrop-blur-sm transition-opacity duration-500 opacity-100 pointer-events-auto"
         onClick={onClose}
       />
-      <div className={`fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[1600] shadow-4xl transition-transform duration-700 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[1600] shadow-4xl transition-transform duration-700 ease-out flex flex-col translate-x-0">
         <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-zinc-50">
           <div className="flex items-center gap-3">
             <Heart size={20} className="text-[#D4AF37]" fill="#D4AF37" />

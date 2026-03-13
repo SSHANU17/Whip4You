@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ChevronRight, Share2, Printer, Heart, 
@@ -18,6 +18,8 @@ const VehicleDetails: React.FC = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isFeeInfoOpen, setIsFeeInfoOpen] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -53,6 +55,38 @@ const VehicleDetails: React.FC = () => {
   const showNextImage = () => {
     if (!vehicle?.images.length) return;
     setActiveImage((prev) => (prev + 1) % vehicle.images.length);
+  };
+
+  const handleGalleryTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.changedTouches[0];
+    touchStartXRef.current = touch.clientX;
+    touchStartYRef.current = touch.clientY;
+  };
+
+  const handleGalleryTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartXRef.current;
+    const deltaY = touch.clientY - touchStartYRef.current;
+    const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
+    const swipeThreshold = 40;
+
+    if (isHorizontalSwipe && Math.abs(deltaX) > swipeThreshold) {
+      if (deltaX > 0) {
+        showPreviousImage();
+      } else {
+        showNextImage();
+      }
+    }
+
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
+
+  const resetGalleryTouch = () => {
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
   };
 
   const toggleFavorite = () => {
@@ -110,8 +144,8 @@ const VehicleDetails: React.FC = () => {
   return (
     <div className="bg-off-white min-h-screen pb-20">
       {/* Top Navigation Bar - Hidden during print */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-30 print:hidden">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+      <div className="bg-white border-b border-gray-200 sticky top-[68px] md:top-16 z-30 print:hidden">
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-3">
           <Link to="/inventory" className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">
             <ChevronLeft size={18} /> Back To Inventory
           </Link>
@@ -129,14 +163,20 @@ const VehicleDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="container mx-auto px-4 sm:px-6 py-8 md:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
           
           {/* Gallery & Main Content */}
-          <div className="lg:col-span-8 space-y-10">
+          <div className="lg:col-span-8 space-y-8 md:space-y-10">
             {/* Gallery */}
             <div className="space-y-4 print:mb-10">
-              <div className="relative overflow-hidden rounded-[40px] bg-zinc-950 shadow-2xl group">
+              <div
+                className="relative overflow-hidden rounded-[40px] bg-zinc-950 shadow-2xl group"
+                onTouchStart={handleGalleryTouchStart}
+                onTouchEnd={handleGalleryTouchEnd}
+                onTouchCancel={resetGalleryTouch}
+                style={{ touchAction: 'pan-y' }}
+              >
                 <img 
                   src={vehicle.images[activeImage]} 
                   alt={`${vehicle.year} ${vehicle.make} ${vehicle.model} photo ${activeImage + 1}`}
@@ -155,7 +195,7 @@ const VehicleDetails: React.FC = () => {
                       type="button"
                       onClick={showPreviousImage}
                       aria-label="Show previous vehicle photo"
-                      className="absolute left-4 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/75 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
+                      className="absolute left-3 top-1/2 z-20 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-black/75 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70 active:scale-95 md:left-4 md:h-12 md:w-12"
                     >
                       <ChevronLeft size={26} />
                     </button>
@@ -163,7 +203,7 @@ const VehicleDetails: React.FC = () => {
                       type="button"
                       onClick={showNextImage}
                       aria-label="Show next vehicle photo"
-                      className="absolute right-4 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/75 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
+                      className="absolute right-3 top-1/2 z-20 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-black/75 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70 active:scale-95 md:right-4 md:h-12 md:w-12"
                     >
                       <ChevronRight size={26} />
                     </button>
@@ -171,7 +211,7 @@ const VehicleDetails: React.FC = () => {
                   </>
                 )}
               </div>
-              <div className="grid grid-cols-4 md:grid-cols-6 gap-4 print:hidden">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 md:gap-4 print:hidden">
                 {vehicle.images.map((img, idx) => (
                   <button 
                     key={idx} 
@@ -188,7 +228,7 @@ const VehicleDetails: React.FC = () => {
             </div>
 
             {/* Description */}
-            <div className="bg-white p-10 md:p-12 rounded-[40px] shadow-sm border border-gray-100">
+            <div className="bg-white p-6 sm:p-8 md:p-12 rounded-[32px] md:rounded-[40px] shadow-sm border border-gray-100">
               <h2 className="text-2xl font-bold mb-6 brand-font italic text-black">Dealer's Description</h2>
               <div className="mb-10 space-y-6 text-lg font-light text-gray-600">
                 {vehicle.description?.length > 0 && (
@@ -213,9 +253,9 @@ const VehicleDetails: React.FC = () => {
             </div>
 
             {/* Technical Specs */}
-            <div className="bg-white p-10 md:p-12 rounded-[40px] shadow-sm border border-gray-100">
+            <div className="bg-white p-6 sm:p-8 md:p-12 rounded-[32px] md:rounded-[40px] shadow-sm border border-gray-100">
               <h2 className="text-2xl font-bold mb-10 brand-font italic text-black">Technical Specifications</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 md:gap-y-10 gap-x-8 md:gap-x-12">
                 {[
                   { label: 'Transmission', value: vehicle.transmission, icon: <Settings size={14} /> },
                   { label: 'Engine', value: vehicle.engine, icon: <Gauge size={14} /> },
@@ -240,8 +280,8 @@ const VehicleDetails: React.FC = () => {
 
           {/* Sticky Sidebar */}
           <div className="lg:col-span-4 print:hidden">
-            <div className="sticky top-40 space-y-6">
-              <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-gray-100 relative overflow-hidden">
+            <div className="space-y-6 lg:sticky lg:top-40">
+              <div className="bg-white p-6 sm:p-8 md:p-10 rounded-[32px] md:rounded-[40px] shadow-2xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 gold-gradient opacity-5 rounded-full blur-3xl -mr-16 -mt-16"></div>
                 <h1 className="text-3xl font-bold mb-2 brand-font text-black">{vehicle.year} {vehicle.make} {vehicle.model}</h1>
                 <p className="text-[#D4AF37] font-black mb-10 uppercase tracking-[0.4em] text-[10px]">{vehicle.trim}</p>
@@ -259,13 +299,13 @@ const VehicleDetails: React.FC = () => {
                 <div className="space-y-4">
                   <Link 
                     to={`/apply?vehicleId=${vehicle._id || vehicle.id}`} 
-                    className="block w-full text-center bg-black text-white py-6 rounded-3xl font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl"
+                    className="block w-full text-center bg-black text-white py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl"
                   >
                     Initiate Approval
                   </Link>
                   <Link 
                     to={`/contact?vehicleId=${vehicle._id || vehicle.id}`} 
-                    className="block w-full text-center bg-white text-black py-6 rounded-3xl font-black uppercase tracking-[0.3em] text-[10px] border-2 border-black hover:bg-black hover:text-white transition-all shadow-md"
+                    className="block w-full text-center bg-white text-black py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] border-2 border-black hover:bg-black hover:text-white transition-all shadow-md"
                   >
                     Direct Inquiry
                   </Link>
@@ -283,7 +323,7 @@ const VehicleDetails: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-black text-white p-12 rounded-[40px] shadow-3xl relative overflow-hidden group">
+              <div className="bg-black text-white p-8 md:p-12 rounded-[32px] md:rounded-[40px] shadow-3xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 gold-gradient opacity-10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:opacity-20 transition-opacity"></div>
                 <h3 className="text-xl font-bold mb-6 brand-font italic text-[#D4AF37]">Budget Analysis</h3>
                 <p className="text-4xl font-black text-white mb-2 display-font">${(typeof vehicle.price === 'number' ? (vehicle.price * 0.02) : 0).toFixed(0)}<span className="text-sm font-medium text-white/40"> /mo</span></p>

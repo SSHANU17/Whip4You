@@ -192,7 +192,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
   return (
     <div className="bg-off-white min-h-screen pb-24">
       {/* Immersive Hero */}
-      <section className="relative min-h-[400px] md:min-h-[450px] py-24 md:py-32 bg-black flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[360px] md:min-h-[450px] py-20 md:py-32 bg-black flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src="https://images.unsplash.com/photo-1562141982-c1a7459e4261?auto=format&fit=crop&q=80&w=2000" 
@@ -201,7 +201,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-off-white via-transparent to-black/90"></div>
         </div>
-        <div className="container mx-auto px-6 relative z-10 text-center">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10 text-center">
           <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-xl px-4 py-2 rounded-full mb-8 border border-white/10">
             <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">
@@ -213,12 +213,12 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
         </div>
       </section>
 
-      <div className="container mx-auto px-6 -mt-12 md:-mt-16 relative z-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="container mx-auto px-4 sm:px-6 -mt-12 md:-mt-16 relative z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
           
           <div className="lg:col-span-4 space-y-6">
             <a href="tel:7789706007" className="block group">
-              <div className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-xl hover:shadow-2xl transition-all border border-gray-100 flex items-center justify-between">
+              <div className="bg-white p-5 md:p-8 rounded-[26px] md:rounded-[40px] shadow-xl hover:shadow-2xl transition-all border border-gray-100 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 md:gap-6">
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black text-[#D4AF37] flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors shrink-0">
                     <Phone size={24} className="md:w-7 md:h-7" />
@@ -231,7 +231,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
               </div>
             </a>
 
-            <div className="bg-black text-white p-8 md:p-10 rounded-[30px] md:rounded-[40px] shadow-2xl relative overflow-hidden">
+            <div className="bg-black text-white p-6 md:p-10 rounded-[26px] md:rounded-[40px] shadow-2xl relative overflow-hidden">
                <div className="absolute top-0 right-0 w-40 h-40 gold-gradient opacity-10 rounded-full blur-3xl -mr-20 -mt-20"></div>
                <h3 className="text-2xl font-bold mb-8 brand-font italic text-[#D4AF37]">The Showroom</h3>
                <div className="space-y-6 md:space-y-8">
@@ -262,9 +262,9 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
           </div>
 
           <div className="lg:col-span-8">
-            <div className="bg-white p-6 md:p-16 rounded-[40px] md:rounded-[60px] shadow-2xl border border-gray-100">
+            <div className="bg-white p-5 sm:p-6 md:p-16 rounded-[32px] md:rounded-[60px] shadow-2xl border border-gray-100">
               {vehicleContext && (
-                <div className="bg-zinc-50 p-6 rounded-[28px] border border-zinc-200 mb-10 flex items-center gap-6 animate-in slide-in-from-left duration-500">
+                <div className="bg-zinc-50 p-5 sm:p-6 rounded-[28px] border border-zinc-200 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 animate-in slide-in-from-left duration-500">
                    <img src={vehicleContext.images[0]} className="w-24 h-24 object-cover rounded-2xl shadow-md border-2 border-white" alt="" />
                    <div>
                      <span className="text-[#D4AF37] font-black uppercase tracking-[0.3em] text-[8px] mb-1 block">Active Interest</span>
@@ -312,7 +312,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                 </div>
 
                 {formType === 'Car Finder' && (
-                  <div className="bg-zinc-50 p-8 rounded-[35px] border border-zinc-200 animate-in slide-in-from-top-6 duration-500">
+                  <div className="bg-zinc-50 p-5 sm:p-8 rounded-[28px] md:rounded-[35px] border border-zinc-200 animate-in slide-in-from-top-6 duration-500">
                      <h4 className="font-bold mb-8 uppercase tracking-[0.4em] text-[10px] flex items-center gap-4 text-black">
                         <Search size={14} className="text-[#D4AF37]" /> Car Finder Profile
                      </h4>
@@ -384,7 +384,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                 )}
 
                 {formType === 'Trade-In' && (
-                  <div className="bg-zinc-50 p-8 rounded-[35px] border border-zinc-200 animate-in slide-in-from-top-6 duration-500">
+                  <div className="bg-zinc-50 p-5 sm:p-8 rounded-[28px] md:rounded-[35px] border border-zinc-200 animate-in slide-in-from-top-6 duration-500">
                      <h4 className="font-bold mb-8 uppercase tracking-[0.4em] text-[10px] flex items-center gap-4 text-black">
                         <TrendingUp size={14} className="text-[#D4AF37]" /> Live Appraisal Simulator
                      </h4>

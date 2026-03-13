@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, Phone, MapPin, Facebook, Instagram, Heart } from 'lucide-react';
 import GarageDrawer from './GarageDrawer.tsx';
 import BrandLogo from './BrandLogo.tsx';
@@ -8,6 +8,7 @@ import BrandLogo from './BrandLogo.tsx';
 const DIRECTIONS_URL = 'https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8';
 
 const Navbar: React.FC = () => {
+  const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isGarageOpen, setIsGarageOpen] = useState(false);
   const [favCount, setFavCount] = useState(0);
@@ -27,6 +28,12 @@ const Navbar: React.FC = () => {
       window.removeEventListener('favoritesUpdated', updateFavCount);
     };
   }, []);
+
+  useEffect(() => {
+    setIsOpen(false);
+    setIsGarageOpen(false);
+    setActiveSub(null);
+  }, [pathname]);
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -64,7 +71,7 @@ const Navbar: React.FC = () => {
     <>
       <nav className="bg-black text-white sticky top-0 z-[1000] shadow-2xl border-b border-white/5 backdrop-blur-md bg-opacity-95">
         <div className="bg-zinc-950 py-2 hidden md:block border-b border-white/5">
-          <div className="container mx-auto px-6 flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">
+          <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">
             <div className="flex gap-10">
               <a href="tel:7789706007" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Phone size={12} className="text-[#D4AF37]" /> (778) 970-6007
@@ -80,12 +87,12 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-6 py-5 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-4 group">
-            <BrandLogo className="h-12 w-12 transition-transform duration-500 group-hover:scale-105" />
+        <div className="container mx-auto px-4 sm:px-6 py-4 md:py-5 flex justify-between items-center gap-3">
+          <Link to="/" className="flex min-w-0 items-center gap-3 sm:gap-4 group">
+            <BrandLogo className="h-10 w-10 sm:h-12 sm:w-12 transition-transform duration-500 group-hover:scale-105 shrink-0" />
             <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-[0.2em] brand-font">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
-              <span className="text-[8px] font-black uppercase tracking-[0.5em] text-[#D4AF37] leading-none">Premium Motors</span>
+              <span className="text-base sm:text-xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
+              <span className="hidden sm:block text-[8px] font-black uppercase tracking-[0.5em] text-[#D4AF37] leading-none">Premium Motors</span>
             </div>
           </Link>
 
@@ -147,7 +154,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile Toggle */}
-          <div className="flex items-center gap-4 lg:hidden">
+          <div className="flex items-center gap-2 sm:gap-4 lg:hidden shrink-0">
             <button 
               onClick={() => setIsGarageOpen(true)}
               className="relative p-2 text-[#D4AF37]"
@@ -167,23 +174,23 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="lg:hidden bg-black h-screen fixed inset-0 z-50 top-0 overflow-y-auto animate-in fade-in duration-300">
-            <div className="flex flex-col p-10 gap-8">
-              <div className="flex justify-between items-center mb-10">
-                 <div className="flex items-center gap-3">
-                   <BrandLogo className="h-12 w-12" />
-                   <span className="text-2xl font-bold tracking-[0.2em] brand-font">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
+          <div className="lg:hidden fixed inset-0 z-50 bg-black min-h-[100dvh] overflow-y-auto overscroll-contain animate-in fade-in duration-300">
+            <div className="flex min-h-[100dvh] flex-col p-6 sm:p-10 gap-8">
+              <div className="flex justify-between items-center mb-6 sm:mb-10 gap-4">
+                 <div className="flex min-w-0 items-center gap-3">
+                   <BrandLogo className="h-10 w-10 sm:h-12 sm:w-12 shrink-0" />
+                   <span className="text-xl sm:text-2xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
                  </div>
-                 <button onClick={() => setIsOpen(false)} className="text-white"><X size={32} /></button>
+                 <button onClick={() => setIsOpen(false)} className="text-white shrink-0"><X size={32} /></button>
               </div>
               {navItems.map((item) => (
                 <div key={item.name} className="border-b border-white/5 pb-6">
                   <div 
-                    className="flex justify-between items-center text-xl font-bold uppercase tracking-[0.3em] brand-font"
+                    className="flex justify-between items-center gap-4 text-lg sm:text-xl font-bold uppercase tracking-[0.24em] sm:tracking-[0.3em] brand-font"
                     onClick={() => setActiveSub(activeSub === item.name ? null : item.name)}
                   >
-                    <Link to={item.path} onClick={() => !item.sub && setIsOpen(false)} className="hover:text-[#D4AF37] transition-colors">{item.name}</Link>
-                    {item.sub && <ChevronDown className={`text-[#D4AF37] transition-transform duration-300 ${activeSub === item.name ? 'rotate-180' : ''}`} />}
+                    <Link to={item.path} onClick={() => !item.sub && setIsOpen(false)} className="hover:text-[#D4AF37] transition-colors break-words">{item.name}</Link>
+                    {item.sub && <ChevronDown className={`text-[#D4AF37] transition-transform duration-300 shrink-0 ${activeSub === item.name ? 'rotate-180' : ''}`} />}
                   </div>
                   {item.sub && activeSub === item.name && (
                     <div className="mt-6 flex flex-col gap-4 pl-4 border-l border-[#D4AF37]/30">
@@ -217,7 +224,7 @@ const Navbar: React.FC = () => {
               <Link 
                 to="/contact" 
                 onClick={() => setIsOpen(false)}
-                className="bg-[#D4AF37] text-black text-center py-5 rounded-2xl font-black uppercase tracking-[0.4em] text-xs shadow-xl"
+                className="mt-auto bg-[#D4AF37] text-black text-center py-4 sm:py-5 rounded-2xl font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[11px] sm:text-xs shadow-xl"
               >
                 Contact Specialist
               </Link>
@@ -225,7 +232,7 @@ const Navbar: React.FC = () => {
           </div>
         )}
       </nav>
-      <GarageDrawer isOpen={isGarageOpen} onClose={() => setIsGarageOpen(false)} />
+      {isGarageOpen && <GarageDrawer isOpen={isGarageOpen} onClose={() => setIsGarageOpen(false)} />}
     </>
   );
 };

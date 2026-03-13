@@ -93,23 +93,23 @@ const Finance: React.FC = () => {
   return (
     <div className="bg-off-white min-h-screen flex flex-col">
       {/* Hero */}
-      <section className="bg-black text-white py-24 relative overflow-hidden">
+      <section className="bg-black text-white py-16 md:py-24 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 gold-gradient opacity-10 rounded-full blur-3xl -mr-48 -mt-48"></div>
-        <div className="container mx-auto px-6 text-center">
+        <div className="container mx-auto px-4 sm:px-6 text-center">
           <span className="text-[#D4AF37] font-bold uppercase tracking-[0.4em] mb-4 block">Stress-Free Funding</span>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 brand-font italic">Easy Financing</h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 brand-font italic">Easy Financing</h1>
+          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Starting from <span className="text-[#D4AF37] font-bold">5.99% APR</span>. We work with all credit situations to get you behind the wheel today.
           </p>
         </div>
       </section>
 
       {/* Credit Tiers */}
-      <section className="py-20 -mt-10">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="py-16 md:py-20 -mt-10">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {creditTiers.map((tier, idx) => (
-              <div key={idx} className="bg-white p-10 rounded-3xl shadow-xl border border-gray-100 transform hover:-translate-y-2 transition-all duration-300">
+              <div key={idx} className="bg-white p-6 sm:p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 transform hover:-translate-y-2 transition-all duration-300">
                 <div className="mb-6">{tier.icon}</div>
                 <h3 className="text-2xl font-bold mb-2 text-zinc-900">{tier.tier}</h3>
                 <p className="text-amber-700 font-black uppercase tracking-widest text-xs mb-4">{tier.benefit}</p>
@@ -121,11 +121,11 @@ const Finance: React.FC = () => {
       </section>
 
       {/* Why Us */}
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+      <section className="py-16 md:py-24 bg-white text-zinc-900">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 items-center">
             <div>
-              <h2 className="text-4xl font-bold mb-8 leading-tight">Why Finance With <br/><span className="gold-text italic">Whip4You?</span></h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-8 leading-tight">Why Finance With <br/><span className="gold-text italic">Whip4You?</span></h2>
               <div className="space-y-6">
                 {[
                   { icon: <CircleDollarSign />, title: 'Transparent Pricing', desc: 'No hidden fees or surprise markups. Everything is clearly outlined.' },
@@ -135,25 +135,25 @@ const Finance: React.FC = () => {
                   <div key={i} className="flex gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-colors">
                     <div className="text-[#D4AF37] mt-1">{item.icon}</div>
                     <div>
-                      <h4 className="font-bold text-lg">{item.title}</h4>
+                      <h4 className="font-bold text-lg text-zinc-900">{item.title}</h4>
                       <p className="text-gray-500 text-sm">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-black p-12 rounded-[40px] text-white shadow-2xl relative">
+            <div className="bg-black p-6 sm:p-8 md:p-12 rounded-[32px] md:rounded-[40px] text-white shadow-2xl relative">
               <div className="absolute inset-0 gold-gradient opacity-5 rounded-[40px] pointer-events-none"></div>
               <h3 className="text-3xl font-bold mb-6 brand-font italic">Ready to drive?</h3>
               <p className="text-gray-400 mb-10 leading-relaxed">Join thousands of happy drivers in BC who secured their dream car through our simple financing process.</p>
               
               <div className="space-y-4">
-                <Link to="/calculator" className="flex items-center justify-between bg-white text-black p-6 rounded-2xl font-bold uppercase tracking-widest text-sm hover:bg-[#D4AF37] transition-all group">
+                <Link to="/calculator" className="flex items-center justify-between gap-4 bg-white text-black p-5 sm:p-6 rounded-2xl font-bold uppercase tracking-[0.18em] sm:tracking-widest text-xs sm:text-sm hover:bg-[#D4AF37] transition-all group">
                   Calculate Payments <ArrowRight className="group-hover:translate-x-2 transition-transform" />
                 </Link>
                 <button 
                   onClick={() => formRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full flex items-center justify-between border-2 border-white text-white p-6 rounded-2xl font-bold uppercase tracking-widest text-sm hover:bg-white hover:text-black transition-all group"
+                  className="w-full flex items-center justify-between gap-4 border-2 border-white text-white p-5 sm:p-6 rounded-2xl font-bold uppercase tracking-[0.18em] sm:tracking-widest text-xs sm:text-sm hover:bg-white hover:text-black transition-all group"
                 >
                   Apply For Credit <ArrowRight className="group-hover:translate-x-2 transition-transform" />
                 </button>
@@ -164,8 +164,8 @@ const Finance: React.FC = () => {
       </section>
 
       {/* Application Hub Section */}
-      <section ref={formRef} className="py-24 bg-off-white" id="application-form">
-        <div className="container mx-auto px-6">
+      <section ref={formRef} className="py-16 md:py-24 bg-off-white text-zinc-900" id="application-form">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
              <div className="inline-flex items-center gap-2 bg-black/5 px-4 py-2 rounded-full mb-6 border border-black/10">
                 <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
@@ -183,7 +183,7 @@ const Finance: React.FC = () => {
                 <div className="w-24 h-24 gold-gradient text-black rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
                   <CheckCircle2 size={48} />
                 </div>
-                <h3 className="text-3xl md:text-5xl font-bold mb-4 brand-font italic">Application Submitted!</h3>
+                <h3 className="text-3xl md:text-5xl font-bold text-zinc-900 mb-4 brand-font italic">Application Submitted!</h3>
                 <p className="text-gray-500 text-lg mb-12">One of our finance specialists will be in touch shortly to discuss your options.</p>
                 <button 
                   onClick={() => setSubmitted(false)}
@@ -237,17 +237,17 @@ const Finance: React.FC = () => {
       </section>
 
       {/* How it works */}
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-16 uppercase tracking-[0.2em]">Our Process</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+      <section className="py-16 md:py-24 bg-white text-zinc-900">
+        <div className="container mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-3xl font-bold text-zinc-900 mb-16 uppercase tracking-[0.2em]">Our Process</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 relative">
             <div className="hidden md:block absolute top-12 left-0 right-0 h-px bg-gray-200 z-0"></div>
             {steps.map((step, i) => (
               <div key={i} className="relative z-10 flex flex-col items-center">
                 <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center text-2xl font-bold text-[#D4AF37] mb-6 border-4 border-gray-50">
                   {i + 1}
                 </div>
-                <h4 className="font-bold text-xl mb-2">{step.title}</h4>
+                <h4 className="font-bold text-xl text-zinc-900 mb-2">{step.title}</h4>
                 <p className="text-gray-500 text-sm max-w-xs">{step.desc}</p>
               </div>
             ))}

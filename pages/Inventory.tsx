@@ -13,6 +13,7 @@ const Inventory: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<SortOption>('year_new');
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [vinSearchTerm, setVinSearchTerm] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -127,6 +128,7 @@ const Inventory: React.FC = () => {
     setPriceMax('');
     setMileageMin('');
     setMileageMax('');
+    setIsMobileFiltersOpen(false);
   };
 
   const toggleCompare = (id: string) => {
@@ -148,22 +150,25 @@ const Inventory: React.FC = () => {
 
   return (
     <div className="bg-off-white min-h-screen pb-20 relative text-gray-900">
-      <div className="bg-black text-white py-16 mb-10">
-        <div className="container mx-auto px-6">
-          <h1 className="text-4xl font-bold mb-4 brand-font italic">Browse Inventory</h1>
+      <div className="bg-black text-white py-12 md:py-16 mb-8 md:mb-10">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 brand-font italic">Browse Inventory</h1>
           <p className="text-gray-400">Discover your perfect match from our premium inspected vehicles.</p>
         </div>
       </div>
 
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col lg:flex-row gap-10">
-          <aside className="w-full lg:w-80 space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
+          <aside className={`w-full lg:w-80 space-y-6 ${isMobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
+            <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <SlidersHorizontal size={18} className="text-[#D4AF37]" /> Filters
                 </h3>
-                <button onClick={handleClearFilters} className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:text-black transition-colors">Reset</button>
+                <div className="flex items-center gap-3">
+                  <button onClick={handleClearFilters} className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:text-black transition-colors">Reset</button>
+                  <button type="button" onClick={() => setIsMobileFiltersOpen(false)} className="lg:hidden text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Close</button>
+                </div>
               </div>
               
               <div className="space-y-6">
@@ -193,7 +198,7 @@ const Inventory: React.FC = () => {
 
                 <div className="h-px bg-gray-100" />
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Make</label>
                     <select className="w-full bg-gray-50 border border-gray-200 p-2.5 rounded-lg outline-none text-sm focus:border-[#D4AF37] text-black" value={makeFilter} onChange={(e) => setMakeFilter(e.target.value)}>
@@ -230,41 +235,64 @@ const Inventory: React.FC = () => {
           </aside>
 
           <main className="flex-1">
-            <div className="bg-white p-4 rounded-2xl shadow-sm mb-8 flex flex-col sm:flex-row justify-between items-center gap-4 border border-gray-100">
-              <p className="text-sm font-medium text-gray-500">Found <span className="text-black font-bold">{filteredVehicles.length}</span> matching whips</p>
-              <div className="flex items-center gap-4">
-                <select className="bg-gray-50 border border-gray-200 p-2 rounded-lg outline-none text-xs font-bold uppercase tracking-widest text-black" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
-                  <option value="year_new">Newest First</option>
-                  <option value="year_old">Oldest First</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                  <option value="mileage_low">Lowest Mileage</option>
-                </select>
+            <div className="bg-white p-4 rounded-2xl shadow-sm mb-6 md:mb-8 flex flex-col gap-4 border border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-gray-500">Found <span className="text-black font-bold">{filteredVehicles.length}</span> matching whips</p>
+                  <button type="button" onClick={() => setIsMobileFiltersOpen((prev) => !prev)} className="lg:hidden inline-flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-black">
+                    <SlidersHorizontal size={14} className="text-[#D4AF37]" /> {isMobileFiltersOpen ? 'Hide Filters' : 'Show Filters'}
+                  </button>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <select className="w-full sm:w-auto bg-gray-50 border border-gray-200 p-2 rounded-lg outline-none text-xs font-bold uppercase tracking-widest text-black" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
+                    <option value="year_new">Newest First</option>
+                    <option value="year_old">Oldest First</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="mileage_low">Lowest Mileage</option>
+                  </select>
+                </div>
               </div>
+
+              {activeFilters.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {activeFilters.map((chip) => (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      onClick={() => chip.value('')}
+                      className="inline-flex items-center gap-2 rounded-full bg-black text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest"
+                    >
+                      {chip.label}
+                      <X size={12} />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-8' : 'flex flex-col gap-6'}>
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8' : 'flex flex-col gap-6'}>
               {filteredVehicles.map(v => (
                 <div key={v._id || v.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col">
-                  <div className="relative h-64 overflow-hidden block">
+                  <div className="relative h-56 sm:h-64 overflow-hidden block">
                     <Link to={`/vehicle/${v._id || v.id}`} className="block h-full">
                       <img src={v.images[0]} alt={v.make} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     </Link>
-                    <button onClick={() => toggleCompare(v._id || v.id)} className={`absolute bottom-4 left-4 py-2 px-3 rounded-full shadow-lg transition-all flex items-center gap-2 ${compareIds.includes(v._id || v.id) ? 'bg-[#D4AF37] text-black' : 'bg-black/60 text-white hover:bg-black'}`}>
+                    <button onClick={() => toggleCompare(v._id || v.id)} className={`absolute bottom-3 left-3 sm:bottom-4 sm:left-4 py-2 px-3 rounded-full shadow-lg transition-all flex items-center gap-2 ${compareIds.includes(v._id || v.id) ? 'bg-[#D4AF37] text-black' : 'bg-black/60 text-white hover:bg-black'}`}>
                       {compareIds.includes(v._id || v.id) ? <Check size={18} /> : <ArrowRightLeft size={18} />}
                     </button>
                   </div>
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <Link to={`/vehicle/${v._id || v.id}`} className="hover:text-[#D4AF37] transition-colors">
+                  <div className="p-5 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
+                      <Link to={`/vehicle/${v._id || v.id}`} className="hover:text-[#D4AF37] transition-colors min-w-0">
                         <h3 className="text-xl font-bold text-black">{v.year} {v.make} {v.model}</h3>
                         <p className="text-sm text-gray-400 font-medium">{v.trim}</p>
                       </Link>
-                      <span className="text-2xl font-bold text-[#D4AF37] brand-font">
+                      <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
                         {typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price}
                       </span>
                     </div>
-                    <div className="mt-auto pt-6 border-t border-gray-100 flex gap-4">
+                    <div className="mt-auto pt-5 sm:pt-6 border-t border-gray-100 flex gap-4">
                       <Link to={`/vehicle/${v._id || v.id}`} className="flex-1 bg-gray-50 text-center py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest text-black">View Details</Link>
                     </div>
                   </div>

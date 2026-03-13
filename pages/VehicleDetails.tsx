@@ -136,23 +136,18 @@ const VehicleDetails: React.FC = () => {
           <div className="lg:col-span-8 space-y-10">
             {/* Gallery */}
             <div className="space-y-4 print:mb-10">
-              <div className="relative aspect-video bg-black rounded-[40px] overflow-hidden shadow-2xl group">
-                <img
-                  src={vehicle.images[activeImage]}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl opacity-35"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/10 to-black/40" />
+              <div className="relative overflow-hidden rounded-[40px] bg-zinc-950 shadow-2xl group">
                 <img 
                   src={vehicle.images[activeImage]} 
                   alt={`${vehicle.year} ${vehicle.make} ${vehicle.model} photo ${activeImage + 1}`}
-                  className="relative z-10 h-full w-full object-contain p-3 md:p-5"
+                  className="block h-auto w-full"
                 />
                 {vehicle.images.length > 1 && (
                   <>
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 md:p-6 pointer-events-none">
-                      <span className="pointer-events-auto rounded-full bg-black/55 px-4 py-2 text-[10px] font-black uppercase tracking-[0.35em] text-white/90 backdrop-blur-sm">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-black/35 to-transparent" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-black/35 to-transparent" />
+                    <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between p-5 md:p-6 pointer-events-none">
+                      <span className="pointer-events-auto rounded-full bg-black/70 px-4 py-2 text-[10px] font-black uppercase tracking-[0.35em] text-white/90 backdrop-blur-sm">
                         Photo {activeImage + 1} / {vehicle.images.length}
                       </span>
                     </div>
@@ -160,7 +155,7 @@ const VehicleDetails: React.FC = () => {
                       type="button"
                       onClick={showPreviousImage}
                       aria-label="Show previous vehicle photo"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/55 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
+                      className="absolute left-4 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/75 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
                     >
                       <ChevronLeft size={26} />
                     </button>
@@ -168,11 +163,11 @@ const VehicleDetails: React.FC = () => {
                       type="button"
                       onClick={showNextImage}
                       aria-label="Show next vehicle photo"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/55 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
+                      className="absolute right-4 top-1/2 z-20 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/75 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
                     >
                       <ChevronRight size={26} />
                     </button>
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-80 transition-opacity group-hover:opacity-100" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-black/30 to-transparent opacity-80 transition-opacity group-hover:opacity-100" />
                   </>
                 )}
               </div>

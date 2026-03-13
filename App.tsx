@@ -195,22 +195,24 @@ const App: React.FC = () => {
   const startEngine = () => {
     if (isStarting) return;
     setIsStarting(true);
-    
-    if (audioRef.current) {
-      audioRef.current.volume = 0.6;
-      audioRef.current.play().catch(err => {
-        console.error("Playback failed", err);
-        localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
-        setHasInteracted(true);
-      });
-      
-      setTimeout(() => {
-        localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
-        setHasInteracted(true);
-      }, 800);
-    } else {
+
+    const enterSite = () => {
       localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
       setHasInteracted(true);
+    };
+
+    if (audioRef.current) {
+      audioRef.current.volume = 0.6;
+      audioRef.current.play()
+        .then(() => {
+          setTimeout(enterSite, 800);
+        })
+        .catch(err => {
+          console.error("Playback failed", err);
+          enterSite();
+        });
+    } else {
+      enterSite();
     }
   };
 

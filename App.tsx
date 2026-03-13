@@ -47,6 +47,8 @@ interface AppFrameProps {
   currentSlide: number;
   startEngine: () => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
+  onPrevSlide: () => void;
+  onNextSlide: () => void;
 }
 
 const AppFrame: React.FC<AppFrameProps> = ({
@@ -54,7 +56,9 @@ const AppFrame: React.FC<AppFrameProps> = ({
   isStarting,
   currentSlide,
   startEngine,
-  audioRef
+  audioRef,
+  onPrevSlide,
+  onNextSlide
 }) => {
   const { pathname } = useLocation();
   const isAdminRoute = pathname === '/admin';
@@ -89,6 +93,26 @@ const AppFrame: React.FC<AppFrameProps> = ({
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
             <div className="absolute inset-0 bg-radial-gradient(circle, transparent 20%, black 100%) opacity-60"></div>
           </div>
+
+          {/* carousel arrows for manual control */}
+          <button
+            onClick={onPrevSlide}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
+            aria-label="Previous slide"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={onNextSlide}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
+            aria-label="Next slide"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
 
           <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-1000">
             <BrandLogo className="h-40 w-40 md:h-52 md:w-52 mb-8 animate-pulse drop-shadow-[0_0_40px_rgba(212,175,55,0.28)]" />
@@ -151,6 +175,14 @@ const App: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // manual navigation helpers for carousel arrows
+  const goNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % ENTRY_SLIDES.length);
+  };
+  const goPrev = () => {
+    setCurrentSlide((prev) => (prev - 1 + ENTRY_SLIDES.length) % ENTRY_SLIDES.length);
+  };
+
   useEffect(() => {
     if (!hasInteracted) {
       const interval = setInterval(() => {
@@ -190,6 +222,8 @@ const App: React.FC = () => {
         currentSlide={currentSlide}
         startEngine={startEngine}
         audioRef={audioRef}
+        onPrevSlide={goPrev}
+        onNextSlide={goNext}
       />
     </Router>
   );

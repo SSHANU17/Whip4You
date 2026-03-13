@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  ChevronLeft, Share2, Printer, Heart, 
+  ChevronLeft, ChevronRight, Share2, Printer, Heart, 
   Gauge, Settings, Fuel, Palette, 
   CheckCircle2, ArrowRight, Phone, MessageSquare,
   Info, X, ShieldCheck, Search, FileCheck, Loader2
@@ -40,6 +40,20 @@ const VehicleDetails: React.FC = () => {
       setIsFavorite(favorites.includes(id));
     }
   }, [id]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [id]);
+
+  const showPreviousImage = () => {
+    if (!vehicle?.images.length) return;
+    setActiveImage((prev) => (prev - 1 + vehicle.images.length) % vehicle.images.length);
+  };
+
+  const showNextImage = () => {
+    if (!vehicle?.images.length) return;
+    setActiveImage((prev) => (prev + 1) % vehicle.images.length);
+  };
 
   const toggleFavorite = () => {
     const favorites = JSON.parse(localStorage.getItem('w4u_favorites') || '[]');
@@ -122,18 +136,54 @@ const VehicleDetails: React.FC = () => {
           <div className="lg:col-span-8 space-y-10">
             {/* Gallery */}
             <div className="space-y-4 print:mb-10">
-              <div className="aspect-video bg-black rounded-[40px] overflow-hidden shadow-2xl">
+              <div className="relative aspect-video bg-black rounded-[40px] overflow-hidden shadow-2xl group">
+                <img
+                  src={vehicle.images[activeImage]}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl opacity-35"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/10 to-black/40" />
                 <img 
                   src={vehicle.images[activeImage]} 
-                  alt={vehicle.make} 
-                  className="w-full h-full object-cover"
+                  alt={`${vehicle.year} ${vehicle.make} ${vehicle.model} photo ${activeImage + 1}`}
+                  className="relative z-10 h-full w-full object-contain p-3 md:p-5"
                 />
+                {vehicle.images.length > 1 && (
+                  <>
+                    <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 md:p-6 pointer-events-none">
+                      <span className="pointer-events-auto rounded-full bg-black/55 px-4 py-2 text-[10px] font-black uppercase tracking-[0.35em] text-white/90 backdrop-blur-sm">
+                        Photo {activeImage + 1} / {vehicle.images.length}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={showPreviousImage}
+                      aria-label="Show previous vehicle photo"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/55 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
+                    >
+                      <ChevronLeft size={26} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={showNextImage}
+                      aria-label="Show next vehicle photo"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/55 text-white shadow-xl backdrop-blur-sm transition-all hover:bg-[#D4AF37] hover:text-black focus:outline-none focus:ring-2 focus:ring-white/70"
+                    >
+                      <ChevronRight size={26} />
+                    </button>
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-80 transition-opacity group-hover:opacity-100" />
+                  </>
+                )}
               </div>
               <div className="grid grid-cols-4 md:grid-cols-6 gap-4 print:hidden">
                 {vehicle.images.map((img, idx) => (
                   <button 
                     key={idx} 
+                    type="button"
                     onClick={() => setActiveImage(idx)}
+                    aria-label={`Show vehicle photo ${idx + 1}`}
+                    aria-pressed={activeImage === idx}
                     className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-[#D4AF37] scale-95 shadow-xl' : 'border-transparent opacity-60 hover:opacity-100'}`}
                   >
                     <img src={img} className="w-full h-full object-cover" alt="" />
@@ -145,11 +195,18 @@ const VehicleDetails: React.FC = () => {
             {/* Description */}
             <div className="bg-white p-10 md:p-12 rounded-[40px] shadow-sm border border-gray-100">
               <h2 className="text-2xl font-bold mb-6 brand-font italic text-black">Dealer's Description</h2>
-              <p className="text-gray-600 leading-relaxed mb-10 text-lg font-light">
-                {vehicle.description} This {vehicle.year} {vehicle.make} {vehicle.model} is a prime example of quality engineering. 
-                Full 150-point inspection completed by our certified technicians. 
-                Wholesale pricing available to the public. Don't miss out on this pristine {vehicle.bodyType.toLowerCase()}.
-              </p>
+              <div className="mb-10 space-y-6 text-lg font-light text-gray-600">
+                {vehicle.description?.length > 0 && (
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {vehicle.description}
+                  </p>
+                )}
+                <p className="leading-relaxed">
+                  This {vehicle.year} {vehicle.make} {vehicle.model} is a prime example of quality engineering.
+                  Full 150-point inspection completed by our certified technicians.
+                  Wholesale pricing available to the public. Don't miss out on this pristine {vehicle.bodyType.toLowerCase()}.
+                </p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {vehicle.features.map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-4 p-5 bg-zinc-50 rounded-2xl border border-zinc-100 group hover:border-[#D4AF37]/30 transition-colors">

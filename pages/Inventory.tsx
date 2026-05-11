@@ -150,7 +150,7 @@ const Inventory: React.FC = () => {
 
   return (
     <div className="bg-off-white min-h-screen pb-20 relative text-gray-900">
-      <div className="bg-black text-white py-12 md:py-16 mb-8 md:mb-10">
+      <div className="bg-black text-white py-10 md:py-16 mb-6 md:mb-10">
         <div className="container mx-auto px-4 sm:px-6">
           <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 brand-font italic">Browse Inventory</h1>
           <p className="text-gray-400">Discover your perfect match from our premium inspected vehicles.</p>

@@ -6,8 +6,16 @@ import {
   ChevronRight, Instagram, Send, Search, ArrowRightLeft, 
   CheckCircle2, MessageSquare
 } from 'lucide-react';
-import { BODY_TYPES } from '../constants.tsx';
 import { api } from '../api.ts';
+
+const HOME_BODY_TYPES = [
+  { name: 'Sedan', size: 'md', image: 'https://images.unsplash.com/photo-1535922384661-826d9c6eab53?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Coupe', size: 'md', image: 'https://images.unsplash.com/photo-1611821064430-0d4022cb4eff?auto=format&fit=crop&q=80&w=400' },
+  { name: 'SUV', size: 'lg', image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Hatchback', size: 'sm', image: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Mini-Van', size: 'lg', image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Truck', size: 'lg', image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=400' }
+];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -70,7 +78,7 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-white mb-10 md:mb-20 brand-font italic">Select Body Type</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {BODY_TYPES.map((type) => (
+            {HOME_BODY_TYPES.map((type) => (
               <div key={type.name} onClick={() => navigate(`/inventory?bodyType=${type.name}`)} className="bg-black p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[40px] border border-white/5 hover:border-[#D4AF37]/50 cursor-pointer group transition-all overflow-hidden flex flex-col items-center justify-center">
                 <div className={`relative mb-4 sm:mb-6 overflow-hidden rounded-2xl group-hover:scale-110 transition-transform duration-300 ${
                   type.size === 'lg' ? 'w-20 h-16 sm:w-28 sm:h-20' : 

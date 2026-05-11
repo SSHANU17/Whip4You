@@ -233,18 +233,27 @@ const AdminDashboard: React.FC = () => {
 
     setUploadingImage(true);
     setInventoryFeedback(null);
-    const uploadedUrls: string[] = [];
-    const failedFiles: string[] = [];
 
     try {
-      for (let i = 0; i < files.length; i++) {
+      // Execute all uploads in parallel for true multiple-upload performance
+      const uploadPromises = Array.from(files).map(async (file) => {
         try {
-          const data = await api.uploadImage(files[i]);
-          uploadedUrls.push(data.url);
+          const data = await api.uploadImage(file);
+          let url = data.url || data.secure_url;
+          
+          // Accept iPhone HEIF/HEIC photos and convert on-the-fly via Cloudinary to JPG
+          if (url && (url.toLowerCase().endsWith('.heic') || url.toLowerCase().endsWith('.heif'))) {
+            url = url.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg');
+          }
+          return url;
         } catch (err) {
-          failedFiles.push(files[i].name);
+          return null; // Handle failure individually
         }
-      }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const uploadedUrls = results.filter((url): url is string => url !== null);
+      const failedCount = files.length - uploadedUrls.length;
 
       if (uploadedUrls.length > 0) {
         setNewVehicle(prev => ({
@@ -254,7 +263,7 @@ const AdminDashboard: React.FC = () => {
       }
 
       const successMsg = uploadedUrls.length > 0 ? `${uploadedUrls.length} image(s) uploaded successfully.` : '';
-      const failMsg = failedFiles.length > 0 ? `${failedFiles.length} file(s) failed to upload.` : '';
+      const failMsg = failedCount > 0 ? `${failedCount} file(s) failed to upload.` : '';
       setInventoryFeedback(successMsg + (failMsg ? ' ' + failMsg : ''));
     } catch (err: any) {
       const message = err?.message || 'Image upload failed. Check Cloudinary configuration.';
@@ -731,7 +740,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">FUEL TYPE</label>
-                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.fuelType} onChange={e => setNewVehicle({...newVehicle, fuelType: e.target.value})}>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.fuelType} onChange={e => setNewVehicle({...newVehicle, fuelType: e.target.value})}>
                     <option value="Gasoline">Gasoline</option>
                     <option value="Diesel">Diesel</option>
                     <option value="Hybrid">Hybrid</option>
@@ -745,7 +754,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">DRIVETRAIN</label>
-                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.drivetrain || 'FWD'} onChange={e => setNewVehicle({...newVehicle, drivetrain: e.target.value})}>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.drivetrain || 'FWD'} onChange={e => setNewVehicle({...newVehicle, drivetrain: e.target.value})}>
                     <option value="FWD">FWD</option>
                     <option value="RWD">RWD</option>
                     <option value="AWD">AWD</option>
@@ -754,7 +763,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">CONDITION</label>
-                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.condition || 'Used'} onChange={e => setNewVehicle({...newVehicle, condition: e.target.value as Vehicle['condition']})}>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.condition || 'Used'} onChange={e => setNewVehicle({...newVehicle, condition: e.target.value as Vehicle['condition']})}>
                     <option value="Used">Used</option>
                     <option value="Certified">Certified</option>
                     <option value="New">New</option>
@@ -762,7 +771,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">STATUS</label>
-                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.status || 'Available'} onChange={e => setNewVehicle({...newVehicle, status: e.target.value as Vehicle['status']})}>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.status || 'Available'} onChange={e => setNewVehicle({...newVehicle, status: e.target.value as Vehicle['status']})}>
                     <option value="Available">Available</option>
                     <option value="Pending">Pending</option>
                     <option value="Sold">Sold</option>
@@ -770,7 +779,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">BODY TYPE</label>
-                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.bodyType} onChange={e => setNewVehicle({...newVehicle, bodyType: e.target.value as Vehicle['bodyType']})}>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.bodyType} onChange={e => setNewVehicle({...newVehicle, bodyType: e.target.value as Vehicle['bodyType']})}>
                     <option value="Sedan">Sedan</option>
                     <option value="SUV">SUV</option>
                     <option value="Truck">Truck</option>
@@ -783,7 +792,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">TRANSMISSION</label>
-                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.transmission} onChange={e => setNewVehicle({...newVehicle, transmission: e.target.value})}>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.transmission} onChange={e => setNewVehicle({...newVehicle, transmission: e.target.value})}>
                     <option value="Automatic">Automatic</option>
                     <option value="Manual">Manual</option>
                   </select>

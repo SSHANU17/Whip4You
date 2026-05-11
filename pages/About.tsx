@@ -32,7 +32,7 @@ const About: React.FC = () => {
               <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
                 Wholesale Pricing, <br/><span className="gold-text italic">Redefined.</span>
               </h2>
-              <p className="text-gray-600 text-lg leading-relaxed mb-8">
+              <p className="text-gray-900 text-lg leading-relaxed mb-8">
                 For years, the "wholesale" advantage was locked behind dealer licenses. We founded Whip4You with a simple mission: break those walls down. Founded by <span className="text-black font-bold">Amanjot Singh</span>, we bring transparency and value to the forefront of the luxury automotive experience.
               </p>
               <div className="space-y-6">
@@ -40,14 +40,14 @@ const About: React.FC = () => {
                   <TrendingDown className="text-[#D4AF37] flex-shrink-0" size={24} />
                   <div>
                     <h4 className="font-bold text-lg">No Middleman Markup</h4>
-                    <p className="text-sm text-gray-500">We source directly from premium partners and pass the savings straight to your driveway.</p>
+                    <p className="text-sm text-gray-700">We source directly from premium partners and pass the savings straight to your driveway.</p>
                   </div>
                 </div>
                 <div className="flex gap-4 p-6 rounded-3xl bg-gray-50 border border-gray-100">
                   <ShieldCheck className="text-[#D4AF37] flex-shrink-0" size={24} />
                   <div>
                     <h4 className="font-bold text-lg">Inspected Excellence</h4>
-                    <p className="text-sm text-gray-500">Every whip undergoes a rigorous 150-point safety and performance inspection.</p>
+                    <p className="text-sm text-gray-700">Every whip undergoes a rigorous 150-point safety and performance inspection.</p>
                   </div>
                 </div>
               </div>

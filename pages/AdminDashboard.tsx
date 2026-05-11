@@ -112,7 +112,7 @@ const AdminDashboard: React.FC = () => {
   const [leadStatus, setLeadStatus] = useState<Lead['status']>('open');
   const [isUpdatingLead, setIsUpdatingLead] = useState(false);
   const [leadFeedback, setLeadFeedback] = useState<string | null>(null);
-  const [showCompletedLeads, setShowCompletedLeads] = useState(true);
+  const [leadStatusFilter, setLeadStatusFilter] = useState<'all' | 'pending' | 'completed'>('pending');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   // Inventory State
@@ -125,8 +125,12 @@ const AdminDashboard: React.FC = () => {
   // Site Configuration State
   const [siteConfig, setSiteConfig] = useState<any>(null);
   const visibleLeads = useMemo(
-    () => (showCompletedLeads ? leads : leads.filter((lead) => lead.status !== 'done')),
-    [leads, showCompletedLeads]
+    () => {
+      if (leadStatusFilter === 'all') return leads;
+      if (leadStatusFilter === 'completed') return leads.filter((lead) => lead.status === 'done');
+      return leads.filter((lead) => lead.status !== 'done');
+    },
+    [leads, leadStatusFilter]
   );
   const leadDetailEntries = useMemo(
     () => getLeadDetailEntries(selectedLead?.details),
@@ -224,18 +228,34 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploadingImage(true);
     setInventoryFeedback(null);
+    const uploadedUrls: string[] = [];
+    const failedFiles: string[] = [];
+
     try {
-      const data = await api.uploadImage(file);
-      setNewVehicle(prev => ({
-        ...prev,
-        images: [...(prev.images || []), data.url]
-      }));
-      setInventoryFeedback('Image uploaded successfully.');
+      for (let i = 0; i < files.length; i++) {
+        try {
+          const data = await api.uploadImage(files[i]);
+          uploadedUrls.push(data.url);
+        } catch (err) {
+          failedFiles.push(files[i].name);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setNewVehicle(prev => ({
+          ...prev,
+          images: [...(prev.images || []), ...uploadedUrls]
+        }));
+      }
+
+      const successMsg = uploadedUrls.length > 0 ? `${uploadedUrls.length} image(s) uploaded successfully.` : '';
+      const failMsg = failedFiles.length > 0 ? `${failedFiles.length} file(s) failed to upload.` : '';
+      setInventoryFeedback(successMsg + (failMsg ? ' ' + failMsg : ''));
     } catch (err: any) {
       const message = err?.message || 'Image upload failed. Check Cloudinary configuration.';
       setInventoryFeedback(message);
@@ -459,14 +479,14 @@ const AdminDashboard: React.FC = () => {
                         />
                         <div className="min-w-0">
                           <h4 className="font-bold text-lg md:text-xl text-black truncate">{v.year} {v.make} {v.model}</h4>
-                          <p className="text-[9px] font-black uppercase text-zinc-400 tracking-widest truncate">{v.vin} | {v.trim}</p>
+                          <p className="text-[9px] font-black uppercase text-zinc-600 tracking-widest truncate">{v.vin} | {v.trim}</p>
                           <p className="text-[#D4AF37] font-bold mt-1">${v.price.toLocaleString()}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 w-full md:w-auto justify-end">
                         <button
                           onClick={() => handleStartEditVehicle(v)}
-                          className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-400 hover:text-black transition-colors"
+                          className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-600 hover:text-black transition-colors"
                           title="Edit vehicle"
                         >
                           <Edit3 size={18} />
@@ -494,13 +514,15 @@ const AdminDashboard: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-10">
                   <h1 className="text-3xl md:text-4xl font-bold brand-font italic">Lead Hub</h1>
                   <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setShowCompletedLeads(prev => !prev)}
-                      className="px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-zinc-200 bg-white hover:border-[#D4AF37] transition-colors flex items-center gap-2"
+                    <select
+                      value={leadStatusFilter}
+                      onChange={(e) => setLeadStatusFilter(e.target.value as 'all' | 'pending' | 'completed')}
+                      className="px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-zinc-200 bg-white hover:border-[#D4AF37] transition-colors cursor-pointer"
                     >
-                      {showCompletedLeads ? <EyeOff size={14} /> : <Eye size={14} />}
-                      {showCompletedLeads ? 'Hide Completed' : 'Show Completed'}
-                    </button>
+                      <option value="pending">Pending Tasks</option>
+                      <option value="completed">Completed Tasks</option>
+                      <option value="all">All Tasks</option>
+                    </select>
                     <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                       Showing {visibleLeads.length} / {leads.length}
                     </div>
@@ -518,7 +540,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="bg-zinc-950 p-4 rounded-xl text-[#D4AF37] shrink-0"><User size={24} /></div>
                         <div>
                           <h4 className="font-bold text-lg text-black">{lead.name}</h4>
-                          <p className="text-[9px] font-black uppercase text-zinc-400">{lead.type} | {lead.priority}</p>
+                          <p className="text-[9px] font-black uppercase text-zinc-600">{lead.type} | {lead.priority}</p>
                           <span className={`inline-flex mt-2 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
                             lead.status === 'done'
                               ? 'bg-green-100 text-green-700'
@@ -541,8 +563,8 @@ const AdminDashboard: React.FC = () => {
               <div className="max-w-4xl space-y-10">
                 <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic">Site Config</h1>
                 <div className="bg-white p-8 md:p-12 rounded-[30px] md:rounded-[40px] shadow-sm space-y-8">
-                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-400">HERO HEADLINE</label><input className="w-full bg-zinc-50 p-5 rounded-2xl font-bold text-black" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
-                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-400">PROMO RATE (%)</label><input className="w-full bg-zinc-50 p-5 rounded-2xl font-bold text-black" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
+                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">HERO HEADLINE</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl font-bold text-black" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
+                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">PROMO RATE (%)</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl font-bold text-black" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
                   <button onClick={handleUpdateConfig} className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">Update Global Config</button>
                 </div>
               </div>
@@ -576,35 +598,35 @@ const AdminDashboard: React.FC = () => {
               <div className="bg-zinc-50 border border-zinc-200 p-5 rounded-2xl space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Customer</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-1">Customer</p>
                     <p className="text-sm font-bold text-black">{selectedLead.name}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Type</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-1">Type</p>
                     <p className="text-sm font-bold text-black">{selectedLead.type}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Email</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-1">Email</p>
                     <a href={`mailto:${selectedLead.email}`} className="text-sm font-bold text-black underline decoration-dotted">{selectedLead.email}</a>
                   </div>
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Phone</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-1">Phone</p>
                     <a href={`tel:${selectedLead.phone}`} className="text-sm font-bold text-black underline decoration-dotted">{selectedLead.phone}</a>
                   </div>
                 </div>
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Request</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-1">Request</p>
                   <p className="text-sm text-zinc-700 leading-relaxed">
                     {selectedLead.message?.trim() || 'No direct message provided. Review request profile below.'}
                   </p>
                 </div>
                 {leadDetailEntries.length > 0 && (
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">Request Profile</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-2">Request Profile</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {leadDetailEntries.map((entry, index) => (
                         <div key={`${entry.label}-${index}`} className="rounded-xl border border-zinc-200 bg-white p-3">
-                          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">{entry.label}</p>
+                          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mb-1">{entry.label}</p>
                           <p className="text-sm font-semibold text-zinc-800 break-words">{entry.value}</p>
                         </div>
                       ))}
@@ -637,8 +659,8 @@ const AdminDashboard: React.FC = () => {
               )}
               {saveSuccess ? <div className="text-center font-bold text-green-500">Record Synchronized</div> : (
                 <>
-                  <div className="space-y-2"><label className="text-[9px] font-black text-zinc-400">STATUS</label><select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={leadStatus} onChange={e => setLeadStatus(e.target.value as any)}><option value="open">Open</option><option value="inProgress">In Progress</option><option value="done">Completed (Closed)</option></select></div>
-                  <div className="space-y-2"><label className="text-[9px] font-black text-zinc-400">REMARKS</label><textarea className="w-full bg-zinc-50 p-5 rounded-2xl h-32 text-black" value={leadRemarks} onChange={e => setLeadRemarks(e.target.value)} /></div>
+                  <div className="space-y-2"><label className="text-[9px] font-black text-zinc-700">STATUS</label><select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={leadStatus} onChange={e => setLeadStatus(e.target.value as any)}><option value="open">Open</option><option value="inProgress">In Progress</option><option value="done">Completed (Closed)</option></select></div>
+                  <div className="space-y-2"><label className="text-[9px] font-black text-zinc-700">REMARKS</label><textarea className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl h-32 text-black" value={leadRemarks} onChange={e => setLeadRemarks(e.target.value)} /></div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button onClick={closeLeadModal} type="button" className="w-full bg-zinc-100 text-zinc-800 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-zinc-200">
                       Close Panel
@@ -658,58 +680,58 @@ const AdminDashboard: React.FC = () => {
       )}
 
       {isAddingVehicle && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={closeVehicleModal}>
-          <div className="bg-white w-full max-w-4xl rounded-[30px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 md:p-10 border-b border-zinc-100 flex justify-between items-center bg-white sticky top-0 z-10">
-              <h2 className="text-xl md:text-2xl font-bold brand-font italic">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-8" onClick={closeVehicleModal}>
+          <div className="bg-white w-full max-w-4xl rounded-[20px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[95vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 md:p-10 border-b border-zinc-100 flex justify-between items-center bg-white sticky top-0 z-10">
+              <h2 className="text-lg md:text-2xl font-bold brand-font italic">
                 {editingVehicleId ? 'Edit Asset' : 'New Asset Registration'}
               </h2>
               <button onClick={closeVehicleModal}>
-                <X size={24} className="md:w-8 md:h-8" />
+                <X size={20} className="md:w-8 md:h-8" />
               </button>
             </div>
-            <form onSubmit={handleSaveVehicle} className="p-6 md:p-12 space-y-8 md:space-y-10 overflow-y-auto">
+            <form onSubmit={handleSaveVehicle} className="p-4 md:p-12 space-y-5 md:space-y-10 overflow-y-auto">
               {inventoryFeedback && (
-                <div className="bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-bold uppercase tracking-widest p-4 rounded-2xl">
+                <div className="bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-bold uppercase tracking-widest p-3 md:p-4 rounded-xl md:rounded-2xl">
                   {inventoryFeedback}
                 </div>
               )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">MAKE</label>
-                  <input required className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.make} onChange={e => setNewVehicle({...newVehicle, make: e.target.value})} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-8">
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">MAKE</label>
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.make} onChange={e => setNewVehicle({...newVehicle, make: e.target.value})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">MODEL</label>
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.model} onChange={e => setNewVehicle({...newVehicle, model: e.target.value})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">YEAR</label>
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.year} onChange={e => setNewVehicle({...newVehicle, year: parseInt(e.target.value)})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">PRICE ($)</label>
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.price} onChange={e => setNewVehicle({...newVehicle, price: parseInt(e.target.value)})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">VIN</label>
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.vin} onChange={e => setNewVehicle({...newVehicle, vin: e.target.value})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">STOCK NUMBER</label>
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.stockNumber} onChange={e => setNewVehicle({...newVehicle, stockNumber: e.target.value})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">MILEAGE</label>
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.mileage} onChange={e => setNewVehicle({...newVehicle, mileage: parseInt(e.target.value)})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">TRIM</label>
+                  <input className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.trim} onChange={e => setNewVehicle({...newVehicle, trim: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">MODEL</label>
-                  <input required className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.model} onChange={e => setNewVehicle({...newVehicle, model: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">YEAR</label>
-                  <input required type="number" className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.year} onChange={e => setNewVehicle({...newVehicle, year: parseInt(e.target.value)})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">PRICE ($)</label>
-                  <input required type="number" className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.price} onChange={e => setNewVehicle({...newVehicle, price: parseInt(e.target.value)})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">VIN</label>
-                  <input required className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.vin} onChange={e => setNewVehicle({...newVehicle, vin: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">STOCK NUMBER</label>
-                  <input required className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.stockNumber} onChange={e => setNewVehicle({...newVehicle, stockNumber: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">MILEAGE</label>
-                  <input required type="number" className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.mileage} onChange={e => setNewVehicle({...newVehicle, mileage: parseInt(e.target.value)})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">TRIM</label>
-                  <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.trim} onChange={e => setNewVehicle({...newVehicle, trim: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">FUEL TYPE</label>
-                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.fuelType} onChange={e => setNewVehicle({...newVehicle, fuelType: e.target.value})}>
+                  <label className="text-[9px] font-black text-zinc-700">FUEL TYPE</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.fuelType} onChange={e => setNewVehicle({...newVehicle, fuelType: e.target.value})}>
                     <option value="Gasoline">Gasoline</option>
                     <option value="Diesel">Diesel</option>
                     <option value="Hybrid">Hybrid</option>
@@ -718,12 +740,12 @@ const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">ENGINE</label>
-                  <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" placeholder="2.0L Turbo I4" value={newVehicle.engine} onChange={e => setNewVehicle({...newVehicle, engine: e.target.value})} />
+                  <label className="text-[9px] font-black text-zinc-700">ENGINE</label>
+                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" placeholder="2.0L Turbo I4" value={newVehicle.engine} onChange={e => setNewVehicle({...newVehicle, engine: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">DRIVETRAIN</label>
-                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.drivetrain || 'FWD'} onChange={e => setNewVehicle({...newVehicle, drivetrain: e.target.value})}>
+                  <label className="text-[9px] font-black text-zinc-700">DRIVETRAIN</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.drivetrain || 'FWD'} onChange={e => setNewVehicle({...newVehicle, drivetrain: e.target.value})}>
                     <option value="FWD">FWD</option>
                     <option value="RWD">RWD</option>
                     <option value="AWD">AWD</option>
@@ -731,24 +753,24 @@ const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">CONDITION</label>
-                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.condition || 'Used'} onChange={e => setNewVehicle({...newVehicle, condition: e.target.value as Vehicle['condition']})}>
+                  <label className="text-[9px] font-black text-zinc-700">CONDITION</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.condition || 'Used'} onChange={e => setNewVehicle({...newVehicle, condition: e.target.value as Vehicle['condition']})}>
                     <option value="Used">Used</option>
                     <option value="Certified">Certified</option>
                     <option value="New">New</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">STATUS</label>
-                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.status || 'Available'} onChange={e => setNewVehicle({...newVehicle, status: e.target.value as Vehicle['status']})}>
+                  <label className="text-[9px] font-black text-zinc-700">STATUS</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.status || 'Available'} onChange={e => setNewVehicle({...newVehicle, status: e.target.value as Vehicle['status']})}>
                     <option value="Available">Available</option>
                     <option value="Pending">Pending</option>
                     <option value="Sold">Sold</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">BODY TYPE</label>
-                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.bodyType} onChange={e => setNewVehicle({...newVehicle, bodyType: e.target.value as Vehicle['bodyType']})}>
+                  <label className="text-[9px] font-black text-zinc-700">BODY TYPE</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.bodyType} onChange={e => setNewVehicle({...newVehicle, bodyType: e.target.value as Vehicle['bodyType']})}>
                     <option value="Sedan">Sedan</option>
                     <option value="SUV">SUV</option>
                     <option value="Truck">Truck</option>
@@ -760,48 +782,58 @@ const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">TRANSMISSION</label>
-                  <select className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" value={newVehicle.transmission} onChange={e => setNewVehicle({...newVehicle, transmission: e.target.value})}>
+                  <label className="text-[9px] font-black text-zinc-700">TRANSMISSION</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" value={newVehicle.transmission} onChange={e => setNewVehicle({...newVehicle, transmission: e.target.value})}>
                     <option value="Automatic">Automatic</option>
                     <option value="Manual">Manual</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">EXTERIOR COLOR</label>
-                  <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" placeholder="White" value={newVehicle.exteriorColor} onChange={e => setNewVehicle({...newVehicle, exteriorColor: e.target.value})} />
+                  <label className="text-[9px] font-black text-zinc-700">EXTERIOR COLOR</label>
+                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" placeholder="White" value={newVehicle.exteriorColor} onChange={e => setNewVehicle({...newVehicle, exteriorColor: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-zinc-400">INTERIOR COLOR</label>
-                  <input className="w-full bg-zinc-50 p-4 rounded-xl font-bold text-black" placeholder="Black" value={newVehicle.interiorColor} onChange={e => setNewVehicle({...newVehicle, interiorColor: e.target.value})} />
+                  <label className="text-[9px] font-black text-zinc-700">INTERIOR COLOR</label>
+                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" placeholder="Black" value={newVehicle.interiorColor} onChange={e => setNewVehicle({...newVehicle, interiorColor: e.target.value})} />
                 </div>
               </div>
 
               <div className="space-y-4">
-                <label className="text-[9px] font-black text-zinc-400">ASSET IMAGES (CLOUDINARY)</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <label className="text-[9px] font-black text-zinc-700">ASSET IMAGES (CLOUDINARY)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {newVehicle.images?.map((img, i) => (
-                    <div key={i} className="relative aspect-square rounded-2xl overflow-hidden border border-zinc-100">
+                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-zinc-200">
                       <img src={img} className="w-full h-full object-cover" alt="" />
                       <button 
                         type="button"
                         onClick={() => setNewVehicle(prev => ({ ...prev, images: prev.images?.filter((_, idx) => idx !== i) }))}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                        className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity"
                       >
-                        <X size={12} />
+                        <X size={20} className="text-white" />
                       </button>
                     </div>
                   ))}
-                  <label className="aspect-square rounded-2xl border-2 border-dashed border-zinc-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#D4AF37] transition-colors">
-                    {uploadingImage ? <Loader2 className="animate-spin text-[#D4AF37]" /> : <Plus className="text-zinc-400" />}
-                    <span className="text-[8px] font-black uppercase mt-2 text-zinc-400">Upload</span>
-                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                  <label className="aspect-square rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center cursor-pointer hover:border-[#D4AF37] hover:bg-zinc-50 transition-all">
+                    {uploadingImage ? (
+                      <>
+                        <Loader2 className="animate-spin text-[#D4AF37] mb-1" size={18} />
+                        <span className="text-[7px] font-black uppercase text-zinc-600">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="text-zinc-600 mb-1" size={18} />
+                        <span className="text-[7px] font-black uppercase text-zinc-700">Multi-Upload</span>
+                      </>
+                    )}
+                    <input type="file" className="hidden" accept="image/*,.heic,.heif" onChange={handleImageUpload} disabled={uploadingImage} multiple />
                   </label>
                 </div>
+                <p className="text-[8px] text-zinc-500 font-semibold">Supports: JPG, PNG, WebP, HEIF (iPhone)</p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-zinc-400">DESCRIPTION</label>
-                <textarea className="w-full bg-zinc-50 p-5 rounded-2xl h-32 text-black" value={newVehicle.description} onChange={e => setNewVehicle({...newVehicle, description: e.target.value})} />
+                <label className="text-[9px] font-black text-zinc-700">DESCRIPTION</label>
+                <textarea className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl h-32 text-black" value={newVehicle.description} onChange={e => setNewVehicle({...newVehicle, description: e.target.value})} />
               </div>
 
               <button type="submit" className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">

@@ -71,13 +71,22 @@ const Home: React.FC = () => {
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-white mb-10 md:mb-20 brand-font italic">Select Body Type</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {BODY_TYPES.map((type) => (
-              <div key={type.name} onClick={() => navigate(`/inventory?bodyType=${type.name}`)} className="bg-black p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[40px] border border-white/5 hover:border-[#D4AF37]/50 cursor-pointer group transition-all">
-                <div className="bg-zinc-900 w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:bg-[#D4AF37] transition-all text-[#D4AF37] group-hover:text-black group-hover:scale-110">
-                  {type.icon}
+              <div key={type.name} onClick={() => navigate(`/inventory?bodyType=${type.name}`)} className="bg-black p-5 sm:p-8 md:p-10 rounded-[28px] sm:rounded-[40px] border border-white/5 hover:border-[#D4AF37]/50 cursor-pointer group transition-all overflow-hidden flex flex-col items-center justify-center">
+                <div className={`relative mb-4 sm:mb-6 overflow-hidden rounded-2xl group-hover:scale-110 transition-transform duration-300 ${
+                  type.size === 'lg' ? 'w-20 h-16 sm:w-28 sm:h-20' : 
+                  type.size === 'sm' ? 'w-16 h-14 sm:w-20 sm:h-16' : 
+                  'w-18 h-14 sm:w-24 sm:h-18'
+                }`}>
+                  <img 
+                    src={type.image} 
+                    alt={type.name}
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
+                  />
                 </div>
-                <h3 className="font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] text-zinc-500 group-hover:text-white">{type.name}</h3>
+                <h3 className="font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] text-zinc-500 group-hover:text-white text-center">{type.name}</h3>
               </div>
             ))}
+          </div>
           </div>
         </div>
       </section>

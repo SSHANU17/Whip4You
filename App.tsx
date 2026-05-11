@@ -94,25 +94,7 @@ const AppFrame: React.FC<AppFrameProps> = ({
             <div className="absolute inset-0 bg-radial-gradient(circle, transparent 20%, black 100%) opacity-60"></div>
           </div>
 
-          {/* carousel arrows for manual control */}
-          <button
-            onClick={onPrevSlide}
-            className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
-            aria-label="Previous slide"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={onNextSlide}
-            className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 rounded-full p-2"
-            aria-label="Next slide"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+
 
           <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-1000">
             <BrandLogo className="h-28 w-28 sm:h-40 sm:w-40 md:h-52 md:w-52 mb-6 sm:mb-8 animate-pulse drop-shadow-[0_0_40px_rgba(212,175,55,0.28)]" />

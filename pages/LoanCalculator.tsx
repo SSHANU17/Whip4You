@@ -149,7 +149,7 @@ const LoanCalculator: React.FC = () => {
                <div className="absolute top-0 right-0 w-64 h-64 gold-gradient opacity-10 rounded-full blur-3xl -mr-32 -mt-32"></div>
                
                <p className="text-[#D4AF37] font-black uppercase tracking-[0.4em] text-[10px] mb-6">Estimated Monthly Payment</p>
-               <h3 className="text-6xl md:text-8xl font-bold mb-12 brand-font italic gold-text">${results.monthly.toFixed(2)}</h3>
+               <h3 className="text-6xl md:text-8xl font-bold mb-12 brand-font italic gold-text break-words">${results.monthly.toFixed(2)}</h3>
                
                <div className="grid grid-cols-2 gap-10 border-t border-white/5 pt-10">
                  <div>
@@ -168,15 +168,15 @@ const LoanCalculator: React.FC = () => {
               <div className="space-y-8">
                 <div className="flex justify-between items-center group">
                   <span className="text-zinc-400 font-bold uppercase tracking-widest text-[11px] group-hover:text-black transition-colors">Monthly</span>
-                  <span className="text-2xl font-bold brand-font group-hover:text-[#D4AF37] transition-colors">${results.monthly.toFixed(2)}</span>
+                  <span className="text-2xl font-bold brand-font text-zinc-600 group-hover:text-[#D4AF37] transition-colors">${results.monthly.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center group">
                   <span className="text-zinc-400 font-bold uppercase tracking-widest text-[11px] group-hover:text-black transition-colors">Bi-Weekly</span>
-                  <span className="text-2xl font-bold brand-font group-hover:text-[#D4AF37] transition-colors">${results.biWeekly.toFixed(2)}</span>
+                  <span className="text-2xl font-bold brand-font text-zinc-600 group-hover:text-[#D4AF37] transition-colors">${results.biWeekly.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center group">
                   <span className="text-zinc-400 font-bold uppercase tracking-widest text-[11px] group-hover:text-black transition-colors">Weekly</span>
-                  <span className="text-2xl font-bold brand-font group-hover:text-[#D4AF37] transition-colors">${results.weekly.toFixed(2)}</span>
+                  <span className="text-2xl font-bold brand-font text-zinc-600 group-hover:text-[#D4AF37] transition-colors">${results.weekly.toFixed(2)}</span>
                 </div>
               </div>
               <Link to="/apply" className="block w-full text-center bg-black text-white py-6 rounded-3xl font-black uppercase tracking-[0.4em] text-[10px] mt-12 hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl active:scale-95">

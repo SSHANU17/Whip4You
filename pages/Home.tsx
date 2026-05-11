@@ -9,7 +9,7 @@ import {
 import { api } from '../api.ts';
 
 const HOME_BODY_TYPES = [
-  { name: 'Sedan', size: 'md', image: 'https://images.unsplash.com/photo-1631214524020-5e18d9765cd3?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Sedan', size: 'md', image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=400' },
   { name: 'Coupe', size: 'md', image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=400' },
   { name: 'SUV', size: 'lg', image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&q=80&w=400' },
   { name: 'Hatchback', size: 'sm', image: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&q=80&w=400' },

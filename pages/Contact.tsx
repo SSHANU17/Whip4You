@@ -299,15 +299,15 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Identity</label>
-                    <input name="name" required type="text" placeholder="Your Name" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
+                    <input name="name" required type="text" placeholder="Your Name" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black caret-black placeholder:text-zinc-500" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Email Address</label>
-                    <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
+                    <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black caret-black placeholder:text-zinc-500" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Mobile</label>
-                    <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black" />
+                    <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black caret-black placeholder:text-zinc-500" />
                   </div>
                 </div>
 
@@ -321,7 +321,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           name="finderMakeModel"
                           required
                           placeholder="Preferred Make / Model"
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500"
                         />
                         <select
                           name="finderBodyType"
@@ -342,7 +342,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           min="1980"
                           max={new Date().getFullYear() + 1}
                           placeholder="Year From"
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500"
                         />
                         <input
                           name="finderYearTo"
@@ -350,7 +350,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           min="1980"
                           max={new Date().getFullYear() + 1}
                           placeholder="Year To"
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500"
                         />
                         <input
                           name="finderBudgetMin"
@@ -358,7 +358,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           min="0"
                           step="500"
                           placeholder="Budget Min ($)"
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500"
                         />
                         <input
                           name="finderBudgetMax"
@@ -367,7 +367,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           min="0"
                           step="500"
                           placeholder="Budget Max ($)"
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500"
                         />
                         <select
                           name="finderTimeline"
@@ -398,7 +398,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           value={tradeYear}
                           onChange={(e) => setTradeYear(e.target.value)}
                           required
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black" 
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500" 
                         />
                         <input 
                           name="tradeMakeModel"
@@ -406,7 +406,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           value={tradeModel}
                           onChange={(e) => setTradeModel(e.target.value)}
                           required
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black" 
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500" 
                         />
                         <input
                           name="tradeMileage"
@@ -417,7 +417,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           value={tradeMileage}
                           onChange={(e) => setTradeMileage(e.target.value)}
                           required
-                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black"
+                          className="bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500"
                         />
                         <select
                           name="tradeCondition"
@@ -436,7 +436,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                           min="0"
                           step="500"
                           placeholder="Current Loan Balance (optional)"
-                          className="md:col-span-2 bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black placeholder:text-zinc-400"
+                          className="md:col-span-2 bg-white p-5 rounded-2xl border border-zinc-100 text-sm outline-none text-black caret-black placeholder:text-zinc-500"
                         />
                      </div>
 
@@ -463,7 +463,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Details</label>
-                  <textarea name="message" rows={4} className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black" 
+                  <textarea name="message" rows={4} className="w-full bg-zinc-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black caret-black placeholder:text-zinc-500" 
                     placeholder={vehicleContext ? `I'm interested in the ${vehicleContext.year} ${vehicleContext.make}. Is it still available for a test drive?` : "How can we help?"}
                   ></textarea>
                 </div>

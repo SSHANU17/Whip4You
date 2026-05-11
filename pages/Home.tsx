@@ -113,11 +113,11 @@ const Home: React.FC = () => {
               <div className="bg-white p-6 sm:p-8 md:p-20 rounded-[36px] md:rounded-[60px] shadow-3xl">
                 <form onSubmit={handleSubmit} className="space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-10">
-                    <input name="name" required placeholder="John Doe" className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium text-black placeholder:text-zinc-500" />
-                    <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium text-black placeholder:text-zinc-500" />
-                    <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium text-black placeholder:text-zinc-500" />
+                    <input name="name" required placeholder="John Doe" className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-sm font-medium text-black caret-black placeholder:text-zinc-500" />
+                    <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-sm font-medium text-black caret-black placeholder:text-zinc-500" />
+                    <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-sm font-medium text-black caret-black placeholder:text-zinc-500" />
                   </div>
-                  <textarea name="message" rows={4} className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:border-[#D4AF37] transition-all text-sm font-medium resize-none text-black placeholder:text-zinc-500" placeholder="Request specifics..."></textarea>
+                  <textarea name="message" rows={4} className="w-full bg-zinc-100 border border-zinc-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-sm font-medium resize-none text-black caret-black placeholder:text-zinc-500" placeholder="Request specifics..."></textarea>
                   <button 
                     type="submit" 
                     disabled={loading}

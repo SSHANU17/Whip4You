@@ -344,8 +344,8 @@ const AdminDashboard: React.FC = () => {
             <ShieldCheck size={32} className="text-black" />
           </div>
           <h2 className="text-2xl font-bold mb-10 brand-font italic text-center uppercase">Secure Gateway</h2>
-          <input required type="email" placeholder="EMAIL" className="w-full bg-zinc-50 p-5 rounded-2xl mb-4 outline-none border-b border-zinc-200 text-black" value={email} onChange={e => setEmail(e.target.value)} />
-          <input required type="password" placeholder="PASSWORD" className="w-full bg-zinc-50 p-5 rounded-2xl mb-8 outline-none border-b border-zinc-200 text-black" value={password} onChange={e => setPassword(e.target.value)} />
+          <input required type="email" placeholder="EMAIL" className="w-full bg-zinc-50 p-5 rounded-2xl mb-4 outline-none border-b border-zinc-200 focus:border-[#D4AF37] transition-all text-black caret-black placeholder:text-zinc-400" value={email} onChange={e => setEmail(e.target.value)} />
+          <input required type="password" placeholder="PASSWORD" className="w-full bg-zinc-50 p-5 rounded-2xl mb-8 outline-none border-b border-zinc-200 focus:border-[#D4AF37] transition-all text-black caret-black placeholder:text-zinc-400" value={password} onChange={e => setPassword(e.target.value)} />
           <button className="w-full bg-black text-white py-5 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px]">Authorize Entry</button>
           <div className="mt-8 text-center">
             <button 
@@ -563,8 +563,8 @@ const AdminDashboard: React.FC = () => {
               <div className="max-w-4xl space-y-10">
                 <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic">Site Config</h1>
                 <div className="bg-white p-8 md:p-12 rounded-[30px] md:rounded-[40px] shadow-sm space-y-8">
-                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">HERO HEADLINE</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl font-bold text-black" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
-                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">PROMO RATE (%)</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl font-bold text-black" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
+                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">HERO HEADLINE</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
+                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">PROMO RATE (%)</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
                   <button onClick={handleUpdateConfig} className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">Update Global Config</button>
                 </div>
               </div>
@@ -699,35 +699,35 @@ const AdminDashboard: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-8">
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">MAKE</label>
-                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.make} onChange={e => setNewVehicle({...newVehicle, make: e.target.value})} />
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.make} onChange={e => setNewVehicle({...newVehicle, make: e.target.value})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">MODEL</label>
-                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.model} onChange={e => setNewVehicle({...newVehicle, model: e.target.value})} />
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.model} onChange={e => setNewVehicle({...newVehicle, model: e.target.value})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">YEAR</label>
-                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.year} onChange={e => setNewVehicle({...newVehicle, year: parseInt(e.target.value)})} />
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.year} onChange={e => setNewVehicle({...newVehicle, year: parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">PRICE ($)</label>
-                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.price} onChange={e => setNewVehicle({...newVehicle, price: parseInt(e.target.value)})} />
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.price} onChange={e => setNewVehicle({...newVehicle, price: parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">VIN</label>
-                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.vin} onChange={e => setNewVehicle({...newVehicle, vin: e.target.value})} />
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.vin} onChange={e => setNewVehicle({...newVehicle, vin: e.target.value})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">STOCK NUMBER</label>
-                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.stockNumber} onChange={e => setNewVehicle({...newVehicle, stockNumber: e.target.value})} />
+                  <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.stockNumber} onChange={e => setNewVehicle({...newVehicle, stockNumber: e.target.value})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">MILEAGE</label>
-                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.mileage} onChange={e => setNewVehicle({...newVehicle, mileage: parseInt(e.target.value)})} />
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.mileage} onChange={e => setNewVehicle({...newVehicle, mileage: parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">TRIM</label>
-                  <input className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl font-bold text-black text-sm" value={newVehicle.trim} onChange={e => setNewVehicle({...newVehicle, trim: e.target.value})} />
+                  <input className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.trim} onChange={e => setNewVehicle({...newVehicle, trim: e.target.value})} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">FUEL TYPE</label>
@@ -741,7 +741,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">ENGINE</label>
-                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" placeholder="2.0L Turbo I4" value={newVehicle.engine} onChange={e => setNewVehicle({...newVehicle, engine: e.target.value})} />
+                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400" placeholder="2.0L Turbo I4" value={newVehicle.engine} onChange={e => setNewVehicle({...newVehicle, engine: e.target.value})} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">DRIVETRAIN</label>
@@ -790,11 +790,11 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">EXTERIOR COLOR</label>
-                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" placeholder="White" value={newVehicle.exteriorColor} onChange={e => setNewVehicle({...newVehicle, exteriorColor: e.target.value})} />
+                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400" placeholder="White" value={newVehicle.exteriorColor} onChange={e => setNewVehicle({...newVehicle, exteriorColor: e.target.value})} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">INTERIOR COLOR</label>
-                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl font-bold text-black" placeholder="Black" value={newVehicle.interiorColor} onChange={e => setNewVehicle({...newVehicle, interiorColor: e.target.value})} />
+                  <input className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400" placeholder="Black" value={newVehicle.interiorColor} onChange={e => setNewVehicle({...newVehicle, interiorColor: e.target.value})} />
                 </div>
               </div>
 
@@ -833,7 +833,7 @@ const AdminDashboard: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-zinc-700">DESCRIPTION</label>
-                <textarea className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl h-32 text-black" value={newVehicle.description} onChange={e => setNewVehicle({...newVehicle, description: e.target.value})} />
+                <textarea className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl h-32 outline-none focus:border-[#D4AF37] transition-all text-black caret-black placeholder:text-zinc-400" value={newVehicle.description} onChange={e => setNewVehicle({...newVehicle, description: e.target.value})} />
               </div>
 
               <button type="submit" className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">

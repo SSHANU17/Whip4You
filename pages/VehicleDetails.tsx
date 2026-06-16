@@ -15,6 +15,7 @@ const VehicleDetails: React.FC = () => {
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<any>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isFeeInfoOpen, setIsFeeInfoOpen] = useState(false);
@@ -24,9 +25,10 @@ const VehicleDetails: React.FC = () => {
   useEffect(() => {
     if (id) {
       setLoading(true);
-      api.getVehicleById(id)
-        .then(data => {
+      Promise.all([api.getVehicleById(id), api.getConfig()])
+        .then(([data, cfg]) => {
           setVehicle(data);
+          setConfig(cfg);
           setLoading(false);
         })
         .catch(err => {
@@ -182,6 +184,11 @@ const VehicleDetails: React.FC = () => {
                   alt={`${vehicle.year} ${vehicle.make} ${vehicle.model} photo ${activeImage + 1}`}
                   className="block h-auto w-full"
                 />
+                {vehicle.isNewArrival !== false && vehicle.newArrivalExpiryDate && new Date(vehicle.newArrivalExpiryDate) > new Date() && (
+                  <div className="absolute top-5 left-5 z-20 pointer-events-none">
+                    <span className="bg-[#D4AF37] text-black px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl">New Arrival</span>
+                  </div>
+                )}
                 {vehicle.images.length > 1 && (
                   <>
                     <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-black/35 to-transparent" />
@@ -288,7 +295,7 @@ const VehicleDetails: React.FC = () => {
                 
                 <div className="mb-10">
                   <span className="text-5xl font-black gold-text display-font">
-                    {typeof vehicle.price === 'number' ? `$${vehicle.price.toLocaleString()}` : vehicle.price}
+                    {vehicle.showPrice === false ? <a href={`tel:${config?.contactPhone || '555-012-3456'}`} className="hover:text-black transition-colors underline decoration-dotted">Call for Price</a> : (typeof vehicle.price === 'number' ? `$${vehicle.price.toLocaleString()}` : vehicle.price)}
                   </span>
                   <div className="flex items-center gap-2 mt-4 cursor-pointer group" onClick={() => setIsFeeInfoOpen(true)}>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.3em] group-hover:text-black transition-colors underline decoration-dotted">Wholesale Access Fee: $799</p>
@@ -323,6 +330,7 @@ const VehicleDetails: React.FC = () => {
                 </div>
               </div>
 
+              {vehicle.showPrice !== false && (
               <div className="bg-black text-white p-8 md:p-12 rounded-[32px] md:rounded-[40px] shadow-3xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 gold-gradient opacity-10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:opacity-20 transition-opacity"></div>
                 <h3 className="text-xl font-bold mb-6 brand-font italic text-[#D4AF37]">Budget Analysis</h3>
@@ -332,6 +340,7 @@ const VehicleDetails: React.FC = () => {
                   CALCULATE TERMS <ArrowRight className="group-hover/link:translate-x-3 transition-transform" size={16} />
                 </Link>
               </div>
+              )}
             </div>
           </div>
         </div>

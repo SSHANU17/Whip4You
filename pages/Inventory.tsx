@@ -18,6 +18,8 @@ const Inventory: React.FC = () => {
   const [vinSearchTerm, setVinSearchTerm] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   
   // Comparison State
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -38,8 +40,9 @@ const Inventory: React.FC = () => {
   const [mileageMax, setMileageMax] = useState('');
 
   useEffect(() => {
-    api.getVehicles().then(data => {
+    Promise.all([api.getVehicles(), api.getConfig()]).then(([data, cfg]) => {
       setVehicles(data);
+      setConfig(cfg);
       setLoading(false);
     });
   }, []);
@@ -50,7 +53,7 @@ const Inventory: React.FC = () => {
   }, [searchParams]);
 
   const filteredVehicles = useMemo(() => {
-    let result = [...vehicles];
+    let result = vehicles.filter(v => !v.isHidden);
 
     if (searchTerm) {
       result = result.filter(v => 
@@ -101,6 +104,8 @@ const Inventory: React.FC = () => {
     return result;
   }, [vehicles, searchTerm, vinSearchTerm, makeFilter, bodyTypeFilter, transmissionFilter, colorFilter, yearMin, yearMax, priceMin, priceMax, mileageMin, mileageMax, sortBy]);
 
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, vinSearchTerm, makeFilter, bodyTypeFilter, transmissionFilter, colorFilter, yearMin, yearMax, priceMin, priceMax, mileageMin, mileageMax, sortBy]);
+
   const activeFilters = useMemo(() => {
     const chips: { label: string; key: string; value: any }[] = [];
     if (makeFilter) chips.push({ label: makeFilter, key: 'make', value: setMakeFilter });
@@ -114,6 +119,11 @@ const Inventory: React.FC = () => {
   const uniqueMakes = useMemo(() => Array.from(new Set(vehicles.map(v => v.make))).sort(), [vehicles]);
   const uniqueTransmissions = useMemo(() => Array.from(new Set(vehicles.map(v => v.transmission))).sort(), [vehicles]);
   const uniqueColors = useMemo(() => Array.from(new Set(vehicles.map(v => v.exteriorColor))).sort(), [vehicles]);
+
+
+  const itemsPerPage = config?.inventoryGridSize || 12;
+  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+  const paginatedVehicles = filteredVehicles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleClearFilters = () => {
     setSearchTerm('');
@@ -272,9 +282,12 @@ const Inventory: React.FC = () => {
             </div>
 
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8' : 'flex flex-col gap-6'}>
-              {filteredVehicles.map(v => (
+              {paginatedVehicles.map(v => (
                 <div key={v._id || v.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col">
                   <div className="relative h-56 sm:h-64 overflow-hidden block">
+                    {v.isNewArrival !== false && v.newArrivalExpiryDate && new Date(v.newArrivalExpiryDate) > new Date() && (
+                      <div className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full z-10">New Arrival</div>
+                    )}
                     <Link to={`/vehicle/${v._id || v.id}`} className="block h-full">
                       <img src={v.images[0]} alt={v.make} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     </Link>
@@ -289,7 +302,7 @@ const Inventory: React.FC = () => {
                         <p className="text-sm text-gray-400 font-medium">{v.trim}</p>
                       </Link>
                       <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
-                        {typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price}
+                        {v.showPrice === false ? <a href={`tel:${config?.contactPhone || '555-012-3456'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
                       </span>
                     </div>
                     <div className="mt-auto pt-5 sm:pt-6 border-t border-gray-100 flex gap-4">
@@ -299,6 +312,14 @@ const Inventory: React.FC = () => {
                 </div>
               ))}
             </div>
+            
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-12">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold disabled:opacity-50">Previous</button>
+                <span className="text-sm font-bold">Page {currentPage} of {totalPages}</span>
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold disabled:opacity-50">Next</button>
+              </div>
+            )}
           </main>
         </div>
       </div>
@@ -387,7 +408,7 @@ const Inventory: React.FC = () => {
                         <h4 className="font-bold text-lg">{v.year} {v.make}</h4>
                         <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">{v.model} {v.trim}</p>
                         <p className="text-[#D4AF37] font-bold text-xl mt-2 brand-font">
-                          {typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price}
+                          {v.showPrice === false ? <a href={`tel:${config?.contactPhone || '555-012-3456'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
                         </p>
                       </th>
                     ))}

@@ -91,7 +91,9 @@ const createInitialVehicleForm = (): Partial<Vehicle> => ({
   features: [],
   description: '',
   condition: 'Used',
-  status: 'Available'
+  status: 'Available',
+  showPrice: true,
+  isNewArrival: true
 });
 
 const AdminDashboard: React.FC = () => {
@@ -121,6 +123,7 @@ const AdminDashboard: React.FC = () => {
   const [newVehicle, setNewVehicle] = useState<Partial<Vehicle>>(createInitialVehicleForm());
   const [uploadingImage, setUploadingImage] = useState(false);
   const [inventoryFeedback, setInventoryFeedback] = useState<string | null>(null);
+  const [draggedImgIndex, setDraggedImgIndex] = useState<number | null>(null);
 
   // Site Configuration State
   const [siteConfig, setSiteConfig] = useState<any>(null);
@@ -302,6 +305,7 @@ const AdminDashboard: React.FC = () => {
       year: Number(newVehicle.year),
       mileage: Number(newVehicle.mileage),
       price: newVehicle.price === 'Call For Price' ? 0 : Number(newVehicle.price),
+      actualPrice: newVehicle.actualPrice ? Number(newVehicle.actualPrice) : undefined,
       images: newVehicle.images || [],
       features: newVehicle.features || []
     };
@@ -378,7 +382,7 @@ const AdminDashboard: React.FC = () => {
                   }
                 }
               }}
-              className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 hover:text-[#D4AF37] transition-colors"
+              className="text-[9px] font-bold uppercase tracking-widest text-zinc-800 hover:text-[#D4AF37] transition-colors"
             >
               First Time? Initialize System
             </button>
@@ -455,6 +459,10 @@ const AdminDashboard: React.FC = () => {
                   <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Live Leads</p>
                     <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{leads.filter(l => l.status !== 'done').length}</h3>
+                  </div>
+                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Inventory Worth</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${vehicles.reduce((sum, v) => sum + (v.actualPrice || 0), 0).toLocaleString()}</h3>
                   </div>
                 </div>
               </div>
@@ -574,6 +582,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="bg-white p-8 md:p-12 rounded-[30px] md:rounded-[40px] shadow-sm space-y-8">
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">HERO HEADLINE</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">PROMO RATE (%)</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
+                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">INVENTORY GRID SIZE (10-20)</label><input type="number" min="10" max="20" className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.inventoryGridSize || 12} onChange={e => setSiteConfig({...siteConfig, inventoryGridSize: parseInt(e.target.value) || 12})} /></div>
                   <button onClick={handleUpdateConfig} className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">Update Global Config</button>
                 </div>
               </div>
@@ -767,6 +776,20 @@ const AdminDashboard: React.FC = () => {
                     <option value="Used">Used</option>
                     <option value="Certified">Certified</option>
                     <option value="New">New</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-700">SHOW PRICE</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.showPrice === false ? 'false' : 'true'} onChange={e => setNewVehicle({...newVehicle, showPrice: e.target.value === 'true'})}>
+                    <option value="true">Yes (Show Price)</option>
+                    <option value="false">No (Call for Price)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-zinc-700">NEW ARRIVAL</label>
+                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.isNewArrival === false ? 'false' : 'true'} onChange={e => setNewVehicle({...newVehicle, isNewArrival: e.target.value === 'true'})}>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
                   </select>
                 </div>
                 <div className="space-y-2">

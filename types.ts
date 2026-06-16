@@ -22,6 +22,11 @@ export interface Vehicle {
   status: 'Available' | 'Pending' | 'Sold';
   condition?: 'New' | 'Used' | 'Certified';
   description: string;
+  showPrice?: boolean;
+  actualPrice?: number;
+  isHidden?: boolean;
+  isNewArrival?: boolean;
+  newArrivalExpiryDate?: string;
 }
 
 export interface ContactForm {

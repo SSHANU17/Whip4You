@@ -396,7 +396,7 @@ const AdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-off-white flex flex-col lg:flex-row text-zinc-900">
       {/* Mobile Header */}
       <div className="lg:hidden bg-black text-white p-6 flex justify-between items-center sticky top-0 z-50 border-b border-white/10">
-        <div className="text-xl font-bold brand-font italic tracking-[0.12em] text-white">MILESTONE <span className="text-[#D4AF37]">SYSTEMS</span></div>
+        <div className="text-xl font-bold brand-font italic tracking-[0.12em] text-white">WHIP4YOU <span className="text-[#D4AF37]">SYSTEMS</span></div>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-[#D4AF37]">
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -413,9 +413,9 @@ const AdminDashboard: React.FC = () => {
       <aside className={`w-64 ${isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'} bg-black text-white flex flex-col fixed lg:sticky top-0 lg:top-0 left-0 h-screen lg:h-screen z-40 border-r border-white/10 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="hidden lg:flex items-center justify-between p-6 border-b border-white/10">
           {isSidebarExpanded ? (
-            <div className="text-lg font-bold brand-font italic tracking-[0.12em] text-white">MILESTONE <span className="text-[#D4AF37]">SYSTEMS</span></div>
+            <div className="text-lg font-bold brand-font italic tracking-[0.12em] text-white">WHIP4YOU <span className="text-[#D4AF37]">SYSTEMS</span></div>
           ) : (
-            <div className="text-base font-bold brand-font italic text-[#D4AF37]">MM</div>
+            <div className="text-base font-bold brand-font italic text-[#D4AF37]">W4U</div>
           )}
           <button
             onClick={() => setIsSidebarExpanded(prev => !prev)}

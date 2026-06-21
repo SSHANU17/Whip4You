@@ -16,7 +16,7 @@ const About: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black"></div>
         </div>
         <div className="container mx-auto px-6 relative z-10">
-          <span className="text-[#D4AF37] font-bold uppercase tracking-[0.4em] mb-4 block">The Milestone Story</span>
+          <span className="text-[#D4AF37] font-bold uppercase tracking-[0.4em] mb-4 block">The Whip4You Story</span>
           <h1 className="text-5xl md:text-8xl font-bold text-white mb-6 brand-font italic">Luxury & Value</h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
             Revolutionizing the pre-owned market in British Columbia since 2018.
@@ -33,7 +33,7 @@ const About: React.FC = () => {
                 Wholesale Pricing, <br/><span className="gold-text italic">Redefined.</span>
               </h2>
               <p className="text-gray-900 text-lg leading-relaxed mb-8">
-                For years, the "wholesale" advantage was locked behind dealer licenses. We founded Milestone Motors with a simple mission: break those walls down. Founded by <span className="text-black font-bold">Amanjot Singh</span>, we bring transparency and value to the forefront of the luxury automotive experience.
+                For years, the "wholesale" advantage was locked behind dealer licenses. We founded Whip4You with a simple mission: break those walls down. Founded by <span className="text-black font-bold">Amanjot Singh</span>, we bring transparency and value to the forefront of the luxury automotive experience.
               </p>
               <div className="space-y-6">
                 <div className="flex gap-4 p-6 rounded-3xl bg-gray-50 border border-gray-100">

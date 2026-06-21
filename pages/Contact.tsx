@@ -212,7 +212,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
             </span>
           </div>
           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-white mb-6 brand-font italic tracking-tighter leading-none">Connect.</h1>
-          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.6em] text-[10px] md:text-sm">Experience Milestone Motors</p>
+          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.6em] text-[10px] md:text-sm">Experience Whip4You</p>
         </div>
       </section>
 

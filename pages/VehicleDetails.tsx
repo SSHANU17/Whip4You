@@ -127,8 +127,8 @@ const VehicleDetails: React.FC = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Milestone Motors: ${vehicle?.year} ${vehicle?.make} ${vehicle?.model}`,
-          text: `Check out this ${vehicle?.trim} at Milestone Motors!`,
+          title: `Whip4You: ${vehicle?.year} ${vehicle?.make} ${vehicle?.model}`,
+          text: `Check out this ${vehicle?.trim} at Whip4You!`,
           url: window.location.href,
         });
       } catch (err) {

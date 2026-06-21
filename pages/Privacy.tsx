@@ -20,7 +20,7 @@ const Privacy: React.FC = () => {
             <ChevronLeft size={14} /> Return to Showroom
           </Link>
           <h1 className="text-5xl md:text-7xl font-bold brand-font italic mb-6">Privacy Policy</h1>
-          <p className="text-gray-400 max-w-2xl font-light tracking-wide uppercase text-xs">Last Updated: February 2024 • Milestone Motors Digital Security</p>
+          <p className="text-gray-400 max-w-2xl font-light tracking-wide uppercase text-xs">Last Updated: February 2024 • Whip4You Digital Security</p>
         </div>
       </section>
 
@@ -53,7 +53,7 @@ const Privacy: React.FC = () => {
           <article className="prose prose-zinc max-w-none text-gray-600 space-y-10">
             <section>
               <h2 className="text-2xl font-bold text-black brand-font mb-4">1. Information Collection</h2>
-              <p className="leading-relaxed">When you visit Milestone Motors, we collect information you provide directly to us via credit applications, trade-in requests, and contact forms. This may include your name, email, phone number, financial history, and vehicle preferences.</p>
+              <p className="leading-relaxed">When you visit Whip4You, we collect information you provide directly to us via credit applications, trade-in requests, and contact forms. This may include your name, email, phone number, financial history, and vehicle preferences.</p>
             </section>
 
             <section>

@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
               <BrandLogo className="h-12 w-12 sm:h-14 sm:w-14 shrink-0" />
               <div className="flex min-w-0 flex-col">
                 <span className="text-2xl sm:text-3xl font-black brand-font tracking-[0.14em] sm:tracking-[0.2em] truncate">
-                  MILESTONE <span className="text-[#D4AF37]">MOTORS</span>
+                  WHIP<span className="text-[#D4AF37]">4</span>YOU
                 </span>
                 <span className="text-[9px] font-black uppercase tracking-[0.45em] text-[#D4AF37]">
                   Premium Motors
@@ -145,7 +145,7 @@ const Footer: React.FC = () => {
         <div className="border-t border-white/5 pt-8 md:pt-12 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8 text-center md:text-left">
           <div className="flex flex-col gap-2">
             <p className="text-zinc-600 text-[9px] font-black uppercase tracking-[0.3em]">
-              (C) {new Date().getFullYear()} MILESTONE MOTORS GROUP. ALL RIGHTS RESERVED.
+              (C) {new Date().getFullYear()} WHIP4YOU GROUP. ALL RIGHTS RESERVED.
             </p>
             <p className="text-zinc-800 text-[8px] font-bold uppercase tracking-widest">
               DEALER DOCUMENTATION FEE ($799) | BC DEALER LICENSE #40321

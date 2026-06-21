@@ -20,7 +20,7 @@ export const BODY_TYPES = [
 
 export const MOCK_REVIEWS = [
   { id: '1', name: 'John Doe', rating: 5, text: 'Great experience! Found exactly what I was looking for at a fair price.', date: '2 days ago' },
-  { id: '2', name: 'Jane Smith', rating: 5, text: 'Professional staff and no-pressure sales. Highly recommend Milestone Motors.', date: '1 week ago' },
+  { id: '2', name: 'Jane Smith', rating: 5, text: 'Professional staff and no-pressure sales. Highly recommend Whip4You.', date: '1 week ago' },
   { id: '3', name: 'Mike Johnson', rating: 4, text: 'Smooth trade-in process. Got a decent value for my old sedan.', date: '2 weeks ago' }
 ];
 

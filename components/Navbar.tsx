@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
           <Link to="/" className="flex min-w-0 items-center gap-3 sm:gap-4 group">
             <BrandLogo className="h-10 w-10 sm:h-12 sm:w-12 transition-transform duration-500 group-hover:scale-105 shrink-0" />
             <div className="flex flex-col">
-              <span className="text-base sm:text-xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">MILESTONE <span className="text-[#D4AF37]">MOTORS</span></span>
+              <span className="text-base sm:text-xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
               <span className="hidden sm:block text-[8px] font-black uppercase tracking-[0.5em] text-[#D4AF37] leading-none">Premium Motors</span>
             </div>
           </Link>
@@ -185,7 +185,7 @@ const Navbar: React.FC = () => {
               <div className="flex justify-between items-center mb-6 sm:mb-10 gap-4">
                  <div className="flex min-w-0 items-center gap-3">
                    <BrandLogo className="h-10 w-10 sm:h-12 sm:w-12 shrink-0" />
-                   <span className="text-xl sm:text-2xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">MILESTONE <span className="text-[#D4AF37]">MOTORS</span></span>
+                   <span className="text-xl sm:text-2xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
                  </div>
                  <button onClick={() => setIsOpen(false)} className="text-white shrink-0"><X size={32} /></button>
               </div>

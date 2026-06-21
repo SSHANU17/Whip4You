@@ -410,7 +410,7 @@ const AdminDashboard: React.FC = () => {
         />
       )}
 
-      <aside className={`w-64 ${isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'} bg-black text-white flex flex-col fixed lg:sticky inset-y-0 left-0 h-full z-40 border-r border-white/10 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`w-64 ${isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'} bg-black text-white flex flex-col fixed lg:sticky top-0 lg:top-0 left-0 h-screen lg:h-screen z-40 border-r border-white/10 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="hidden lg:flex items-center justify-between p-6 border-b border-white/10">
           {isSidebarExpanded ? (
             <div className="text-lg font-bold brand-font italic tracking-[0.12em] text-white">MILESTONE <span className="text-[#D4AF37]">SYSTEMS</span></div>
@@ -853,7 +853,28 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">NEW ARRIVAL</label>
-                  <select className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" value={newVehicle.isNewArrival === false ? 'false' : 'true'} onChange={e => setNewVehicle({...newVehicle, isNewArrival: e.target.value === 'true'})}>
+                  <select 
+                    className="w-full bg-white border-2 border-zinc-200 p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black" 
+                    value={newVehicle.isNewArrival === false ? 'false' : 'true'} 
+                    onChange={e => {
+                      const isNew = e.target.value === 'true';
+                      if (isNew) {
+                        const newExpiry = new Date();
+                        newExpiry.setDate(newExpiry.getDate() + 14);
+                        setNewVehicle({
+                          ...newVehicle,
+                          isNewArrival: true,
+                          newArrivalExpiryDate: newExpiry.toISOString()
+                        });
+                      } else {
+                        setNewVehicle({
+                          ...newVehicle,
+                          isNewArrival: false,
+                          newArrivalExpiryDate: null as any
+                        });
+                      }
+                    }}
+                  >
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>

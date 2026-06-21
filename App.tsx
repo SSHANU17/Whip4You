@@ -97,8 +97,7 @@ const AppFrame: React.FC<AppFrameProps> = ({
 
 
           <div className="relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-1000">
-            <BrandLogo className="h-28 w-28 sm:h-40 sm:w-40 md:h-52 md:w-52 mb-6 sm:mb-8 animate-pulse drop-shadow-[0_0_40px_rgba(212,175,55,0.28)]" />
-            <p className="text-[#D4AF37] font-black uppercase tracking-[0.35em] sm:tracking-[0.5em] text-[9px] md:text-sm mb-6 text-center">MILESTONE MOTORS</p>
+            <p className="text-[#D4AF37] font-black uppercase tracking-[0.35em] sm:tracking-[0.5em] text-[10px] md:text-base mb-8 text-center drop-shadow-[0_0_30px_rgba(212,175,55,0.28)]">MILESTONE MOTORS</p>
 
             <div className="h-24 flex flex-col items-center justify-center gap-6">
               {!isStarting ? (

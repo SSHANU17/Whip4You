@@ -387,10 +387,10 @@ const Inventory: React.FC = () => {
       {/* Comparison Modal */}
       {isCompareModalOpen && (
         <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-6xl h-full max-h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-gray-200">
+          <div className="bg-white w-full max-w-6xl h-full max-h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-gray-200 text-zinc-900">
             <div className="p-6 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold brand-font">Vehicle Comparison</h2>
+                <h2 className="text-2xl font-bold brand-font text-zinc-900">Vehicle Comparison</h2>
                 <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Side-by-side technical specifications</p>
               </div>
               <button 
@@ -413,7 +413,7 @@ const Inventory: React.FC = () => {
                     {vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => (
                       <th key={v._id || v.id} className="p-8 w-1/4 border-r border-gray-100">
                         <img src={v.images[0]} className="w-full h-32 object-cover rounded-xl mb-4 shadow-sm" alt="" />
-                        <h4 className="font-bold text-lg">{v.year} {v.make}</h4>
+                        <h4 className="font-bold text-lg text-zinc-900">{v.year} {v.make}</h4>
                         <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">{v.model} {v.trim}</p>
                         <p className="text-[#D4AF37] font-bold text-xl mt-2 brand-font">
                           {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
@@ -483,7 +483,7 @@ const ComparisonRow: React.FC<{ label: string; values: string[]; isMono?: boolea
   <tr>
     <td className="p-6 font-bold text-[10px] uppercase tracking-widest text-gray-400 bg-gray-50/30 border-r border-gray-100">{label}</td>
     {values.map((v, i) => (
-      <td key={i} className={`p-6 border-r border-gray-100 font-medium text-sm ${isMono ? 'font-mono text-xs' : ''}`}>
+      <td key={i} className={`p-6 border-r border-gray-100 font-medium text-sm text-zinc-900 ${isMono ? 'font-mono text-xs' : ''}`}>
         {v}
       </td>
     ))}

@@ -356,7 +356,7 @@ const AdminDashboard: React.FC = () => {
           <div className="gold-gradient w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-8">
             <ShieldCheck size={32} className="text-black" />
           </div>
-          <h2 className="text-2xl font-bold mb-10 brand-font italic text-center uppercase">Secure Gateway</h2>
+          <h2 className="text-2xl font-bold mb-10 brand-font italic text-center uppercase text-zinc-900">Secure Gateway</h2>
           <input required type="email" placeholder="EMAIL" className="w-full bg-zinc-50 p-5 rounded-2xl mb-4 outline-none border-b border-zinc-200 focus:border-[#D4AF37] transition-all text-black caret-black placeholder:text-zinc-400" value={email} onChange={e => setEmail(e.target.value)} />
           <input required type="password" placeholder="PASSWORD" className="w-full bg-zinc-50 p-5 rounded-2xl mb-8 outline-none border-b border-zinc-200 focus:border-[#D4AF37] transition-all text-black caret-black placeholder:text-zinc-400" value={password} onChange={e => setPassword(e.target.value)} />
           <button className="w-full bg-black text-white py-5 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px]">Authorize Entry</button>
@@ -393,10 +393,10 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-off-white flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-off-white flex flex-col lg:flex-row text-zinc-900">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-black text-white p-6 flex justify-between items-center sticky top-0 z-50">
-        <div className="text-xl font-black brand-font italic tracking-[0.15em] text-white">W4U <span className="text-[#D4AF37]">SYSTEMS</span></div>
+      <div className="lg:hidden bg-black text-white p-6 flex justify-between items-center sticky top-0 z-50 border-b border-white/10">
+        <div className="text-xl font-bold brand-font italic tracking-[0.12em] text-white">MILESTONE <span className="text-[#D4AF37]">SYSTEMS</span></div>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-[#D4AF37]">
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -410,12 +410,12 @@ const AdminDashboard: React.FC = () => {
         />
       )}
 
-      <aside className={`w-80 ${isSidebarExpanded ? 'lg:w-80' : 'lg:w-24'} bg-black text-white flex flex-col fixed lg:sticky inset-y-0 left-0 h-full z-40 border-r border-white/5 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="hidden lg:flex items-center justify-between p-6 border-b border-white/5">
+      <aside className={`w-64 ${isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'} bg-black text-white flex flex-col fixed lg:sticky inset-y-0 left-0 h-full z-40 border-r border-white/10 transition-all duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="hidden lg:flex items-center justify-between p-6 border-b border-white/10">
           {isSidebarExpanded ? (
-            <div className="text-xl font-black brand-font italic tracking-[0.18em] text-white">W4U <span className="text-[#D4AF37]">SYSTEMS</span></div>
+            <div className="text-lg font-bold brand-font italic tracking-[0.12em] text-white">MILESTONE <span className="text-[#D4AF37]">SYSTEMS</span></div>
           ) : (
-            <div className="text-lg font-black brand-font italic text-white">W4U</div>
+            <div className="text-base font-bold brand-font italic text-[#D4AF37]">MM</div>
           )}
           <button
             onClick={() => setIsSidebarExpanded(prev => !prev)}
@@ -425,20 +425,33 @@ const AdminDashboard: React.FC = () => {
             {isSidebarExpanded ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
           </button>
         </div>
-        <nav className={`flex-1 ${isSidebarExpanded ? 'px-8' : 'px-3'} space-y-4 mt-8 lg:mt-6`}>
+        <nav className={`flex-1 ${isSidebarExpanded ? 'px-4' : 'px-2'} space-y-2 mt-8 lg:mt-6`}>
           {['overview', 'inventory', 'leads', 'reviews', 'config'].map(id => (
-            <button key={id} onClick={() => { setActiveTab(id as any); setIsSidebarOpen(false); }} className={`w-full flex items-center ${isSidebarExpanded ? 'gap-6 px-8 justify-start' : 'justify-center px-0'} py-4 rounded-2xl font-black uppercase tracking-[0.3em] text-[9px] ${activeTab === id ? 'bg-[#D4AF37] text-black' : 'text-zinc-300 hover:bg-white/10 hover:text-white'}`}>
-              {id === 'overview' && <TrendingUp size={18} />}
-              {id === 'inventory' && <Car size={18} />}
-              {id === 'leads' && <FileText size={18} />}
-              {id === 'reviews' && <Star size={18} />}
-              {id === 'config' && <Settings size={18} />}
+            <button
+              key={id}
+              onClick={() => { setActiveTab(id as any); setIsSidebarOpen(false); }}
+              className={`w-full flex items-center ${
+                isSidebarExpanded ? 'gap-4 px-4 justify-start' : 'justify-center px-0'
+              } py-3.5 rounded-xl font-bold uppercase tracking-[0.2em] text-[9px] transition-all duration-300 border-l-4 ${
+                activeTab === id
+                  ? 'bg-white/5 border-[#D4AF37] text-[#D4AF37] shadow-[inset_4px_0_12px_rgba(212,175,55,0.08)]'
+                  : 'border-transparent text-zinc-400 hover:bg-white/5 hover:text-zinc-200'
+              }`}
+            >
+              {id === 'overview' && <TrendingUp size={16} />}
+              {id === 'inventory' && <Car size={16} />}
+              {id === 'leads' && <FileText size={16} />}
+              {id === 'reviews' && <Star size={16} />}
+              {id === 'config' && <Settings size={16} />}
               <span className={isSidebarExpanded ? '' : 'lg:hidden'}>{id.toUpperCase()}</span>
             </button>
           ))}
         </nav>
-        <div className={isSidebarExpanded ? 'p-12' : 'p-4'}>
-          <button onClick={() => { localStorage.removeItem('w4u_admin_token'); setIsLoggedIn(false); }} className="w-full text-red-500 font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2">
+        <div className="p-4 border-t border-white/10">
+          <button 
+            onClick={() => { localStorage.removeItem('w4u_admin_token'); setIsLoggedIn(false); }} 
+            className="w-full text-red-500 hover:text-red-400 font-bold uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 py-3.5 rounded-xl hover:bg-red-500/5 transition-all"
+          >
             <LogOut size={14} />
             <span className={isSidebarExpanded ? '' : 'lg:hidden'}>Log Out</span>
           </button>
@@ -450,7 +463,7 @@ const AdminDashboard: React.FC = () => {
           <>
             {activeTab === 'overview' && (
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-zinc-900">Operations Analytics</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-zinc-900" style={{ color: '#18181b' }}>Operations Analytics</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
                   <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-[#D4AF37]">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Units</p>
@@ -471,7 +484,7 @@ const AdminDashboard: React.FC = () => {
             {activeTab === 'inventory' && (
               <div className="space-y-10">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10 md:mb-16">
-                  <h1 className="text-3xl md:text-4xl font-bold brand-font italic">Inventory Control</h1>
+                  <h1 className="text-3xl md:text-4xl font-bold brand-font italic text-zinc-900" style={{ color: '#18181b' }}>Inventory Control</h1>
                   <button 
                     onClick={() => {
                       setInventoryFeedback(null);
@@ -578,7 +591,7 @@ const AdminDashboard: React.FC = () => {
             {activeTab === 'leads' && (
               <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-10">
-                  <h1 className="text-3xl md:text-4xl font-bold brand-font italic">Lead Hub</h1>
+                  <h1 className="text-3xl md:text-4xl font-bold brand-font italic text-zinc-900" style={{ color: '#18181b' }}>Lead Hub</h1>
                   <div className="flex items-center gap-3">
                     <select
                       value={leadStatusFilter}
@@ -627,7 +640,7 @@ const AdminDashboard: React.FC = () => {
 
             {activeTab === 'config' && (
               <div className="max-w-4xl space-y-10">
-                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic">Site Config</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-zinc-900" style={{ color: '#18181b' }}>Site Config</h1>
                 <div className="bg-white p-8 md:p-12 rounded-[30px] md:rounded-[40px] shadow-sm space-y-8">
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">HERO HEADLINE</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">PROMO RATE (%)</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
@@ -639,10 +652,10 @@ const AdminDashboard: React.FC = () => {
 
             {activeTab === 'reviews' && (
               <div className="space-y-6">
-                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic">Reviews Queue</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-zinc-900" style={{ color: '#18181b' }}>Reviews Queue</h1>
                 {reviews.map(review => (
                   <div key={review._id || review.id} className={`bg-white p-6 md:p-8 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center transition-opacity gap-6 ${!review.visible ? 'opacity-40' : ''}`}>
-                    <div><h4 className="font-bold">{review.name}</h4><p className="text-sm italic">"{review.text}"</p></div>
+                    <div><h4 className="font-bold text-black">{review.name}</h4><p className="text-sm italic text-zinc-600">"{review.text}"</p></div>
                     <button onClick={() => handleReviewToggle(review)} className="w-full sm:w-auto p-3 bg-zinc-50 rounded-xl flex justify-center">{review.visible ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                   </div>
                 ))}
@@ -654,9 +667,9 @@ const AdminDashboard: React.FC = () => {
 
       {selectedLead && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={closeLeadModal}>
-          <div className="bg-white w-full max-w-2xl rounded-[30px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white w-full max-w-2xl rounded-[30px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[90vh] text-zinc-900" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 md:p-10 border-b border-zinc-100 flex justify-between items-center">
-              <h2 className="text-xl md:text-2xl font-bold brand-font italic">Lead Analysis</h2>
+              <h2 className="text-xl md:text-2xl font-bold brand-font italic text-zinc-900">Lead Analysis</h2>
               <button onClick={closeLeadModal} className="w-9 h-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-700 hover:bg-zinc-200">
                 <X size={20} className="md:w-6 md:h-6" />
               </button>
@@ -748,13 +761,13 @@ const AdminDashboard: React.FC = () => {
 
       {isAddingVehicle && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-8" onClick={closeVehicleModal}>
-          <div className="bg-white w-full max-w-4xl rounded-[20px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[95vh]" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white w-full max-w-4xl rounded-[20px] md:rounded-[50px] overflow-hidden flex flex-col max-h-[95vh] text-zinc-900" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 md:p-10 border-b border-zinc-100 flex justify-between items-center bg-white sticky top-0 z-10">
-              <h2 className="text-lg md:text-2xl font-bold brand-font italic">
+              <h2 className="text-lg md:text-2xl font-bold brand-font italic text-zinc-900">
                 {editingVehicleId ? 'Edit Asset' : 'New Asset Registration'}
               </h2>
-              <button onClick={closeVehicleModal}>
-                <X size={20} className="md:w-8 md:h-8" />
+              <button onClick={closeVehicleModal} className="w-9 h-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-700 hover:bg-zinc-200 transition-colors">
+                <X size={20} className="md:w-6 md:h-6" />
               </button>
             </div>
             <form onSubmit={handleSaveVehicle} className="p-4 md:p-12 space-y-5 md:space-y-10 overflow-y-auto">

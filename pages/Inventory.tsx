@@ -9,6 +9,14 @@ import {
 import { api } from '../api.ts';
 import { Vehicle, SortOption } from '../types.ts';
 
+const capitalizeWords = (str?: string) => {
+  if (!str) return '';
+  return str
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const Inventory: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -186,7 +194,7 @@ const Inventory: React.FC = () => {
                   <Info size={16} className="text-[#D4AF37] flex-shrink-0 mt-0.5" />
                   <div>
                     <h4 className="text-[10px] font-bold uppercase tracking-widest mb-1">Comparison Tool</h4>
-                    <p className="text-[10px] text-gray-500 leading-relaxed italic">Select up to 3 whips using the <ArrowRightLeft size={10} className="inline mx-0.5" /> icon on any car to compare specs side-by-side.</p>
+                    <p className="text-[10px] text-gray-500 leading-relaxed italic">Select up to 3 vehicles using the <ArrowRightLeft size={10} className="inline mx-0.5" /> icon on any car to compare specs side-by-side.</p>
                   </div>
                 </div>
 
@@ -248,7 +256,7 @@ const Inventory: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl shadow-sm mb-6 md:mb-8 flex flex-col gap-4 border border-gray-100">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-gray-500">Found <span className="text-black font-bold">{filteredVehicles.length}</span> matching whips</p>
+                  <p className="text-sm font-medium text-gray-500">Found <span className="text-black font-bold">{filteredVehicles.length}</span> matching vehicles</p>
                   <button type="button" onClick={() => setIsMobileFiltersOpen((prev) => !prev)} className="lg:hidden inline-flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-black">
                     <SlidersHorizontal size={14} className="text-[#D4AF37]" /> {isMobileFiltersOpen ? 'Hide Filters' : 'Show Filters'}
                   </button>
@@ -302,7 +310,7 @@ const Inventory: React.FC = () => {
                         <p className="text-sm text-gray-400 font-medium">{v.trim}</p>
                       </Link>
                       <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
-                        {v.showPrice === false ? <a href={`tel:${config?.contactPhone || '555-012-3456'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
+                        {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
                       </span>
                     </div>
                     <div className="mt-auto pt-5 sm:pt-6 border-t border-gray-100 flex gap-4">
@@ -408,7 +416,7 @@ const Inventory: React.FC = () => {
                         <h4 className="font-bold text-lg">{v.year} {v.make}</h4>
                         <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">{v.model} {v.trim}</p>
                         <p className="text-[#D4AF37] font-bold text-xl mt-2 brand-font">
-                          {v.showPrice === false ? <a href={`tel:${config?.contactPhone || '555-012-3456'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
+                          {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
                         </p>
                       </th>
                     ))}
@@ -423,14 +431,14 @@ const Inventory: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  <ComparisonRow label="Mileage" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => `${v.mileage.toLocaleString()} km`)} />
-                  <ComparisonRow label="Body Type" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.bodyType)} />
-                  <ComparisonRow label="Transmission" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.transmission)} />
-                  <ComparisonRow label="Engine" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.engine)} />
-                  <ComparisonRow label="Fuel Type" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.fuelType)} />
-                  <ComparisonRow label="Exterior" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.exteriorColor)} />
-                  <ComparisonRow label="Interior" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.interiorColor)} />
-                  <ComparisonRow label="VIN" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.vin)} isMono />
+                   <ComparisonRow label="Mileage" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => `${v.mileage.toLocaleString()} km`)} />
+                  <ComparisonRow label="Body Type" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => capitalizeWords(v.bodyType))} />
+                  <ComparisonRow label="Transmission" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => capitalizeWords(v.transmission))} />
+                  <ComparisonRow label="Engine" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => capitalizeWords(v.engine))} />
+                  <ComparisonRow label="Fuel Type" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => capitalizeWords(v.fuelType))} />
+                  <ComparisonRow label="Exterior" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => capitalizeWords(v.exteriorColor))} />
+                  <ComparisonRow label="Interior" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => capitalizeWords(v.interiorColor))} />
+                  <ComparisonRow label="VIN" values={vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => v.vin.toUpperCase())} isMono />
                   <tr className="align-top">
                     <td className="p-6 font-bold text-[10px] uppercase tracking-widest text-gray-400 bg-gray-50/30 border-r border-gray-100">Key Features</td>
                     {vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => (

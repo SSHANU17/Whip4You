@@ -13,17 +13,19 @@ interface GarageDrawerProps {
 const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
   const [savedCars, setSavedCars] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(false);
+  const [config, setConfig] = useState<any>(null);
 
   const loadFavorites = async () => {
     setLoading(true);
     try {
       const favorites = JSON.parse(localStorage.getItem('w4u_favorites') || '[]');
+      const [allVehicles, cfg] = await Promise.all([api.getVehicles(), api.getConfig()]);
+      setConfig(cfg);
       if (favorites.length === 0) {
         setSavedCars([]);
         setLoading(false);
         return;
       }
-      const allVehicles = await api.getVehicles();
       const filtered = allVehicles.filter((v: Vehicle) => favorites.includes(v._id || v.id));
       setSavedCars(filtered);
     } catch (err) {
@@ -78,10 +80,10 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
               </div>
               <div>
                 <h3 className="font-bold text-xl text-black">Empty Collection</h3>
-                <p className="text-zinc-400 text-sm mt-2">Explore the fleet to add whips to your garage.</p>
+                <p className="text-zinc-400 text-sm mt-2">Explore the fleet to add vehicles to your garage.</p>
               </div>
               <Link to="/inventory" onClick={onClose} className="bg-black text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all">
-                Browse Whips
+                Browse Vehicles
               </Link>
             </div>
           ) : (
@@ -94,7 +96,15 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
                       <h4 className="font-bold text-black">{car.year} {car.make}</h4>
                       <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{car.model} {car.trim}</p>
                     </div>
-                    <span className="font-bold text-[#D4AF37] brand-font italic">${typeof car.price === 'number' ? car.price.toLocaleString() : car.price}</span>
+                    <span className="font-bold text-[#D4AF37] brand-font italic">
+                      {car.showPrice === false ? (
+                        <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="underline hover:text-[#D4AF37]" onClick={(e) => e.stopPropagation()}>
+                          Call for Price
+                        </a>
+                      ) : (
+                        typeof car.price === 'number' ? `$${car.price.toLocaleString()}` : car.price
+                      )}
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     <Link to={`/vehicle/${car._id || car.id}`} onClick={onClose} className="flex-1 bg-zinc-50 text-center py-3 rounded-xl text-[9px] font-black uppercase tracking-widest text-black hover:bg-black hover:text-white transition-all">

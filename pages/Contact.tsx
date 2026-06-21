@@ -83,7 +83,10 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
   const [tradeCondition, setTradeCondition] = useState<TradeCondition>('Good');
   const [appraisalRange, setAppraisalRange] = useState<{min: number, max: number} | null>(null);
 
+  const [config, setConfig] = useState<any>(null);
+
   useEffect(() => {
+    api.getConfig().then(setConfig).catch(err => console.error(err));
     const hour = new Date().getHours();
     if (hour >= 11 && hour < 20) {
       setIsLive(true);
@@ -209,7 +212,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
             </span>
           </div>
           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-white mb-6 brand-font italic tracking-tighter leading-none">Connect.</h1>
-          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.6em] text-[10px] md:text-sm">Experience Whip4You Premium</p>
+          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.6em] text-[10px] md:text-sm">Experience Milestone Motors</p>
         </div>
       </section>
 
@@ -217,7 +220,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
           
           <div className="lg:col-span-4 space-y-6">
-            <a href="tel:7789706007" className="block group">
+            <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="block group">
               <div className="bg-white p-5 md:p-8 rounded-[20px] md:rounded-[40px] shadow-xl hover:shadow-2xl transition-all border border-gray-100 flex items-center justify-between">
                 <div className="flex items-center gap-4 md:gap-6">
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black text-[#D4AF37] flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors shrink-0">
@@ -225,7 +228,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Call Hub</h4>
-                    <p className="text-lg md:text-xl font-bold group-hover:text-[#D4AF37] transition-colors truncate font-display text-black">(778) 970-6007</p>
+                    <p className="text-lg md:text-xl font-bold group-hover:text-[#D4AF37] transition-colors truncate font-display text-black">{config?.contactPhone || '(604) 712-1994'}</p>
                   </div>
                 </div>
               </div>
@@ -238,8 +241,19 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   <div className="flex gap-4">
                     <MapPin className="text-[#D4AF37] flex-shrink-0" size={24} />
                     <p className="text-gray-300 leading-relaxed text-sm">
-                      102-20771 Langley Bypass,<br />
-                      Langley, BC V3A 5E8
+                      {config?.address ? (
+                        config.address.split(',').map((part: string, idx: number) => (
+                          <React.Fragment key={idx}>
+                            {part.trim()}
+                            {idx < config.address.split(',').length - 1 && idx % 2 === 0 ? <br /> : idx < config.address.split(',').length - 1 ? ', ' : ''}
+                          </React.Fragment>
+                        ))
+                      ) : (
+                        <>
+                          102-20771 Langley Bypass,<br />
+                          Langley, BC V3A 5E8
+                        </>
+                      )}
                     </p>
                   </div>
                   <div className="flex gap-4">
@@ -251,7 +265,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   </div>
                </div>
                <a 
-                 href="https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8" 
+                 href={config?.address ? `https://maps.google.com/?q=${encodeURIComponent(config.address)}` : "https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8"} 
                  target="_blank" 
                  rel="noreferrer"
                  className="mt-10 md:mt-12 flex items-center justify-center gap-3 bg-white text-black py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-[#D4AF37] transition-all shadow-lg"

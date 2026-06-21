@@ -485,43 +485,92 @@ const AdminDashboard: React.FC = () => {
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-1 gap-6">
-                  {vehicles.map(v => (
-                    <div key={v._id || v.id} className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between border border-zinc-100 group hover:border-[#D4AF37] transition-all gap-6">
-                      <div className="flex items-center gap-6 md:gap-10">
-                        <img 
-                          src={v.images?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80'} 
-                          className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shrink-0" 
-                          alt="" 
-                        />
-                        <div className="min-w-0">
-                          <h4 className="font-bold text-lg md:text-xl text-black truncate">{v.year} {v.make} {v.model}</h4>
-                          <p className="text-[9px] font-black uppercase text-zinc-600 tracking-widest truncate">{v.vin} | {v.trim}</p>
-                          <p className="text-[#D4AF37] font-bold mt-1">${v.price.toLocaleString()}</p>
+                <div className="space-y-10">
+                  <div>
+                    <h3 className="text-xl font-bold mb-6 text-black brand-font">Available Vehicles</h3>
+                    <div className="grid grid-cols-1 gap-6">
+                      {vehicles.filter(v => v.status !== 'Sold').map(v => (
+                        <div key={v._id || v.id} className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between border border-zinc-100 group hover:border-[#D4AF37] transition-all gap-6">
+                          <div className="flex items-center gap-6 md:gap-10">
+                            <img src={v.images?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80'} className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shrink-0" alt="" />
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-lg md:text-xl text-black truncate">{v.year} {v.make} {v.model}</h4>
+                              <p className="text-[9px] font-black uppercase text-zinc-600 tracking-widest truncate">{v.vin} | {v.trim}</p>
+                              <p className="text-[#D4AF37] font-bold mt-1">${typeof v.price === 'number' ? v.price.toLocaleString() : v.price}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+                            <button
+                              onClick={async () => {
+                                const updated = await api.updateVehicle(v._id || v.id, { isHidden: !v.isHidden });
+                                setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
+                              }}
+                              className={`p-3 md:p-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-colors ${v.isHidden ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-zinc-100 text-zinc-700 hover:text-black hover:bg-zinc-200'}`}
+                              title={v.isHidden ? "Show Vehicle" : "Hide Vehicle"}
+                            >
+                              {v.isHidden ? "Unhide" : "Hide"}
+                            </button>
+                            <button
+                              onClick={async () => {
+                                const updated = await api.updateVehicle(v._id || v.id, { status: 'Sold' });
+                                setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
+                              }}
+                              className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-blue-500 hover:bg-blue-50 transition-colors font-bold text-[10px] uppercase tracking-widest"
+                              title="Mark as Sold"
+                            >
+                              Mark Sold
+                            </button>
+                            <button onClick={() => handleStartEditVehicle(v)} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-600 hover:text-black transition-colors" title="Edit vehicle"><Edit3 size={18} /></button>
+                            <button onClick={async () => { if(confirm('Authorize permanent deletion of this asset?')) { await api.deleteVehicle(v._id || v.id); setVehicles(prev => prev.filter(item => (item._id || item.id) !== (v._id || v.id))); } }} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-red-400 hover:bg-red-50 transition-colors"><Trash2 size={18} /></button>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                        <button
-                          onClick={() => handleStartEditVehicle(v)}
-                          className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-600 hover:text-black transition-colors"
-                          title="Edit vehicle"
-                        >
-                          <Edit3 size={18} />
-                        </button>
-                        <button 
-                          onClick={async () => {
-                            if(confirm('Authorize permanent deletion of this asset?')) {
-                              await api.deleteVehicle(v._id || v.id);
-                              setVehicles(prev => prev.filter(item => (item._id || item.id) !== (v._id || v.id)));
-                            }
-                          }}
-                          className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-red-400 hover:bg-red-50 transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {vehicles.filter(v => v.status === 'Sold').length > 0 && (
+                    <div>
+                      <h3 className="text-xl font-bold mb-6 text-zinc-800 brand-font">Sold Vehicles</h3>
+                      <div className="grid grid-cols-1 gap-6 opacity-80">
+                        {vehicles.filter(v => v.status === 'Sold').map(v => (
+                          <div key={v._id || v.id} className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between border border-zinc-100 group transition-all gap-6">
+                            <div className="flex items-center gap-6 md:gap-10">
+                              <img src={v.images?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80'} className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shrink-0 grayscale" alt="" />
+                              <div className="min-w-0">
+                                <h4 className="font-bold text-lg md:text-xl text-zinc-800 line-through truncate">{v.year} {v.make} {v.model}</h4>
+                                <p className="text-[9px] font-black uppercase text-zinc-600 tracking-widest truncate">{v.vin} | {v.trim}</p>
+                                <p className="text-zinc-700 font-bold mt-1">${typeof v.price === 'number' ? v.price.toLocaleString() : v.price}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+                              <button
+                                onClick={async () => {
+                                  const updated = await api.updateVehicle(v._id || v.id, { isHidden: !v.isHidden });
+                                  setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
+                                }}
+                                className={`p-3 md:p-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-colors ${v.isHidden ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-zinc-100 text-zinc-700 hover:text-black hover:bg-zinc-200'}`}
+                                title={v.isHidden ? "Show Vehicle" : "Hide Vehicle"}
+                              >
+                                {v.isHidden ? "Unhide" : "Hide"}
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  const updated = await api.updateVehicle(v._id || v.id, { status: 'Available' });
+                                  setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
+                                }}
+                                className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-green-500 hover:bg-green-50 transition-colors font-bold text-[10px] uppercase tracking-widest"
+                                title="Mark as Available"
+                              >
+                                Mark Available
+                              </button>
+                              <button onClick={() => handleStartEditVehicle(v)} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-400 hover:text-black transition-colors"><Edit3 size={18} /></button>
+                              <button onClick={async () => { if(confirm('Authorize permanent deletion of this asset?')) { await api.deleteVehicle(v._id || v.id); setVehicles(prev => prev.filter(item => (item._id || item.id) !== (v._id || v.id))); } }} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-red-300 hover:bg-red-50 transition-colors"><Trash2 size={18} /></button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             )}
@@ -732,6 +781,10 @@ const AdminDashboard: React.FC = () => {
                   <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.price} onChange={e => setNewVehicle({...newVehicle, price: parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
+                  <label className="text-[8px] md:text-[9px] font-black text-zinc-700">ACTUAL/REAL PRICE ($) <span className="text-zinc-400 font-normal">(Optional)</span></label>
+                  <input type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.actualPrice || ''} onChange={e => setNewVehicle({...newVehicle, actualPrice: e.target.value ? parseInt(e.target.value) : undefined})} />
+                </div>
+                <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">VIN</label>
                   <input required className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.vin} onChange={e => setNewVehicle({...newVehicle, vin: e.target.value})} />
                 </div>
@@ -791,6 +844,11 @@ const AdminDashboard: React.FC = () => {
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>
+                  {newVehicle.newArrivalExpiryDate && (
+                    <p className="text-[9px] font-bold text-[#D4AF37] mt-1">
+                      Expiry: {new Date(newVehicle.newArrivalExpiryDate).toLocaleDateString()}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-zinc-700">STATUS</label>
@@ -831,15 +889,36 @@ const AdminDashboard: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <label className="text-[9px] font-black text-zinc-700">ASSET IMAGES (CLOUDINARY)</label>
+                <label className="text-[9px] font-black text-zinc-700">ASSET IMAGES (CLOUDINARY) - <span className="text-[#D4AF37]">DRAG TO REORDER</span></label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {newVehicle.images?.map((img, i) => (
-                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-zinc-200">
-                      <img src={img} className="w-full h-full object-cover" alt="" />
+                    <div 
+                      key={i} 
+                      draggable
+                      onDragStart={() => setDraggedImgIndex(i)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggedImgIndex === null || draggedImgIndex === i) return;
+                        setNewVehicle(prev => {
+                          const imgs = [...(prev.images || [])];
+                          const draggedImg = imgs[draggedImgIndex];
+                          imgs.splice(draggedImgIndex, 1);
+                          imgs.splice(i, 0, draggedImg);
+                          return { ...prev, images: imgs };
+                        });
+                        setDraggedImgIndex(null);
+                      }}
+                      onDragEnd={() => setDraggedImgIndex(null)}
+                      className={`relative aspect-square rounded-xl overflow-hidden border-2 cursor-move transition-all ${draggedImgIndex === i ? 'opacity-50 border-[#D4AF37]' : 'border-transparent hover:border-[#D4AF37]'}`}
+                    >
+                      <img src={img} className="w-full h-full object-cover pointer-events-none" alt="" />
                       <button 
                         type="button"
                         onClick={() => setNewVehicle(prev => ({ ...prev, images: prev.images?.filter((_, idx) => idx !== i) }))}
-                        className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity"
+                        className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity z-10"
                       >
                         <X size={20} className="text-white" />
                       </button>

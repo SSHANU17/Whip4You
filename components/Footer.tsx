@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Send, CheckCircle2 } from 'lucide-react';
 import BrandLogo from './BrandLogo.tsx';
+import { api } from '../api.ts';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [config, setConfig] = useState<any>(null);
 
   useEffect(() => {
+    api.getConfig().then(setConfig).catch(err => console.error(err));
     const isSubscribed = localStorage.getItem('w4u_subscribed') === 'true';
     if (isSubscribed) setSubscribed(true);
   }, []);
@@ -32,7 +35,7 @@ const Footer: React.FC = () => {
               <BrandLogo className="h-12 w-12 sm:h-14 sm:w-14 shrink-0" />
               <div className="flex min-w-0 flex-col">
                 <span className="text-2xl sm:text-3xl font-black brand-font tracking-[0.14em] sm:tracking-[0.2em] truncate">
-                  WHIP<span className="text-[#D4AF37]">4</span>YOU
+                  MILESTONE <span className="text-[#D4AF37]">MOTORS</span>
                 </span>
                 <span className="text-[9px] font-black uppercase tracking-[0.45em] text-[#D4AF37]">
                   Premium Motors
@@ -73,26 +76,36 @@ const Footer: React.FC = () => {
           <div className="lg:col-span-3">
             <h4 className="text-[#D4AF37] font-black uppercase tracking-[0.4em] text-[10px] mb-8">Contact Hub</h4>
             <div className="flex flex-col gap-6 text-zinc-400">
-              <a href="tel:7789706007" className="flex items-center gap-4 hover:text-white group">
+              <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="flex items-center gap-4 hover:text-white group">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
                   <Phone size={16} />
                 </div>
-                <span className="text-xs font-bold">(778) 970-6007</span>
+                <span className="text-xs font-bold">{config?.contactPhone || '(604) 712-1994'}</span>
               </a>
-              <a href="mailto:Whip4youauto@gmail.com" className="flex items-center gap-4 hover:text-white group">
+              <a href={`mailto:${config?.contactEmail || 'Whip4youauto@gmail.com'}`} className="flex items-center gap-4 hover:text-white group">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
                   <Mail size={16} />
                 </div>
-                <span className="text-xs font-bold break-all sm:break-normal">Whip4youauto@gmail.com</span>
+                <span className="text-xs font-bold break-all sm:break-normal">{config?.contactEmail || 'Whip4youauto@gmail.com'}</span>
               </a>
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center flex-shrink-0">
                   <MapPin size={16} />
                 </div>
                 <span className="text-xs font-bold leading-relaxed">
-                  102-20771 Langley Bypass,
-                  <br />
-                  Langley, BC V3A 5E8
+                  {config?.address ? (
+                    <>
+                      {config.address.split(',').slice(0, 2).join(',')}
+                      <br />
+                      {config.address.split(',').slice(2).join(',')}
+                    </>
+                  ) : (
+                    <>
+                      102-20771 Langley Bypass,
+                      <br />
+                      Langley, BC V3A 5E8
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -132,7 +145,7 @@ const Footer: React.FC = () => {
         <div className="border-t border-white/5 pt-8 md:pt-12 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8 text-center md:text-left">
           <div className="flex flex-col gap-2">
             <p className="text-zinc-600 text-[9px] font-black uppercase tracking-[0.3em]">
-              (C) 2026 WHIP4YOU MOTOR GROUP. ALL RIGHTS RESERVED.
+              (C) {new Date().getFullYear()} MILESTONE MOTORS GROUP. ALL RIGHTS RESERVED.
             </p>
             <p className="text-zinc-800 text-[8px] font-bold uppercase tracking-widest">
               DEALER DOCUMENTATION FEE ($799) | BC DEALER LICENSE #40321

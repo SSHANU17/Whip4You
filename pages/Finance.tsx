@@ -125,7 +125,7 @@ const Finance: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-8 leading-tight">Why Finance With <br/><span className="gold-text italic">Whip4You?</span></h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-8 leading-tight">Why Finance With <br/><span className="gold-text italic">Milestone Motors?</span></h2>
               <div className="space-y-6">
                 {[
                   { icon: <CircleDollarSign />, title: 'Transparent Pricing', desc: 'No hidden fees or surprise markups. Everything is clearly outlined.' },

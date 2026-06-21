@@ -1,9 +1,16 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Lock, Eye, FileText, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { api } from '../api.ts';
 
 const Privacy: React.FC = () => {
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    api.getConfig().then(setConfig).catch(err => console.error(err));
+  }, []);
+
   return (
     <div className="bg-white min-h-screen pb-20">
       <section className="bg-black text-white py-24 relative overflow-hidden">
@@ -13,7 +20,7 @@ const Privacy: React.FC = () => {
             <ChevronLeft size={14} /> Return to Showroom
           </Link>
           <h1 className="text-5xl md:text-7xl font-bold brand-font italic mb-6">Privacy Policy</h1>
-          <p className="text-gray-400 max-w-2xl font-light tracking-wide uppercase text-xs">Last Updated: February 2024 • Whip4You Digital Security</p>
+          <p className="text-gray-400 max-w-2xl font-light tracking-wide uppercase text-xs">Last Updated: February 2024 • Milestone Motors Digital Security</p>
         </div>
       </section>
 
@@ -46,7 +53,7 @@ const Privacy: React.FC = () => {
           <article className="prose prose-zinc max-w-none text-gray-600 space-y-10">
             <section>
               <h2 className="text-2xl font-bold text-black brand-font mb-4">1. Information Collection</h2>
-              <p className="leading-relaxed">When you visit Whip4You, we collect information you provide directly to us via credit applications, trade-in requests, and contact forms. This may include your name, email, phone number, financial history, and vehicle preferences.</p>
+              <p className="leading-relaxed">When you visit Milestone Motors, we collect information you provide directly to us via credit applications, trade-in requests, and contact forms. This may include your name, email, phone number, financial history, and vehicle preferences.</p>
             </section>
 
             <section>
@@ -63,7 +70,7 @@ const Privacy: React.FC = () => {
               <h4 className="text-black font-bold uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 <FileText size={16} className="text-[#D4AF37]" /> Contact Data Officer
               </h4>
-              <p className="text-sm">For questions regarding your data or to request deletion, please contact our privacy hub at <a href="mailto:Whip4youauto@gmail.com" className="text-black font-bold underline">Whip4youauto@gmail.com</a></p>
+              <p className="text-sm">For questions regarding your data or to request deletion, please contact our privacy hub at <a href={`mailto:${config?.contactEmail || 'Whip4youauto@gmail.com'}`} className="text-black font-bold underline">{config?.contactEmail || 'Whip4youauto@gmail.com'}</a></p>
             </section>
           </article>
         </div>

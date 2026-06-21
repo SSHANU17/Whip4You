@@ -4,10 +4,16 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, Phone, MapPin, Facebook, Instagram, Heart } from 'lucide-react';
 import GarageDrawer from './GarageDrawer.tsx';
 import BrandLogo from './BrandLogo.tsx';
+import { api } from '../api.ts';
 
 const DIRECTIONS_URL = 'https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8';
 
 const Navbar: React.FC = () => {
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    api.getConfig().then(setConfig).catch(err => console.error(err));
+  }, []);
   const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isGarageOpen, setIsGarageOpen] = useState(false);
@@ -73,11 +79,11 @@ const Navbar: React.FC = () => {
         <div className="bg-zinc-950 py-2 hidden md:block border-b border-white/5">
           <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">
             <div className="flex gap-10">
-              <a href="tel:7789706007" className="flex items-center gap-2 hover:text-white transition-colors">
-                <Phone size={12} className="text-[#D4AF37]" /> (778) 970-6007
+              <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                <Phone size={12} className="text-[#D4AF37]" /> {config?.contactPhone || '(604) 712-1994'}
               </a>
-              <a href={DIRECTIONS_URL} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
-                <MapPin size={12} className="text-[#D4AF37]" /> Langley Bypass, BC
+              <a href={config?.address ? `https://maps.google.com/?q=${encodeURIComponent(config.address)}` : DIRECTIONS_URL} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
+                <MapPin size={12} className="text-[#D4AF37]" /> {config?.address ? (config.address.includes('Langley') ? 'Langley Bypass, BC' : config.address.split(',')[0]) : 'Langley Bypass, BC'}
               </a>
             </div>
             <div className="flex gap-6">
@@ -91,7 +97,7 @@ const Navbar: React.FC = () => {
           <Link to="/" className="flex min-w-0 items-center gap-3 sm:gap-4 group">
             <BrandLogo className="h-10 w-10 sm:h-12 sm:w-12 transition-transform duration-500 group-hover:scale-105 shrink-0" />
             <div className="flex flex-col">
-              <span className="text-base sm:text-xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
+              <span className="text-base sm:text-xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">MILESTONE <span className="text-[#D4AF37]">MOTORS</span></span>
               <span className="hidden sm:block text-[8px] font-black uppercase tracking-[0.5em] text-[#D4AF37] leading-none">Premium Motors</span>
             </div>
           </Link>
@@ -179,7 +185,7 @@ const Navbar: React.FC = () => {
               <div className="flex justify-between items-center mb-6 sm:mb-10 gap-4">
                  <div className="flex min-w-0 items-center gap-3">
                    <BrandLogo className="h-10 w-10 sm:h-12 sm:w-12 shrink-0" />
-                   <span className="text-xl sm:text-2xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">WHIP<span className="text-[#D4AF37]">4</span>YOU</span>
+                   <span className="text-xl sm:text-2xl font-bold tracking-[0.16em] sm:tracking-[0.2em] brand-font truncate">MILESTONE <span className="text-[#D4AF37]">MOTORS</span></span>
                  </div>
                  <button onClick={() => setIsOpen(false)} className="text-white shrink-0"><X size={32} /></button>
               </div>

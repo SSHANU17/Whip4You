@@ -10,6 +10,23 @@ import {
 import { api } from '../api.ts';
 import { Vehicle } from '../types.ts';
 
+const capitalizeWords = (str?: string) => {
+  if (!str) return '';
+  return str
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const formatValue = (label: string, val?: any): string => {
+  if (val === null || typeof val === 'undefined') return '';
+  const str = String(val);
+  if (label === 'VIN Identity' || label === 'Stock Reference') {
+    return str.toUpperCase();
+  }
+  return capitalizeWords(str);
+};
+
 const VehicleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -110,8 +127,8 @@ const VehicleDetails: React.FC = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Whip4You: ${vehicle?.year} ${vehicle?.make} ${vehicle?.model}`,
-          text: `Check out this ${vehicle?.trim} at Whip4You!`,
+          title: `Milestone Motors: ${vehicle?.year} ${vehicle?.make} ${vehicle?.model}`,
+          text: `Check out this ${vehicle?.trim} at Milestone Motors!`,
           url: window.location.href,
         });
       } catch (err) {
@@ -264,15 +281,15 @@ const VehicleDetails: React.FC = () => {
               <h2 className="text-2xl font-bold mb-10 brand-font italic text-black">Technical Specifications</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 md:gap-y-10 gap-x-8 md:gap-x-12">
                 {[
-                  { label: 'Transmission', value: vehicle.transmission, icon: <Settings size={14} /> },
-                  { label: 'Engine', value: vehicle.engine, icon: <Gauge size={14} /> },
+                  { label: 'Transmission', value: formatValue('Transmission', vehicle.transmission), icon: <Settings size={14} /> },
+                  { label: 'Engine', value: formatValue('Engine', vehicle.engine), icon: <Gauge size={14} /> },
                   { label: 'Mileage', value: `${vehicle.mileage.toLocaleString()} KM`, icon: <Gauge size={14} /> },
-                  { label: 'Fuel Type', value: vehicle.fuelType, icon: <Fuel size={14} /> },
-                  { label: 'Exterior', value: vehicle.exteriorColor, icon: <Palette size={14} /> },
-                  { label: 'Interior', value: vehicle.interiorColor, icon: <Palette size={14} /> },
-                  { label: 'VIN Identity', value: vehicle.vin, isMono: true },
-                  { label: 'Stock Reference', value: vehicle.stockNumber },
-                  { label: 'Body Category', value: vehicle.bodyType }
+                  { label: 'Fuel Type', value: formatValue('Fuel Type', vehicle.fuelType), icon: <Fuel size={14} /> },
+                  { label: 'Exterior', value: formatValue('Exterior', vehicle.exteriorColor), icon: <Palette size={14} /> },
+                  { label: 'Interior', value: formatValue('Interior', vehicle.interiorColor), icon: <Palette size={14} /> },
+                  { label: 'VIN Identity', value: formatValue('VIN Identity', vehicle.vin), isMono: true },
+                  { label: 'Stock Reference', value: formatValue('Stock Reference', vehicle.stockNumber) },
+                  { label: 'Body Category', value: formatValue('Body Category', vehicle.bodyType) }
                 ].map((spec, idx) => (
                   <div key={idx} className="group">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-2 flex items-center gap-2 group-hover:text-[#D4AF37] transition-colors">
@@ -295,7 +312,7 @@ const VehicleDetails: React.FC = () => {
                 
                 <div className="mb-10">
                   <span className="text-5xl font-black gold-text display-font">
-                    {vehicle.showPrice === false ? <a href={`tel:${config?.contactPhone || '555-012-3456'}`} className="hover:text-black transition-colors underline decoration-dotted">Call for Price</a> : (typeof vehicle.price === 'number' ? `$${vehicle.price.toLocaleString()}` : vehicle.price)}
+                    {vehicle.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="hover:text-black transition-colors underline decoration-dotted">Call for Price</a> : (typeof vehicle.price === 'number' ? `$${vehicle.price.toLocaleString()}` : vehicle.price)}
                   </span>
                   <div className="flex items-center gap-2 mt-4 cursor-pointer group" onClick={() => setIsFeeInfoOpen(true)}>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.3em] group-hover:text-black transition-colors underline decoration-dotted">Wholesale Access Fee: $799</p>
@@ -319,9 +336,9 @@ const VehicleDetails: React.FC = () => {
                 </div>
 
                 <div className="mt-12 pt-10 border-t border-zinc-100 space-y-6">
-                   <a href="tel:7789706007" className="flex items-center gap-5 text-sm font-bold text-black hover:text-[#D4AF37] transition-colors group">
+                   <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="flex items-center gap-5 text-sm font-bold text-black hover:text-[#D4AF37] transition-colors group">
                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Phone size={20} /></div>
-                     (778) 970-6007
+                     {config?.contactPhone || '(604) 712-1994'}
                    </a>
                    <div className="flex items-center gap-5 text-sm font-bold text-black group">
                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><MessageSquare size={20} /></div>

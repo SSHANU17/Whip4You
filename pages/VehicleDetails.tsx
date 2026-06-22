@@ -172,11 +172,12 @@ const VehicleDetails: React.FC = () => {
             <button onClick={handleShare} className="p-2 text-zinc-400 hover:text-[#D4AF37] transition-colors" title="Share Listing"><Share2 size={18} /></button>
             <button onClick={() => window.print()} className="p-2 text-zinc-400 hover:text-[#D4AF37] transition-colors" title="Print Specs"><Printer size={18} /></button>
             <button 
-              onClick={toggleFavorite} 
-              className={`p-2 transition-all ${isFavorite ? 'text-red-500 scale-125' : 'text-zinc-400 hover:text-red-500'}`}
-              title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+              onClick={vehicle.status !== 'Sold' ? toggleFavorite : undefined} 
+              disabled={vehicle.status === 'Sold'}
+              className={`p-2 transition-all ${vehicle.status === 'Sold' ? 'text-zinc-300 opacity-50 cursor-not-allowed' : isFavorite ? 'text-red-500 scale-125' : 'text-zinc-400 hover:text-red-500'}`}
+              title={vehicle.status === 'Sold' ? 'Sold Out' : isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
             >
-              <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+              <Heart size={18} fill={vehicle.status !== 'Sold' && isFavorite ? 'currentColor' : 'none'} />
             </button>
           </div>
         </div>
@@ -307,7 +308,14 @@ const VehicleDetails: React.FC = () => {
             <div className="space-y-6 lg:sticky lg:top-40">
               <div className="bg-white p-6 sm:p-8 md:p-10 rounded-[32px] md:rounded-[40px] shadow-2xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 gold-gradient opacity-5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                <h1 className="text-3xl font-bold mb-2 brand-font text-black">{vehicle.year} {vehicle.make} {vehicle.model}</h1>
+                <h1 className="text-3xl font-bold mb-2 brand-font text-black flex items-center justify-between gap-4">
+                  <span>{vehicle.year} {vehicle.make} {vehicle.model}</span>
+                  {vehicle.status === 'Sold' && (
+                    <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex-shrink-0">
+                      Sold
+                    </span>
+                  )}
+                </h1>
                 <p className="text-[#D4AF37] font-black mb-10 uppercase tracking-[0.4em] text-[10px]">{vehicle.trim}</p>
                 
                 <div className="mb-10">
@@ -321,18 +329,29 @@ const VehicleDetails: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <Link 
-                    to={`/apply?vehicleId=${vehicle._id || vehicle.id}`} 
-                    className="block w-full text-center bg-black text-white py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl"
-                  >
-                    Initiate Approval
-                  </Link>
-                  <Link 
-                    to={`/contact?vehicleId=${vehicle._id || vehicle.id}`} 
-                    className="block w-full text-center bg-white text-black py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] border-2 border-black hover:bg-black hover:text-white transition-all shadow-md"
-                  >
-                    Direct Inquiry
-                  </Link>
+                  {vehicle.status === 'Sold' ? (
+                    <button 
+                      disabled
+                      className="block w-full text-center bg-zinc-100 text-zinc-400 py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] border border-zinc-200 cursor-not-allowed shadow-none"
+                    >
+                      Sold Out
+                    </button>
+                  ) : (
+                    <>
+                      <Link 
+                        to={`/apply?vehicleId=${vehicle._id || vehicle.id}`} 
+                        className="block w-full text-center bg-black text-white py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl"
+                      >
+                        Initiate Approval
+                      </Link>
+                      <Link 
+                        to={`/contact?vehicleId=${vehicle._id || vehicle.id}`} 
+                        className="block w-full text-center bg-white text-black py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] border-2 border-black hover:bg-black hover:text-white transition-all shadow-md"
+                      >
+                        Direct Inquiry
+                      </Link>
+                    </>
+                  )}
                 </div>
 
                 <div className="mt-12 pt-10 border-t border-zinc-100 space-y-6">
@@ -347,7 +366,7 @@ const VehicleDetails: React.FC = () => {
                 </div>
               </div>
 
-              {vehicle.showPrice !== false && (
+              {vehicle.showPrice !== false && vehicle.status !== 'Sold' && (
               <div className="bg-black text-white p-8 md:p-12 rounded-[32px] md:rounded-[40px] shadow-3xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 gold-gradient opacity-10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:opacity-20 transition-opacity"></div>
                 <h3 className="text-xl font-bold mb-6 brand-font italic text-[#D4AF37]">Budget Analysis</h3>

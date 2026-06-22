@@ -96,6 +96,10 @@ const Inventory: React.FC = () => {
     if (mileageMax) result = result.filter(v => v.mileage <= parseInt(mileageMax));
 
     result.sort((a, b) => {
+      // Sold out cars always go to the end
+      if (a.status === 'Sold' && b.status !== 'Sold') return 1;
+      if (a.status !== 'Sold' && b.status === 'Sold') return -1;
+
       const priceA = typeof a.price === 'number' ? a.price : 999999;
       const priceB = typeof b.price === 'number' ? b.price : 999999;
       
@@ -291,17 +295,26 @@ const Inventory: React.FC = () => {
 
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8' : 'flex flex-col gap-6'}>
               {paginatedVehicles.map(v => (
-                <div key={v._id || v.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col">
+                <div key={v._id || v.id} className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col ${v.status === 'Sold' ? 'opacity-70 grayscale-[20%]' : ''}`}>
                   <div className="relative h-56 sm:h-64 overflow-hidden block">
                     {v.isNewArrival !== false && v.newArrivalExpiryDate && new Date(v.newArrivalExpiryDate) > new Date() && (
                       <div className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full z-10">New Arrival</div>
                     )}
-                    <Link to={`/vehicle/${v._id || v.id}`} className="block h-full">
+                    <Link to={`/vehicle/${v._id || v.id}`} className="block h-full relative">
                       <img src={v.images[0]} alt={v.make} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      {v.status === 'Sold' && (
+                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-10">
+                          <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.25em] px-4 py-2 rounded-full shadow-2xl border border-red-500/20">
+                            Sold Out
+                          </span>
+                        </div>
+                      )}
                     </Link>
-                    <button onClick={() => toggleCompare(v._id || v.id)} className={`absolute bottom-3 left-3 sm:bottom-4 sm:left-4 py-2 px-3 rounded-full shadow-lg transition-all flex items-center gap-2 ${compareIds.includes(v._id || v.id) ? 'bg-[#D4AF37] text-black' : 'bg-black/60 text-white hover:bg-black'}`}>
-                      {compareIds.includes(v._id || v.id) ? <Check size={18} /> : <ArrowRightLeft size={18} />}
-                    </button>
+                    {v.status !== 'Sold' && (
+                      <button onClick={() => toggleCompare(v._id || v.id)} className={`absolute bottom-3 left-3 sm:bottom-4 sm:left-4 py-2 px-3 rounded-full shadow-lg transition-all flex items-center gap-2 ${compareIds.includes(v._id || v.id) ? 'bg-[#D4AF37] text-black' : 'bg-black/60 text-white hover:bg-black'}`}>
+                        {compareIds.includes(v._id || v.id) ? <Check size={18} /> : <ArrowRightLeft size={18} />}
+                      </button>
+                    )}
                   </div>
                   <div className="p-5 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">

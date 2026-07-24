@@ -76,11 +76,11 @@ const Footer: React.FC = () => {
           <div className="lg:col-span-3">
             <h4 className="text-[#D4AF37] font-black uppercase tracking-[0.4em] text-[10px] mb-8">Contact Hub</h4>
             <div className="flex flex-col gap-6 text-zinc-400">
-              <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="flex items-center gap-4 hover:text-white group">
+              <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="flex items-center gap-4 hover:text-white group">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
                   <Phone size={16} />
                 </div>
-                <span className="text-xs font-bold">{config?.contactPhone || '(604) 712-1994'}</span>
+                <span className="text-xs font-bold">{config?.contactPhone || '+1 7789706007'}</span>
               </a>
               <a href={`mailto:${config?.contactEmail || 'Whip4youauto@gmail.com'}`} className="flex items-center gap-4 hover:text-white group">
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors">
@@ -101,7 +101,7 @@ const Footer: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      102-20771 Langley Bypass,
+                      20771 Langley Bypass #102,
                       <br />
                       Langley, BC V3A 5E8
                     </>

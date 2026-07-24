@@ -320,7 +320,7 @@ const VehicleDetails: React.FC = () => {
                 
                 <div className="mb-10">
                   <span className="text-5xl font-black gold-text display-font">
-                    {vehicle.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="hover:text-black transition-colors underline decoration-dotted">Call for Price</a> : (typeof vehicle.price === 'number' ? `$${vehicle.price.toLocaleString()}` : vehicle.price)}
+                    {vehicle.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="hover:text-black transition-colors underline decoration-dotted">Call for Price</a> : (typeof vehicle.price === 'number' ? `$${vehicle.price.toLocaleString()}` : vehicle.price)}
                   </span>
                   <div className="flex items-center gap-2 mt-4 cursor-pointer group" onClick={() => setIsFeeInfoOpen(true)}>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.3em] group-hover:text-black transition-colors underline decoration-dotted">Wholesale Access Fee: $799</p>
@@ -355,9 +355,9 @@ const VehicleDetails: React.FC = () => {
                 </div>
 
                 <div className="mt-12 pt-10 border-t border-zinc-100 space-y-6">
-                   <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="flex items-center gap-5 text-sm font-bold text-black hover:text-[#D4AF37] transition-colors group">
+                   <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="flex items-center gap-5 text-sm font-bold text-black hover:text-[#D4AF37] transition-colors group">
                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><Phone size={20} /></div>
-                     {config?.contactPhone || '(604) 712-1994'}
+                     {config?.contactPhone || '+1 7789706007'}
                    </a>
                    <div className="flex items-center gap-5 text-sm font-bold text-black group">
                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors"><MessageSquare size={20} /></div>

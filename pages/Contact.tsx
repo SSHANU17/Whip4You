@@ -220,7 +220,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
           
           <div className="lg:col-span-4 space-y-6">
-            <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="block group">
+            <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="block group">
               <div className="bg-white p-5 md:p-8 rounded-[20px] md:rounded-[40px] shadow-xl hover:shadow-2xl transition-all border border-gray-100 flex items-center justify-between">
                 <div className="flex items-center gap-4 md:gap-6">
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black text-[#D4AF37] flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-black transition-colors shrink-0">
@@ -228,7 +228,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Call Hub</h4>
-                    <p className="text-lg md:text-xl font-bold group-hover:text-[#D4AF37] transition-colors truncate font-display text-black">{config?.contactPhone || '(604) 712-1994'}</p>
+                    <p className="text-lg md:text-xl font-bold group-hover:text-[#D4AF37] transition-colors truncate font-display text-black">{config?.contactPhone || '+1 7789706007'}</p>
                   </div>
                 </div>
               </div>
@@ -250,7 +250,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                         ))
                       ) : (
                         <>
-                          102-20771 Langley Bypass,<br />
+                          20771 Langley Bypass #102,<br />
                           Langley, BC V3A 5E8
                         </>
                       )}
@@ -265,7 +265,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   </div>
                </div>
                <a 
-                 href={config?.address ? `https://maps.google.com/?q=${encodeURIComponent(config.address)}` : "https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8"} 
+                 href={config?.address ? `https://maps.google.com/?q=${encodeURIComponent(config.address)}` : "https://maps.google.com/?q=20771%20Langley%20Bypass%20%23102,%20Langley,%20BC%20V3A%205E8"} 
                  target="_blank" 
                  rel="noreferrer"
                  className="mt-10 md:mt-12 flex items-center justify-center gap-3 bg-white text-black py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-[#D4AF37] transition-all shadow-lg"

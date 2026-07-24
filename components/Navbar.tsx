@@ -6,7 +6,7 @@ import GarageDrawer from './GarageDrawer.tsx';
 import BrandLogo from './BrandLogo.tsx';
 import { api } from '../api.ts';
 
-const DIRECTIONS_URL = 'https://maps.google.com/?q=102-20771%20Langley%20Bypass,%20Langley,%20BC%20V3A%205E8';
+const DIRECTIONS_URL = 'https://maps.google.com/?q=20771%20Langley%20Bypass%20%23102,%20Langley,%20BC%20V3A%205E8';
 
 const Navbar: React.FC = () => {
   const [config, setConfig] = useState<any>(null);
@@ -79,8 +79,8 @@ const Navbar: React.FC = () => {
         <div className="bg-zinc-950 py-2 hidden md:block border-b border-white/5">
           <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">
             <div className="flex gap-10">
-              <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="flex items-center gap-2 hover:text-white transition-colors">
-                <Phone size={12} className="text-[#D4AF37]" /> {config?.contactPhone || '(604) 712-1994'}
+              <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                <Phone size={12} className="text-[#D4AF37]" /> {config?.contactPhone || '+1 7789706007'}
               </a>
               <a href={config?.address ? `https://maps.google.com/?q=${encodeURIComponent(config.address)}` : DIRECTIONS_URL} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
                 <MapPin size={12} className="text-[#D4AF37]" /> {config?.address ? (config.address.includes('Langley') ? 'Langley Bypass, BC' : config.address.split(',')[0]) : 'Langley Bypass, BC'}

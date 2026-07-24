@@ -323,7 +323,7 @@ const Inventory: React.FC = () => {
                         <p className="text-sm text-gray-400 font-medium">{v.trim}</p>
                       </Link>
                       <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
-                        {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
+                        {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
                       </span>
                     </div>
                     <div className="mt-auto pt-5 sm:pt-6 border-t border-gray-100 flex gap-4">
@@ -429,7 +429,7 @@ const Inventory: React.FC = () => {
                         <h4 className="font-bold text-lg text-zinc-900">{v.year} {v.make}</h4>
                         <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">{v.model} {v.trim}</p>
                         <p className="text-[#D4AF37] font-bold text-xl mt-2 brand-font">
-                          {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '6047121994'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
+                          {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
                         </p>
                       </th>
                     ))}

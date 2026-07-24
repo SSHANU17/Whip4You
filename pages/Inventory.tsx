@@ -1,10 +1,10 @@
-
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { 
   Search, SlidersHorizontal, LayoutGrid, List as ListIcon, 
   Car, Fuel, Gauge, Settings, Hash, Palette, Calendar, 
-  DollarSign, ArrowRightLeft, X, Check, Info, Plus, Loader2
+  DollarSign, ArrowRightLeft, X, Check, Info, Plus, Loader2,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import { api } from '../api.ts';
 import { Vehicle, SortOption } from '../types.ts';
@@ -24,11 +24,39 @@ const Inventory: React.FC = () => {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [vinSearchTerm, setVinSearchTerm] = useState('');
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [config, setConfig] = useState<any>(null);
+  const mainGridRef = useRef<HTMLDivElement>(null);
+
+  // Synchronous cache-first state initialization for Eager Loading & instant rendering
+  const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
+    try {
+      const val = sessionStorage.getItem('w4u_vehicles_cache');
+      if (val) {
+        const parsed = JSON.parse(val);
+        if (parsed && (Date.now() - parsed.timestamp < 2 * 60 * 1000) && Array.isArray(parsed.data)) {
+          return parsed.data;
+        }
+      }
+    } catch {}
+    return [];
+  });
+
+  const [config, setConfig] = useState<any>(() => {
+    try {
+      const val = sessionStorage.getItem('w4u_config_cache');
+      if (val) {
+        const parsed = JSON.parse(val);
+        if (parsed && (Date.now() - parsed.timestamp < 2 * 60 * 1000)) {
+          return parsed.data;
+        }
+      }
+    } catch {}
+    return null;
+  });
+
+  const [loading, setLoading] = useState<boolean>(() => vehicles.length === 0);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(12);
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Comparison State
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
@@ -47,12 +75,27 @@ const Inventory: React.FC = () => {
   const [mileageMin, setMileageMin] = useState('');
   const [mileageMax, setMileageMax] = useState('');
 
+  // Sync config grid size when available
   useEffect(() => {
-    Promise.all([api.getVehicles(), api.getConfig()]).then(([data, cfg]) => {
-      setVehicles(data);
-      setConfig(cfg);
-      setLoading(false);
-    });
+    if (config?.inventoryGridSize) {
+      setItemsPerPage(config.inventoryGridSize);
+    }
+  }, [config]);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([api.getVehicles(), api.getConfig()])
+      .then(([data, cfg]) => {
+        if (!isMounted) return;
+        setVehicles(data);
+        setConfig(cfg);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to scan fleet registry', err);
+        if (isMounted) setLoading(false);
+      });
+    return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {
@@ -96,7 +139,6 @@ const Inventory: React.FC = () => {
     if (mileageMax) result = result.filter(v => v.mileage <= parseInt(mileageMax));
 
     result.sort((a, b) => {
-      // Sold out cars always go to the end
       if (a.status === 'Sold' && b.status !== 'Sold') return 1;
       if (a.status !== 'Sold' && b.status === 'Sold') return -1;
 
@@ -118,6 +160,24 @@ const Inventory: React.FC = () => {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, vinSearchTerm, makeFilter, bodyTypeFilter, transmissionFilter, colorFilter, yearMin, yearMax, priceMin, priceMax, mileageMin, mileageMax, sortBy]);
 
+  // Eager pre-loading of current, next & previous page vehicle images
+  useEffect(() => {
+    if (loading || !filteredVehicles.length) return;
+
+    const effectivePerPage = itemsPerPage === -1 ? filteredVehicles.length : itemsPerPage;
+    const startIdx = (currentPage - 1) * effectivePerPage;
+    const currentBatch = filteredVehicles.slice(startIdx, startIdx + effectivePerPage);
+    const nextBatch = filteredVehicles.slice(startIdx + effectivePerPage, startIdx + effectivePerPage * 2);
+    const prevBatch = startIdx >= effectivePerPage ? filteredVehicles.slice(startIdx - effectivePerPage, startIdx) : [];
+
+    [...currentBatch, ...nextBatch, ...prevBatch].forEach(v => {
+      if (v.images?.[0]) {
+        const img = new Image();
+        img.src = v.images[0];
+      }
+    });
+  }, [filteredVehicles, currentPage, itemsPerPage, loading]);
+
   const activeFilters = useMemo(() => {
     const chips: { label: string; key: string; value: any }[] = [];
     if (makeFilter) chips.push({ label: makeFilter, key: 'make', value: setMakeFilter });
@@ -129,13 +189,40 @@ const Inventory: React.FC = () => {
   }, [makeFilter, bodyTypeFilter, transmissionFilter, colorFilter, searchTerm]);
 
   const uniqueMakes = useMemo(() => Array.from(new Set(vehicles.map(v => v.make))).sort(), [vehicles]);
-  const uniqueTransmissions = useMemo(() => Array.from(new Set(vehicles.map(v => v.transmission))).sort(), [vehicles]);
-  const uniqueColors = useMemo(() => Array.from(new Set(vehicles.map(v => v.exteriorColor))).sort(), [vehicles]);
 
+  const effectivePerPage = itemsPerPage === -1 ? (filteredVehicles.length || 1) : itemsPerPage;
+  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / effectivePerPage));
+  const validCurrentPage = Math.min(currentPage, totalPages);
 
-  const itemsPerPage = config?.inventoryGridSize || 12;
-  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
-  const paginatedVehicles = filteredVehicles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const startItem = filteredVehicles.length === 0 ? 0 : (validCurrentPage - 1) * effectivePerPage + 1;
+  const endItem = Math.min(validCurrentPage * effectivePerPage, filteredVehicles.length);
+
+  const paginatedVehicles = useMemo(() => {
+    if (itemsPerPage === -1) return filteredVehicles;
+    return filteredVehicles.slice((validCurrentPage - 1) * effectivePerPage, validCurrentPage * effectivePerPage);
+  }, [filteredVehicles, validCurrentPage, effectivePerPage, itemsPerPage]);
+
+  const handlePageChange = (newPage: number) => {
+    const target = Math.max(1, Math.min(newPage, totalPages));
+    setCurrentPage(target);
+    if (mainGridRef.current) {
+      mainGridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const pageNumbers = useMemo(() => {
+    const pages: number[] = [];
+    const maxButtons = 5;
+    let start = Math.max(1, validCurrentPage - 2);
+    let end = Math.min(totalPages, start + maxButtons - 1);
+    if (end - start + 1 < maxButtons) {
+      start = Math.max(1, end - maxButtons + 1);
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }, [validCurrentPage, totalPages]);
 
   const handleClearFilters = () => {
     setSearchTerm('');
@@ -161,14 +248,116 @@ const Inventory: React.FC = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-off-white flex flex-col items-center justify-center gap-6">
-        <Loader2 className="text-[#D4AF37] animate-spin" size={48} />
-        <p className="font-bold text-black brand-font uppercase tracking-widest text-xs">Scanning Fleet Registry...</p>
+  const PaginationBar = ({ position }: { position: 'top' | 'bottom' }) => (
+    <div className={`flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm ${position === 'top' ? 'mb-6' : 'mt-10'}`}>
+      <div className="flex flex-wrap items-center justify-between w-full md:w-auto gap-4 text-xs font-bold text-gray-500">
+        <span>
+          Showing <span className="text-black font-extrabold">{startItem}</span>–<span className="text-black font-extrabold">{endItem}</span> of <span className="text-black font-extrabold">{filteredVehicles.length}</span> vehicles
+        </span>
+        <div className="h-4 w-px bg-gray-200 hidden md:block" />
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Per Page:</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-black outline-none focus:border-[#D4AF37] cursor-pointer"
+          >
+            <option value={6}>6</option>
+            <option value={12}>12</option>
+            <option value={24}>24</option>
+            <option value={48}>48</option>
+            <option value={-1}>All ({filteredVehicles.length})</option>
+          </select>
+        </div>
       </div>
-    );
-  }
+
+      {totalPages > 1 && (
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => handlePageChange(1)}
+            disabled={validCurrentPage === 1}
+            title="First Page"
+            className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-30 disabled:hover:border-gray-200 transition-all"
+          >
+            <ChevronsLeft size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => handlePageChange(validCurrentPage - 1)}
+            disabled={validCurrentPage === 1}
+            title="Previous Page"
+            className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-30 disabled:hover:border-gray-200 transition-all"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {pageNumbers[0] > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => handlePageChange(1)}
+                className="w-8 h-8 rounded-lg text-xs font-bold transition-all border border-gray-200 text-gray-600 hover:border-black"
+              >
+                1
+              </button>
+              {pageNumbers[0] > 2 && <span className="text-gray-400 text-xs px-1">...</span>}
+            </>
+          )}
+
+          {pageNumbers.map(page => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => handlePageChange(page)}
+              className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                validCurrentPage === page
+                  ? 'bg-[#D4AF37] text-black shadow-md scale-105'
+                  : 'bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-black'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          {pageNumbers[pageNumbers.length - 1] < totalPages && (
+            <>
+              {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="text-gray-400 text-xs px-1">...</span>}
+              <button
+                type="button"
+                onClick={() => handlePageChange(totalPages)}
+                className="w-8 h-8 rounded-lg text-xs font-bold transition-all border border-gray-200 text-gray-600 hover:border-black"
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={() => handlePageChange(validCurrentPage + 1)}
+            disabled={validCurrentPage === totalPages}
+            title="Next Page"
+            className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-30 disabled:hover:border-gray-200 transition-all"
+          >
+            <ChevronRight size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={validCurrentPage === totalPages}
+            title="Last Page"
+            className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:border-black hover:text-black disabled:opacity-30 disabled:hover:border-gray-200 transition-all"
+          >
+            <ChevronsRight size={16} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="bg-off-white min-h-screen pb-20 relative text-gray-900">
@@ -179,7 +368,7 @@ const Inventory: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6" ref={mainGridRef}>
         <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
           <aside className={`w-full lg:w-80 space-y-6 ${isMobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -256,8 +445,8 @@ const Inventory: React.FC = () => {
             </div>
           </aside>
 
-          <main className="flex-1">
-            <div className="bg-white p-4 rounded-2xl shadow-sm mb-6 md:mb-8 flex flex-col gap-4 border border-gray-100">
+          <main className="flex-1 min-w-0">
+            <div className="bg-white p-4 rounded-2xl shadow-sm mb-6 flex flex-col gap-4 border border-gray-100">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-medium text-gray-500">Found <span className="text-black font-bold">{filteredVehicles.length}</span> matching vehicles</p>
@@ -266,7 +455,7 @@ const Inventory: React.FC = () => {
                   </button>
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <select className="w-full sm:w-auto bg-gray-50 border border-gray-200 p-2 rounded-lg outline-none text-xs font-bold uppercase tracking-widest text-black" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
+                  <select className="w-full sm:w-auto bg-gray-50 border border-gray-200 p-2 rounded-lg outline-none text-xs font-bold uppercase tracking-widest text-black cursor-pointer" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
                     <option value="year_new">Newest First</option>
                     <option value="year_old">Oldest First</option>
                     <option value="price_asc">Price: Low to High</option>
@@ -283,7 +472,7 @@ const Inventory: React.FC = () => {
                       key={chip.key}
                       type="button"
                       onClick={() => chip.value('')}
-                      className="inline-flex items-center gap-2 rounded-full bg-black text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest"
+                      className="inline-flex items-center gap-2 rounded-full bg-black text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-colors"
                     >
                       {chip.label}
                       <X size={12} />
@@ -293,54 +482,84 @@ const Inventory: React.FC = () => {
               )}
             </div>
 
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8' : 'flex flex-col gap-6'}>
-              {paginatedVehicles.map(v => (
-                <div key={v._id || v.id} className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col ${v.status === 'Sold' ? 'opacity-70 grayscale-[20%]' : ''}`}>
-                  <div className="relative h-56 sm:h-64 overflow-hidden block">
-                    {v.isNewArrival !== false && v.newArrivalExpiryDate && new Date(v.newArrivalExpiryDate) > new Date() && (
-                      <div className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full z-10">New Arrival</div>
-                    )}
-                    <Link to={`/vehicle/${v._id || v.id}`} className="block h-full relative">
-                      <img src={v.images[0]} alt={v.make} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                      {v.status === 'Sold' && (
-                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-10">
-                          <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.25em] px-4 py-2 rounded-full shadow-2xl border border-red-500/20">
-                            Sold Out
-                          </span>
-                        </div>
-                      )}
-                    </Link>
-                    {v.status !== 'Sold' && (
-                      <button onClick={() => toggleCompare(v._id || v.id)} className={`absolute bottom-3 left-3 sm:bottom-4 sm:left-4 py-2 px-3 rounded-full shadow-lg transition-all flex items-center gap-2 ${compareIds.includes(v._id || v.id) ? 'bg-[#D4AF37] text-black' : 'bg-black/60 text-white hover:bg-black'}`}>
-                        {compareIds.includes(v._id || v.id) ? <Check size={18} /> : <ArrowRightLeft size={18} />}
-                      </button>
-                    )}
+            <PaginationBar position="top" />
+
+            {loading ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between bg-black text-white p-5 rounded-2xl border border-[#D4AF37]/30 shadow-xl animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="text-[#D4AF37] animate-spin" size={22} />
+                    <span className="font-extrabold brand-font uppercase tracking-[0.25em] text-xs text-[#D4AF37]">Scanning Fleet Registry...</span>
                   </div>
-                  <div className="p-5 sm:p-6">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
-                      <Link to={`/vehicle/${v._id || v.id}`} className="hover:text-[#D4AF37] transition-colors min-w-0">
-                        <h3 className="text-xl font-bold text-black">{v.year} {v.make} {v.model}</h3>
-                        <p className="text-sm text-gray-400 font-medium">{v.trim}</p>
-                      </Link>
-                      <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
-                        {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-5 sm:pt-6 border-t border-gray-100 flex gap-4">
-                      <Link to={`/vehicle/${v._id || v.id}`} className="flex-1 bg-gray-50 text-center py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest text-black">View Details</Link>
-                    </div>
-                  </div>
+                  <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono hidden sm:inline">Eager Loading Active</span>
                 </div>
-              ))}
-            </div>
-            
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-12">
-                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold disabled:opacity-50">Previous</button>
-                <span className="text-sm font-bold">Page {currentPage} of {totalPages}</span>
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold disabled:opacity-50">Next</button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  {[1, 2, 3, 4, 5, 6].map((idx) => (
+                    <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 p-5 space-y-4 animate-pulse">
+                      <div className="h-56 bg-zinc-200 rounded-xl" />
+                      <div className="h-6 bg-zinc-200 rounded w-3/4" />
+                      <div className="h-4 bg-zinc-100 rounded w-1/2" />
+                      <div className="h-10 bg-zinc-200 rounded-xl" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : paginatedVehicles.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
+                <Car size={48} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-xl font-bold text-black brand-font mb-2">No Matching Vehicles Found</h3>
+                <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">Try adjusting your filters or search terms to explore available vehicles in our fleet registry.</p>
+                <button
+                  onClick={handleClearFilters}
+                  className="bg-black text-white px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            ) : (
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8' : 'flex flex-col gap-6'}>
+                {paginatedVehicles.map(v => (
+                  <div key={v._id || v.id} className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col ${v.status === 'Sold' ? 'opacity-70 grayscale-[20%]' : ''}`}>
+                    <div className="relative h-56 sm:h-64 overflow-hidden block">
+                      {v.isNewArrival !== false && v.newArrivalExpiryDate && new Date(v.newArrivalExpiryDate) > new Date() && (
+                        <div className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full z-10">New Arrival</div>
+                      )}
+                      <Link to={`/vehicle/${v._id || v.id}`} className="block h-full relative">
+                        <img src={v.images[0]} alt={v.make} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="eager" />
+                        {v.status === 'Sold' && (
+                          <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-10">
+                            <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.25em] px-4 py-2 rounded-full shadow-2xl border border-red-500/20">
+                              Sold Out
+                            </span>
+                          </div>
+                        )}
+                      </Link>
+                      {v.status !== 'Sold' && (
+                        <button onClick={() => toggleCompare(v._id || v.id)} className={`absolute bottom-3 left-3 sm:bottom-4 sm:left-4 py-2 px-3 rounded-full shadow-lg transition-all flex items-center gap-2 ${compareIds.includes(v._id || v.id) ? 'bg-[#D4AF37] text-black' : 'bg-black/60 text-white hover:bg-black'}`}>
+                          {compareIds.includes(v._id || v.id) ? <Check size={18} /> : <ArrowRightLeft size={18} />}
+                        </button>
+                      )}
+                    </div>
+                    <div className="p-5 sm:p-6 flex flex-col flex-1">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
+                        <Link to={`/vehicle/${v._id || v.id}`} className="hover:text-[#D4AF37] transition-colors min-w-0">
+                          <h3 className="text-xl font-bold text-black">{v.year} {v.make} {v.model}</h3>
+                          <p className="text-sm text-gray-400 font-medium">{v.trim}</p>
+                        </Link>
+                        <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
+                          {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
+                        </span>
+                      </div>
+                      <div className="mt-auto pt-5 sm:pt-6 border-t border-gray-100 flex gap-4">
+                        <Link to={`/vehicle/${v._id || v.id}`} className="flex-1 bg-gray-50 text-center py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest text-black hover:bg-black hover:text-white transition-all">View Details</Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
+
+            <PaginationBar position="bottom" />
           </main>
         </div>
       </div>

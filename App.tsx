@@ -15,6 +15,7 @@ import Privacy from './pages/Privacy.tsx';
 import { ENGINE_SOUND_URL } from './constants.tsx';
 import { Play, Loader2 } from 'lucide-react';
 import BrandLogo from './components/BrandLogo.tsx';
+import { api } from './api.ts';
 
 const ENTRY_GATE_STORAGE_KEY = 'w4u_has_entered_site';
 
@@ -163,6 +164,12 @@ const App: React.FC = () => {
   const goPrev = () => {
     setCurrentSlide((prev) => (prev - 1 + ENTRY_SLIDES.length) % ENTRY_SLIDES.length);
   };
+
+  useEffect(() => {
+    // Eagerly pre-fetch fleet registry & config in the background so navigation is instant
+    api.getVehicles().catch(err => console.error(err));
+    api.getConfig().catch(err => console.error(err));
+  }, []);
 
   useEffect(() => {
     if (!hasInteracted) {

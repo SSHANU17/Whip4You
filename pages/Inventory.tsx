@@ -25,6 +25,7 @@ const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [vinSearchTerm, setVinSearchTerm] = useState('');
   const mainGridRef = useRef<HTMLDivElement>(null);
+  const preloadedImageUrls = useRef(new Set<string>());
 
   // Synchronous cache-first state initialization for Eager Loading & instant rendering
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
@@ -160,23 +161,31 @@ const Inventory: React.FC = () => {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, vinSearchTerm, makeFilter, bodyTypeFilter, transmissionFilter, colorFilter, yearMin, yearMax, priceMin, priceMax, mileageMin, mileageMax, sortBy]);
 
-  // Eager pre-loading of current, next & previous page vehicle images
+  // Start fetching every lead vehicle photo as soon as the Inventory route has
+  // vehicle data. This also works for cache-first navigation back to this page.
+  // The inventory only renders each vehicle's lead photo; gallery photos remain
+  // deferred until a visitor opens that vehicle's detail page.
   useEffect(() => {
-    if (loading || !filteredVehicles.length) return;
+    if (loading || !vehicles.length) return;
 
-    const effectivePerPage = itemsPerPage === -1 ? filteredVehicles.length : itemsPerPage;
-    const startIdx = (currentPage - 1) * effectivePerPage;
-    const currentBatch = filteredVehicles.slice(startIdx, startIdx + effectivePerPage);
-    const nextBatch = filteredVehicles.slice(startIdx + effectivePerPage, startIdx + effectivePerPage * 2);
-    const prevBatch = startIdx >= effectivePerPage ? filteredVehicles.slice(startIdx - effectivePerPage, startIdx) : [];
+    vehicles.forEach((vehicle, index) => {
+      const url = vehicle.images?.[0];
+      if (!url || preloadedImageUrls.current.has(url)) return;
+      preloadedImageUrls.current.add(url);
 
-    [...currentBatch, ...nextBatch, ...prevBatch].forEach(v => {
-      if (v.images?.[0]) {
-        const img = new Image();
-        img.src = v.images[0];
-      }
+      const preload = document.createElement('link');
+      preload.rel = 'preload';
+      preload.as = 'image';
+      preload.href = url;
+      // Prioritize the initially visible inventory cards, while still starting
+      // every remaining car image immediately.
+      preload.setAttribute('fetchpriority', index < 12 ? 'high' : 'low');
+      document.head.appendChild(preload);
+
+      const image = new Image();
+      image.src = url;
     });
-  }, [filteredVehicles, currentPage, itemsPerPage, loading]);
+  }, [vehicles, loading]);
 
   const activeFilters = useMemo(() => {
     const chips: { label: string; key: string; value: any }[] = [];

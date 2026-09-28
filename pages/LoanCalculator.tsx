@@ -7,10 +7,10 @@ const LoanCalculator: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialPrice = Number(searchParams.get('price')) || 30000;
   
-  const [vehiclePrice, setVehiclePrice] = useState<number>(initialPrice);
-  const [downPayment, setDownPayment] = useState<number>(Math.floor(initialPrice * 0.1));
-  const [tradeValue, setTradeValue] = useState<number>(0);
-  const [interestRate, setInterestRate] = useState<number>(5.99);
+  const [vehiclePrice, setVehiclePrice] = useState(String(initialPrice));
+  const [downPayment, setDownPayment] = useState(String(Math.floor(initialPrice * 0.1)));
+  const [tradeValue, setTradeValue] = useState('');
+  const [interestRate, setInterestRate] = useState('5.99');
   const [term, setTerm] = useState<number>(60);
   
   const [results, setResults] = useState({
@@ -23,12 +23,12 @@ const LoanCalculator: React.FC = () => {
 
   useEffect(() => {
     // Safety constraints
-    const safePrice = Math.max(0, vehiclePrice);
-    const safeDown = Math.max(0, downPayment);
-    const safeTrade = Math.max(0, tradeValue);
+    const safePrice = Math.max(0, Number(vehiclePrice) || 0);
+    const safeDown = Math.max(0, Number(downPayment) || 0);
+    const safeTrade = Math.max(0, Number(tradeValue) || 0);
     
     const principal = safePrice - safeDown - safeTrade;
-    const r = (interestRate / 100) / 12;
+    const r = (Math.max(0, Number(interestRate) || 0) / 100) / 12;
     const n = term;
 
     if (principal <= 0) {
@@ -36,7 +36,7 @@ const LoanCalculator: React.FC = () => {
       return;
     }
 
-    const monthly = principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    const monthly = r === 0 ? principal / n : principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
     const totalPaid = monthly * n;
     const totalInterest = totalPaid - principal;
 
@@ -74,7 +74,8 @@ const LoanCalculator: React.FC = () => {
                   <input 
                     type="number" 
                     value={vehiclePrice} 
-                    onChange={(e) => setVehiclePrice(Number(e.target.value))}
+                    min="0"
+                    onChange={(e) => setVehiclePrice(e.target.value)}
                     className="w-full bg-zinc-50 border-b border-zinc-200 p-4 pl-10 rounded-xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-black font-bold" 
                   />
                   <DollarSign className="absolute left-3 top-4 text-gray-400" size={18} />
@@ -86,7 +87,8 @@ const LoanCalculator: React.FC = () => {
                   <input 
                     type="number" 
                     value={downPayment} 
-                    onChange={(e) => setDownPayment(Number(e.target.value))}
+                    min="0"
+                    onChange={(e) => setDownPayment(e.target.value)}
                     className="w-full bg-zinc-50 border-b border-zinc-200 p-4 pl-10 rounded-xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-black font-bold" 
                   />
                   <DollarSign className="absolute left-3 top-4 text-gray-400" size={18} />
@@ -97,8 +99,9 @@ const LoanCalculator: React.FC = () => {
                 <div className="relative">
                   <input 
                     type="number" 
-                    value={tradeValue} 
-                    onChange={(e) => setTradeValue(Number(e.target.value))}
+                    value={tradeValue}
+                    min="0"
+                    onChange={(e) => setTradeValue(e.target.value)}
                     className="w-full bg-zinc-50 border-b border-zinc-200 p-4 pl-10 rounded-xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-black font-bold" 
                   />
                   <DollarSign className="absolute left-3 top-4 text-gray-400" size={18} />
@@ -110,8 +113,9 @@ const LoanCalculator: React.FC = () => {
                   <input 
                     type="number" 
                     step="0.01"
+                    min="0"
                     value={interestRate} 
-                    onChange={(e) => setInterestRate(Number(e.target.value))}
+                    onChange={(e) => setInterestRate(e.target.value)}
                     className="w-full bg-zinc-50 border-b border-zinc-200 p-4 pl-10 rounded-xl outline-none focus:bg-white focus:border-[#D4AF37] transition-all text-black font-bold" 
                   />
                   <Percent className="absolute left-3 top-4 text-gray-400" size={18} />

@@ -25,6 +25,7 @@ export interface Vehicle {
   showPrice?: boolean;
   actualPrice?: number;
   isHidden?: boolean;
+  displayOrder?: number | null;
   isNewArrival?: boolean;
   newArrivalExpiryDate?: string;
 }
@@ -51,4 +52,4 @@ export interface Review {
   date: string;
 }
 
-export type SortOption = 'price_asc' | 'price_desc' | 'year_new' | 'year_old' | 'mileage_low';
+export type SortOption = 'admin_order' | 'price_asc' | 'price_desc' | 'year_new' | 'year_old' | 'mileage_low';

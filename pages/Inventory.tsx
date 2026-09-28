@@ -20,7 +20,7 @@ const capitalizeWords = (str?: string) => {
 const Inventory: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<SortOption>('year_new');
+  const [sortBy, setSortBy] = useState<SortOption>('admin_order');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [vinSearchTerm, setVinSearchTerm] = useState('');
@@ -372,7 +372,7 @@ const Inventory: React.FC = () => {
     <div className="bg-off-white min-h-screen pb-20 relative text-gray-900">
       <div className="bg-black text-white py-10 md:py-16 mb-6 md:mb-10">
         <div className="container mx-auto px-4 sm:px-6">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 brand-font italic">Browse Inventory</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 brand-font italic text-white">Browse Inventory</h1>
           <p className="text-gray-400">Discover your perfect match from our premium inspected vehicles.</p>
         </div>
       </div>
@@ -465,6 +465,7 @@ const Inventory: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <select className="w-full sm:w-auto bg-gray-50 border border-gray-200 p-2 rounded-lg outline-none text-xs font-bold uppercase tracking-widest text-black cursor-pointer" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
+                    <option value="admin_order">Featured</option>
                     <option value="year_new">Newest First</option>
                     <option value="year_old">Oldest First</option>
                     <option value="price_asc">Price: Low to High</option>

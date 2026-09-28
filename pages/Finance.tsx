@@ -12,6 +12,83 @@ import {
 } from 'lucide-react';
 import { api } from '../api.ts';
 
+type ApplicationField = {
+  name: string;
+  label: string;
+  type?: 'text' | 'email' | 'tel' | 'date' | 'number' | 'select' | 'textarea';
+  required?: boolean;
+  options?: string[];
+  placeholder?: string;
+};
+
+const provinces = ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'];
+const yesNo = ['Yes', 'No'];
+const durationFields = (prefix: string, label: string, required = false): ApplicationField[] => [
+  { name: `${prefix}Years`, label: `${label} - Years`, type: 'number', required },
+  { name: `${prefix}Months`, label: `${label} - Months`, type: 'number', required }
+];
+
+const applicationSections: { title: string; fields: ApplicationField[] }[] = [
+  { title: 'Personal Information', fields: [
+    { name: 'salutation', label: 'Salutation', type: 'select', options: ['Dr.', 'Miss', 'Mr.', 'Mrs.', 'Ms.'] },
+    { name: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female'] },
+    { name: 'firstName', label: 'First Name', required: true },
+    { name: 'lastName', label: 'Last Name', required: true },
+    { name: 'phone', label: 'Phone', type: 'tel', required: true },
+    { name: 'email', label: 'Email', type: 'email', required: true },
+    { name: 'maritalStatus', label: 'Marital Status', type: 'select', required: true, options: ['Single', 'Married', 'Divorced', 'Other'] },
+    { name: 'birthDate', label: 'Birth Date', type: 'date', required: true },
+    { name: 'sin', label: 'SIN', placeholder: 'Optional' }
+  ] },
+  { title: 'Current Address', fields: [
+    { name: 'address', label: 'Address', required: true },
+    { name: 'city', label: 'City', required: true },
+    { name: 'province', label: 'Province', type: 'select', required: true, options: provinces },
+    { name: 'postalCode', label: 'Postal Code', required: true },
+    ...durationFields('addressDuration', 'Time at Current Address', true)
+  ] },
+  { title: 'Home Rent / Mortgage Information', fields: [
+    { name: 'homeStatus', label: 'Home Status', type: 'select', required: true, options: ['Rent', 'Own with Mortgage', 'With Parents', 'Other'] },
+    { name: 'monthlyPayment', label: 'Monthly Payment ($)', type: 'number', required: true }
+  ] },
+  { title: 'Current Employment', fields: [
+    { name: 'employmentType', label: 'Type', type: 'select', required: true, options: ['Full Time', 'Part Time', 'Contract'] },
+    { name: 'employer', label: 'Employer', required: true },
+    { name: 'occupation', label: 'Occupation', required: true },
+    { name: 'employmentAddress', label: 'Employment Address', required: true },
+    { name: 'employmentCity', label: 'City', required: true },
+    { name: 'employmentProvince', label: 'Province', type: 'select', required: true, options: provinces },
+    { name: 'employmentPostalCode', label: 'Postal Code', required: true },
+    { name: 'employmentPhone', label: 'Phone', type: 'tel', required: true },
+    { name: 'grossIncome', label: 'Gross Income ($)', type: 'number', required: true },
+    ...durationFields('employmentDuration', 'Time with Employer', true)
+  ] },
+  { title: 'Previous Employment', fields: [
+    { name: 'previousEmployer', label: 'Previous Employer' },
+    { name: 'previousEmployerPhone', label: 'Phone', type: 'tel' },
+    ...durationFields('previousEmploymentDuration', 'Previous Employment Duration')
+  ] },
+  { title: 'Other Information', fields: [
+    { name: 'previousBankruptcy', label: 'Previous Bankruptcy?', type: 'select', options: yesNo },
+    { name: 'previousRepossession', label: 'Previous Repossession?', type: 'select', options: yesNo },
+    { name: 'cosignerAvailable', label: 'Is Cosigner Available?', type: 'select', options: yesNo },
+    { name: 'creditRating', label: 'Please Rate Your Credit', type: 'select', options: ['Good Credit', 'Average', 'Bad Credit', 'No Credit'] }
+  ] },
+  { title: 'Desired Vehicle', fields: [
+    { name: 'desiredVehicleMake', label: 'Make' },
+    { name: 'desiredVehicleModel', label: 'Model' },
+    { name: 'desiredVehicleYear', label: 'Year', type: 'number' },
+    { name: 'desiredVehicleVin', label: 'VIN' }
+  ] },
+  { title: 'Trade In', fields: [
+    { name: 'tradeInMake', label: 'Trade-In Make' },
+    { name: 'tradeInModel', label: 'Trade-In Model' },
+    { name: 'tradeInYear', label: 'Trade-In Year', type: 'number' },
+    { name: 'tradeInKilometers', label: 'Trade-In Kilometers', type: 'number' },
+    { name: 'message', label: 'Questions or Comments', type: 'textarea', placeholder: 'Add any questions or comments...' }
+  ] }
+];
+
 const Finance: React.FC = () => {
   const location = useLocation();
   const formRef = useRef<HTMLDivElement>(null);
@@ -40,18 +117,18 @@ const Finance: React.FC = () => {
       Object.entries(data).filter(([, value]) => String(value).trim().length > 0)
     );
 
-    const message =
-      String(data.message || '').trim() ||
-      'Finance application request from application hub.';
+    const firstName = String(data.firstName || '').trim();
+    const lastName = String(data.lastName || '').trim();
+    const message = String(data.message || '').trim() || 'Finance application request from application hub.';
 
     try {
       await api.createLead({
         type: 'Finance',
-        name: data.name as string,
+        name: `${firstName} ${lastName}`.trim(),
         email: data.email as string,
         phone: data.phone as string,
         message,
-        details: normalizedDetails
+        details: { ...normalizedDetails, creditReportAuthorization: 'Authorized' }
       });
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -200,26 +277,41 @@ const Finance: React.FC = () => {
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Full Name</label>
-                      <input name="name" required type="text" placeholder="John Doe" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Email Address</label>
-                      <input name="email" required type="email" placeholder="john@example.com" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Phone Number</label>
-                      <input name="phone" required type="tel" placeholder="(778) 000-0000" className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm text-black placeholder:text-zinc-400" />
-                    </div>
+                <form onSubmit={handleSubmit} className="space-y-8 md:space-y-10">
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 md:p-6">
+                    <h3 className="text-xl font-bold brand-font italic text-zinc-900">Good, Bad or No Credit - We Can Help You!</h3>
+                    <p className="mt-2 text-sm text-zinc-700">Get approved from home. Please fill out the secure credit application below.</p>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Additional Information</label>
-                    <textarea name="message" rows={3} className="w-full bg-gray-50 p-5 rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm resize-none text-black placeholder:text-zinc-400" placeholder="Employment, preferred monthly budget, or questions..."></textarea>
-                  </div>
+                  {applicationSections.map(section => (
+                    <section key={section.title} className="space-y-5 border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+                      <h3 className="border-l-4 border-[#D4AF37] pl-4 text-lg font-bold uppercase tracking-wide text-zinc-900">{section.title}</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                        {section.fields.map(field => (
+                          <div key={field.name} className={`space-y-2 ${field.type === 'textarea' ? 'md:col-span-2' : ''}`}>
+                            <label htmlFor={`finance-${field.name}`} className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                              {field.label}{field.required && <span className="text-red-600"> (Required)</span>}
+                            </label>
+                            {field.type === 'select' ? (
+                              <select id={`finance-${field.name}`} name={field.name} required={field.required} defaultValue="" className="w-full bg-gray-50 p-4 md:p-5 rounded-xl md:rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/30 transition-all text-sm text-zinc-900">
+                                <option value="" disabled>Select {field.label}</option>
+                                {field.options?.map(option => <option key={option} value={option}>{option}</option>)}
+                              </select>
+                            ) : field.type === 'textarea' ? (
+                              <textarea id={`finance-${field.name}`} name={field.name} required={field.required} rows={4} placeholder={field.placeholder} className="w-full bg-gray-50 p-4 md:p-5 rounded-xl md:rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/30 transition-all text-sm resize-y text-zinc-900 placeholder:text-zinc-400" />
+                            ) : (
+                              <input id={`finance-${field.name}`} name={field.name} required={field.required} type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} autoComplete={field.name === 'sin' ? 'off' : undefined} placeholder={field.placeholder} className="w-full bg-gray-50 p-4 md:p-5 rounded-xl md:rounded-2xl outline-none focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/30 transition-all text-sm text-zinc-900 placeholder:text-zinc-400" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+
+                  <label className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-5 text-sm leading-relaxed text-zinc-700">
+                    <input name="creditAuthorization" type="checkbox" value="yes" required className="mt-1 h-4 w-4 accent-[#D4AF37]" />
+                    <span><strong className="text-zinc-900">Credit report authorization:</strong> By submitting this application, you authorize Whip4You to run your credit report.</span>
+                  </label>
 
                   <button 
                     type="submit" 
@@ -228,7 +320,7 @@ const Finance: React.FC = () => {
                   >
                     {loading ? 'TRANSMITTING...' : 'Submit Secure Application'}
                   </button>
-                  <p className="text-center text-[9px] text-gray-400 uppercase tracking-widest">Your data is protected with 256-bit SSL encryption</p>
+                  <p className="text-center text-[9px] text-gray-500 uppercase tracking-widest">Your application details are submitted securely.</p>
                 </form>
               </div>
             )}

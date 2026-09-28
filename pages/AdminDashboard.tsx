@@ -6,7 +6,7 @@ import {
   Phone, Mail, User, MessageSquare, AlertTriangle,
   TrendingUp, BarChart3, Eye, EyeOff, Star, ShieldCheck,
   Percent, DollarSign, Type, ClipboardEdit, Save, Loader2,
-  Menu, ChevronsLeft, ChevronsRight
+  Menu, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { api } from '../api';
 import { Vehicle } from '../types';
@@ -76,8 +76,8 @@ const createInitialVehicleForm = (): Partial<Vehicle> => ({
   make: '',
   model: '',
   year: new Date().getFullYear(),
-  price: 0,
-  mileage: 0,
+  price: undefined,
+  mileage: undefined,
   bodyType: 'Sedan',
   transmission: 'Automatic',
   fuelType: 'Gasoline',
@@ -124,6 +124,10 @@ const AdminDashboard: React.FC = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [inventoryFeedback, setInventoryFeedback] = useState<string | null>(null);
   const [draggedImgIndex, setDraggedImgIndex] = useState<number | null>(null);
+  const [inventorySearch, setInventorySearch] = useState('');
+  const [inventoryStatusFilter, setInventoryStatusFilter] = useState<'all' | Vehicle['status']>('all');
+  const [inventoryMakeFilter, setInventoryMakeFilter] = useState('all');
+  const [inventoryBodyTypeFilter, setInventoryBodyTypeFilter] = useState('all');
 
   // Site Configuration State
   const [siteConfig, setSiteConfig] = useState<any>(null);
@@ -139,6 +143,33 @@ const AdminDashboard: React.FC = () => {
     () => getLeadDetailEntries(selectedLead?.details),
     [selectedLead?.details]
   );
+  const inventoryMakes = useMemo(
+    () => [...new Set(vehicles.map(vehicle => vehicle.make).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [vehicles]
+  );
+  const filteredInventory = useMemo(() => {
+    const query = inventorySearch.trim().toLowerCase();
+    return vehicles.filter(vehicle => {
+      const matchesStatus = inventoryStatusFilter === 'all' || vehicle.status === inventoryStatusFilter;
+      const matchesMake = inventoryMakeFilter === 'all' || vehicle.make === inventoryMakeFilter;
+      const matchesBodyType = inventoryBodyTypeFilter === 'all' || vehicle.bodyType === inventoryBodyTypeFilter;
+      const searchable = [vehicle.year, vehicle.make, vehicle.model, vehicle.trim, vehicle.vin, vehicle.stockNumber]
+        .filter(Boolean).join(' ').toLowerCase();
+      return matchesStatus && matchesMake && matchesBodyType && (!query || searchable.includes(query));
+    });
+  }, [vehicles, inventorySearch, inventoryStatusFilter, inventoryMakeFilter, inventoryBodyTypeFilter]);
+  const getVehicleListedPrice = (vehicle: Vehicle) => {
+    if (typeof vehicle.price === 'number') return Number.isFinite(vehicle.price) ? vehicle.price : 0;
+    const parsedPrice = Number(String(vehicle.price || '').replace(/[^\d.-]/g, ''));
+    return Number.isFinite(parsedPrice) ? parsedPrice : 0;
+  };
+  const availableInventoryWorth = vehicles
+    .filter(vehicle => vehicle.status === 'Available')
+    .reduce((total, vehicle) => total + getVehicleListedPrice(vehicle), 0);
+  const soldInventoryWorth = vehicles
+    .filter(vehicle => vehicle.status === 'Sold')
+    .reduce((total, vehicle) => total + getVehicleListedPrice(vehicle), 0);
+  const totalInventoryWorth = vehicles.reduce((total, vehicle) => total + getVehicleListedPrice(vehicle), 0);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -219,7 +250,12 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleUpdateConfig = async () => {
-    const updated = await api.updateConfig(siteConfig);
+    const gridSize = Number(siteConfig?.inventoryGridSize);
+    if (!Number.isInteger(gridSize) || gridSize < 10 || gridSize > 20) {
+      alert('Inventory grid size must be between 10 and 20.');
+      return;
+    }
+    const updated = await api.updateConfig({ ...siteConfig, inventoryGridSize: gridSize });
     setSiteConfig(updated);
     alert("Configuration Deployed Successfully.");
   };
@@ -318,7 +354,7 @@ const AdminDashboard: React.FC = () => {
         );
       } else {
         const created = await api.createVehicle(payload);
-        setVehicles(prev => [created, ...prev]);
+        setVehicles(prev => [...prev, created]);
       }
 
       closeVehicleModal();
@@ -326,6 +362,21 @@ const AdminDashboard: React.FC = () => {
       const message = err?.message || `Failed to ${editingVehicleId ? 'update' : 'create'} vehicle.`;
       setInventoryFeedback(message);
       alert(message);
+    }
+  };
+
+  const handleReorderVehicle = async (vehicleId: string, direction: -1 | 1) => {
+    const currentIndex = vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === vehicleId);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= vehicles.length) return;
+
+    const reorderedVehicles = [...vehicles];
+    [reorderedVehicles[currentIndex], reorderedVehicles[nextIndex]] = [reorderedVehicles[nextIndex], reorderedVehicles[currentIndex]];
+    try {
+      await api.reorderVehicles(reorderedVehicles.map(vehicle => vehicle._id || vehicle.id).filter((id): id is string => Boolean(id)));
+      setVehicles(reorderedVehicles.map((vehicle, displayOrder) => ({ ...vehicle, displayOrder })));
+    } catch (err: any) {
+      alert(err?.message || 'Unable to save vehicle order.');
     }
   };
 
@@ -464,18 +515,35 @@ const AdminDashboard: React.FC = () => {
             {activeTab === 'overview' && (
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-zinc-900" style={{ color: '#18181b' }}>Operations Analytics</h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6 md:gap-8">
                   <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-[#D4AF37]">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Units</p>
                     <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{vehicles.length}</h3>
+                  </div>
+                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Available Units</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{vehicles.filter(vehicle => vehicle.status === 'Available').length}</h3>
+                  </div>
+                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-zinc-500">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Sold Out Units</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{vehicles.filter(vehicle => vehicle.status === 'Sold').length}</h3>
                   </div>
                   <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Live Leads</p>
                     <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{leads.filter(l => l.status !== 'done').length}</h3>
                   </div>
                   <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Available Cars Worth</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${availableInventoryWorth.toLocaleString()}</h3>
+                  </div>
+                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-zinc-500">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Sold Cars Worth</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${soldInventoryWorth.toLocaleString()}</h3>
+                  </div>
+                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Inventory Worth</p>
-                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${vehicles.reduce((sum, v) => sum + (v.actualPrice || 0), 0).toLocaleString()}</h3>
+                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${totalInventoryWorth.toLocaleString()}</h3>
+                    <p className="mt-2 text-[9px] font-bold text-zinc-500">Sum of listed prices for all units</p>
                   </div>
                 </div>
               </div>
@@ -498,93 +566,70 @@ const AdminDashboard: React.FC = () => {
                   </button>
                 </div>
                 
-                <div className="space-y-10">
-                  <div>
-                    <h3 className="text-xl font-bold mb-6 text-black brand-font">Available Vehicles</h3>
-                    <div className="grid grid-cols-1 gap-6">
-                      {vehicles.filter(v => v.status !== 'Sold').map(v => (
-                        <div key={v._id || v.id} className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between border border-zinc-100 group hover:border-[#D4AF37] transition-all gap-6">
-                          <div className="flex items-center gap-6 md:gap-10">
-                            <img src={v.images?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80'} className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shrink-0" alt="" />
-                            <div className="min-w-0">
-                              <h4 className="font-bold text-lg md:text-xl text-black truncate">{v.year} {v.make} {v.model}</h4>
-                              <p className="text-[9px] font-black uppercase text-zinc-600 tracking-widest truncate">{v.vin} | {v.trim}</p>
-                              <p className="text-[#D4AF37] font-bold mt-1">${typeof v.price === 'number' ? v.price.toLocaleString() : v.price}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                            <button
-                              onClick={async () => {
-                                const updated = await api.updateVehicle(v._id || v.id, { isHidden: !v.isHidden });
-                                setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
-                              }}
-                              className={`p-3 md:p-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-colors ${v.isHidden ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-zinc-100 text-zinc-700 hover:text-black hover:bg-zinc-200'}`}
-                              title={v.isHidden ? "Show Vehicle" : "Hide Vehicle"}
-                            >
-                              {v.isHidden ? "Unhide" : "Hide"}
-                            </button>
-                            <button
-                              onClick={async () => {
-                                const updated = await api.updateVehicle(v._id || v.id, { status: 'Sold' });
-                                setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
-                              }}
-                              className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-blue-500 hover:bg-blue-50 transition-colors font-bold text-[10px] uppercase tracking-widest"
-                              title="Mark as Sold"
-                            >
-                              Mark Sold
-                            </button>
-                            <button onClick={() => handleStartEditVehicle(v)} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-600 hover:text-black transition-colors" title="Edit vehicle"><Edit3 size={18} /></button>
-                            <button onClick={async () => { if(confirm('Authorize permanent deletion of this asset?')) { await api.deleteVehicle(v._id || v.id); setVehicles(prev => prev.filter(item => (item._id || item.id) !== (v._id || v.id))); } }} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-red-400 hover:bg-red-50 transition-colors"><Trash2 size={18} /></button>
-                          </div>
-                        </div>
-                      ))}
+                <section className="space-y-6">
+                  <div className="flex flex-col gap-4 rounded-3xl border border-zinc-200 bg-white p-5 md:p-6 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <h3 className="text-xl font-bold text-black brand-font">Vehicle Inventory</h3>
+                        <p className="mt-1 text-xs font-semibold text-zinc-500">Showing {filteredInventory.length} of {vehicles.length} vehicles</p>
+                      </div>
+                      <button
+                        onClick={() => { setInventorySearch(''); setInventoryStatusFilter('all'); setInventoryMakeFilter('all'); setInventoryBodyTypeFilter('all'); }}
+                        className="self-start rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:bg-zinc-100"
+                      >Reset filters</button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                      <input aria-label="Search inventory" value={inventorySearch} onChange={e => setInventorySearch(e.target.value)} placeholder="Search make, model, VIN, stock..." className="sm:col-span-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 outline-none focus:border-[#D4AF37]" />
+                      <select aria-label="Filter by status" value={inventoryStatusFilter} onChange={e => setInventoryStatusFilter(e.target.value as 'all' | Vehicle['status'])} className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-800 outline-none focus:border-[#D4AF37]">
+                        <option value="all">All statuses</option><option value="Available">Available</option><option value="Pending">Pending</option><option value="Sold">Sold</option>
+                      </select>
+                      <select aria-label="Filter by make" value={inventoryMakeFilter} onChange={e => setInventoryMakeFilter(e.target.value)} className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-800 outline-none focus:border-[#D4AF37]">
+                        <option value="all">All makes</option>{inventoryMakes.map(make => <option key={make} value={make}>{make}</option>)}
+                      </select>
+                      <select aria-label="Filter by body type" value={inventoryBodyTypeFilter} onChange={e => setInventoryBodyTypeFilter(e.target.value)} className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-800 outline-none focus:border-[#D4AF37]">
+                        <option value="all">All body types</option>{[...new Set(vehicles.map(vehicle => vehicle.bodyType).filter(Boolean))].sort().map(type => <option key={type} value={type}>{type}</option>)}
+                      </select>
                     </div>
                   </div>
 
-                  {vehicles.filter(v => v.status === 'Sold').length > 0 && (
-                    <div>
-                      <h3 className="text-xl font-bold mb-6 text-zinc-800 brand-font">Sold Vehicles</h3>
-                      <div className="grid grid-cols-1 gap-6 opacity-80">
-                        {vehicles.filter(v => v.status === 'Sold').map(v => (
-                          <div key={v._id || v.id} className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between border border-zinc-100 group transition-all gap-6">
-                            <div className="flex items-center gap-6 md:gap-10">
-                              <img src={v.images?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80'} className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shrink-0 grayscale" alt="" />
-                              <div className="min-w-0">
-                                <h4 className="font-bold text-lg md:text-xl text-zinc-800 line-through truncate">{v.year} {v.make} {v.model}</h4>
-                                <p className="text-[9px] font-black uppercase text-zinc-600 tracking-widest truncate">{v.vin} | {v.trim}</p>
-                                <p className="text-zinc-700 font-bold mt-1">${typeof v.price === 'number' ? v.price.toLocaleString() : v.price}</p>
-                              </div>
+                  {filteredInventory.length === 0 ? (
+                    <div className="rounded-3xl border border-dashed border-zinc-300 bg-white p-12 text-center text-sm font-semibold text-zinc-500">No vehicles match these filters.</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+                      {filteredInventory.map(v => (
+                        <article key={v._id || v.id} className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-[#D4AF37] hover:shadow-lg">
+                          <div className="relative h-52 bg-zinc-100">
+                            <img src={v.images?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80'} className={`h-full w-full object-cover ${v.status === 'Sold' ? 'grayscale' : ''}`} alt={`${v.year} ${v.make} ${v.model}`} />
+                            <span className={`absolute left-4 top-4 rounded-full px-3 py-1.5 text-[9px] font-black uppercase tracking-widest ${v.status === 'Sold' ? 'bg-zinc-900 text-white' : v.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>{v.status}</span>
+                            {v.isHidden && <span className="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-700">Hidden</span>}
+                          </div>
+                          <div className="space-y-4 p-5">
+                            <div>
+                              <h4 className="truncate text-lg font-bold text-zinc-900">{v.year} {v.make} {v.model}</h4>
+                              <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-widest text-zinc-500">{v.trim || v.bodyType} {v.vin ? `· ${v.vin}` : ''}</p>
+                              <p className="mt-2 text-lg font-black text-[#B58B16]">{typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price}</p>
+                              <p className="mt-1 text-xs text-zinc-500">{Number(v.mileage || 0).toLocaleString()} km · {v.transmission || 'Transmission N/A'}</p>
                             </div>
-                            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                              <button
-                                onClick={async () => {
-                                  const updated = await api.updateVehicle(v._id || v.id, { isHidden: !v.isHidden });
-                                  setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
-                                }}
-                                className={`p-3 md:p-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-colors ${v.isHidden ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-zinc-100 text-zinc-700 hover:text-black hover:bg-zinc-200'}`}
-                                title={v.isHidden ? "Show Vehicle" : "Hide Vehicle"}
-                              >
-                                {v.isHidden ? "Unhide" : "Hide"}
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  const updated = await api.updateVehicle(v._id || v.id, { status: 'Available' });
-                                  setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item));
-                                }}
-                                className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-green-500 hover:bg-green-50 transition-colors font-bold text-[10px] uppercase tracking-widest"
-                                title="Mark as Available"
-                              >
-                                Mark Available
-                              </button>
-                              <button onClick={() => handleStartEditVehicle(v)} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-zinc-400 hover:text-black transition-colors"><Edit3 size={18} /></button>
-                              <button onClick={async () => { if(confirm('Authorize permanent deletion of this asset?')) { await api.deleteVehicle(v._id || v.id); setVehicles(prev => prev.filter(item => (item._id || item.id) !== (v._id || v.id))); } }} className="p-3 md:p-4 bg-zinc-50 rounded-2xl text-red-300 hover:bg-red-50 transition-colors"><Trash2 size={18} /></button>
+                            <div className="flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-4">
+                              <div className="flex items-center gap-1" aria-label="Change vehicle display order">
+                                <button onClick={() => handleReorderVehicle(v._id || v.id, -1)} disabled={vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === (v._id || v.id)) === 0} aria-label="Move vehicle earlier" title="Move earlier in public inventory" className="rounded-xl bg-zinc-100 p-2.5 text-zinc-600 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"><ArrowUp size={16} /></button>
+                                <button onClick={() => handleReorderVehicle(v._id || v.id, 1)} disabled={vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === (v._id || v.id)) === vehicles.length - 1} aria-label="Move vehicle later" title="Move later in public inventory" className="rounded-xl bg-zinc-100 p-2.5 text-zinc-600 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"><ArrowDown size={16} /></button>
+                              </div>
+                              <button onClick={async () => { const updated = await api.updateVehicle(v._id || v.id, { isHidden: !v.isHidden }); setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item)); }} className={`rounded-xl px-3 py-2.5 text-[9px] font-black uppercase tracking-widest ${v.isHidden ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}>{v.isHidden ? 'Unhide' : 'Hide'}</button>
+                              {v.status === 'Sold' ? (
+                                <button onClick={async () => { const updated = await api.updateVehicle(v._id || v.id, { status: 'Available' }); setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item)); }} className="rounded-xl bg-green-50 px-3 py-2.5 text-[9px] font-black uppercase tracking-widest text-green-700 hover:bg-green-100">Mark Available</button>
+                              ) : (
+                                <button onClick={async () => { const updated = await api.updateVehicle(v._id || v.id, { status: 'Sold' }); setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item)); }} className="rounded-xl bg-blue-50 px-3 py-2.5 text-[9px] font-black uppercase tracking-widest text-blue-700 hover:bg-blue-100">Mark Sold</button>
+                              )}
+                              <button onClick={() => handleStartEditVehicle(v)} aria-label={`Edit ${v.year} ${v.make} ${v.model}`} className="ml-auto rounded-xl bg-zinc-100 p-2.5 text-zinc-600 hover:text-black"><Edit3 size={16} /></button>
+                              <button onClick={async () => { if (confirm('Authorize permanent deletion of this asset?')) { await api.deleteVehicle(v._id || v.id); setVehicles(prev => prev.filter(item => (item._id || item.id) !== (v._id || v.id))); } }} aria-label={`Delete ${v.year} ${v.make} ${v.model}`} className="rounded-xl bg-red-50 p-2.5 text-red-500 hover:bg-red-100"><Trash2 size={16} /></button>
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </article>
+                      ))}
                     </div>
                   )}
-                </div>
+                </section>
               </div>
             )}
 
@@ -644,7 +689,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="bg-white p-8 md:p-12 rounded-[30px] md:rounded-[40px] shadow-sm space-y-8">
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">HERO HEADLINE</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">PROMO RATE (%)</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
-                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">INVENTORY GRID SIZE (10-20)</label><input type="number" min="10" max="20" className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.inventoryGridSize || 12} onChange={e => setSiteConfig({...siteConfig, inventoryGridSize: parseInt(e.target.value) || 12})} /></div>
+                  <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">INVENTORY GRID SIZE (10-20)</label><input type="number" min="10" max="20" className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.inventoryGridSize ?? ''} onChange={e => setSiteConfig({...siteConfig, inventoryGridSize: e.target.value === '' ? '' : Number(e.target.value)})} /></div>
                   <button onClick={handleUpdateConfig} className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">Update Global Config</button>
                 </div>
               </div>
@@ -787,11 +832,11 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">YEAR</label>
-                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.year} onChange={e => setNewVehicle({...newVehicle, year: parseInt(e.target.value)})} />
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.year ?? ''} onChange={e => setNewVehicle({...newVehicle, year: e.target.value === '' ? undefined : parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">PRICE ($)</label>
-                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.price} onChange={e => setNewVehicle({...newVehicle, price: parseInt(e.target.value)})} />
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={typeof newVehicle.price === 'number' ? newVehicle.price : ''} onChange={e => setNewVehicle({...newVehicle, price: e.target.value === '' ? undefined : parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">ACTUAL/REAL PRICE ($) <span className="text-zinc-400 font-normal">(Optional)</span></label>
@@ -807,7 +852,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">MILEAGE</label>
-                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.mileage} onChange={e => setNewVehicle({...newVehicle, mileage: parseInt(e.target.value)})} />
+                  <input required type="number" className="w-full bg-white border-2 border-zinc-200 p-2.5 md:p-4 rounded-lg md:rounded-xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-400 text-sm" value={newVehicle.mileage ?? ''} onChange={e => setNewVehicle({...newVehicle, mileage: e.target.value === '' ? undefined : parseInt(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[8px] md:text-[9px] font-black text-zinc-700">TRIM</label>

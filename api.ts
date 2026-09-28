@@ -180,6 +180,17 @@ export const api = {
     return result;
   },
 
+  reorderVehicles: async (vehicleIds: string[]) => {
+    const res = await fetch(`${API_BASE}/vehicles/reorder`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify({ vehicleIds })
+    });
+    const result = await handleResponse(res);
+    clearVehiclesCache();
+    return result;
+  },
+
   deleteVehicle: async (id: string) => {
     const res = await fetch(`${API_BASE}/vehicles/${id}`, {
       method: 'DELETE',

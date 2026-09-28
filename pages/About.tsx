@@ -6,7 +6,7 @@ const About: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="relative h-[60vh] flex items-center justify-center text-center bg-black">
+      <section className="relative min-h-[55svh] md:h-[60vh] flex items-center justify-center text-center bg-black py-16 md:py-0">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=2000" 
@@ -15,21 +15,21 @@ const About: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black"></div>
         </div>
-        <div className="container mx-auto px-6 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <span className="text-[#D4AF37] font-bold uppercase tracking-[0.4em] mb-4 block">The Whip4You Story</span>
-          <h1 className="text-5xl md:text-8xl font-bold text-white mb-6 brand-font italic">Luxury & Value</h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+          <h1 className="text-4xl sm:text-5xl md:text-8xl font-bold text-white mb-5 md:mb-6 brand-font italic">Luxury &amp; Value</h1>
+          <p className="text-base sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
             Revolutionizing the pre-owned market in British Columbia since 2018.
           </p>
         </div>
       </section>
 
       {/* Philosophy */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+      <section className="py-14 md:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 lg:gap-24 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-8 leading-tight">
                 Wholesale Pricing, <br/><span className="gold-text italic">Redefined.</span>
               </h2>
               <p className="text-gray-900 text-lg leading-relaxed mb-8">
@@ -68,12 +68,12 @@ const About: React.FC = () => {
 
       {/* Values */}
       <section className="py-24 bg-gray-950 text-white">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-20">
             <h2 className="text-4xl font-bold mb-4">Our Core Values</h2>
             <div className="w-24 h-1 bg-[#D4AF37] mx-auto"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {[
               { icon: <Heart size={40} />, title: 'Customer First', desc: 'No-pressure sales environment. We are here to consult, not to close.' },
               { icon: <Globe size={40} />, title: 'Transparency', desc: 'Full Carfax reports and inspection sheets provided for every vehicle.' },

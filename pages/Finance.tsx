@@ -243,28 +243,28 @@ const Finance: React.FC = () => {
       {/* Application Hub Section */}
       <section ref={formRef} className="py-16 md:py-24 bg-off-white text-zinc-900" id="application-form">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
              <div className="inline-flex items-center gap-2 bg-black/5 px-4 py-2 rounded-full mb-6 border border-black/10">
                 <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">
                   {isLive ? 'Finance Team Online' : 'Secure 24/7 Portal'}
                 </span>
              </div>
-             <h2 className="text-4xl md:text-5xl font-bold mb-4 brand-font italic text-black">Start Your Application</h2>
-             <p className="text-gray-500 max-w-xl mx-auto">Get pre-approved in minutes with our encrypted finance portal.</p>
+             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 brand-font italic text-black">Start Your Application</h2>
+             <p className="text-sm sm:text-base text-gray-500 max-w-xl mx-auto">Get pre-approved in minutes with our encrypted finance portal.</p>
           </div>
 
           <div className="max-w-5xl mx-auto">
             {submitted ? (
-              <div className="bg-white p-12 md:p-24 rounded-[40px] md:rounded-[60px] text-center animate-in zoom-in duration-500 shadow-xl border border-gray-100">
+              <div className="bg-white p-6 sm:p-10 md:p-16 lg:p-24 rounded-3xl md:rounded-[60px] text-center animate-in zoom-in duration-500 shadow-xl border border-gray-100">
                 <div className="w-24 h-24 gold-gradient text-black rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
                   <CheckCircle2 size={48} />
                 </div>
                 <h3 className="text-3xl md:text-5xl font-bold text-zinc-900 mb-4 brand-font italic">Application Submitted!</h3>
-                <p className="text-gray-500 text-lg mb-12">One of our finance specialists will be in touch shortly to discuss your options.</p>
+                <p className="text-gray-600 text-base sm:text-lg mb-8 md:mb-12">One of our finance specialists will be in touch shortly to discuss your options.</p>
                 <button 
                   onClick={() => setSubmitted(false)}
-                  className="bg-black text-white px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#D4AF37] hover:text-black transition-all"
+                  className="bg-black text-white px-8 sm:px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#D4AF37] hover:text-black transition-all"
                 >
                   Return to Top
                 </button>

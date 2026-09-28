@@ -191,7 +191,7 @@ const VehicleDetails: React.FC = () => {
             {/* Gallery */}
             <div className="space-y-4 print:mb-10">
               <div
-                className="relative overflow-hidden rounded-[40px] bg-zinc-950 shadow-2xl group"
+                className="relative overflow-hidden rounded-3xl sm:rounded-[40px] bg-zinc-950 shadow-2xl group"
                 onTouchStart={handleGalleryTouchStart}
                 onTouchEnd={handleGalleryTouchEnd}
                 onTouchCancel={resetGalleryTouch}
@@ -308,8 +308,8 @@ const VehicleDetails: React.FC = () => {
             <div className="space-y-6 lg:sticky lg:top-40">
               <div className="bg-white p-6 sm:p-8 md:p-10 rounded-[32px] md:rounded-[40px] shadow-2xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 gold-gradient opacity-5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                <h1 className="text-3xl font-bold mb-2 brand-font text-black flex items-center justify-between gap-4">
-                  <span>{vehicle.year} {vehicle.make} {vehicle.model}</span>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2 brand-font text-black flex items-center justify-between gap-2 sm:gap-4">
+                  <span className="min-w-0 break-words">{vehicle.year} {vehicle.make} {vehicle.model}</span>
                   {vehicle.status === 'Sold' && (
                     <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex-shrink-0">
                       Sold
@@ -340,13 +340,13 @@ const VehicleDetails: React.FC = () => {
                     <>
                       <Link 
                         to={`/apply?vehicleId=${vehicle._id || vehicle.id}`} 
-                        className="block w-full text-center bg-black text-white py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl"
+                        className="block w-full text-center bg-black text-white py-5 sm:py-6 px-3 rounded-3xl font-black uppercase tracking-[0.12em] sm:tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl"
                       >
                         Initiate Approval
                       </Link>
                       <Link 
                         to={`/contact?vehicleId=${vehicle._id || vehicle.id}`} 
-                        className="block w-full text-center bg-white text-black py-5 sm:py-6 rounded-3xl font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] border-2 border-black hover:bg-black hover:text-white transition-all shadow-md"
+                        className="block w-full text-center bg-white text-black py-5 sm:py-6 px-3 rounded-3xl font-black uppercase tracking-[0.12em] sm:tracking-[0.3em] text-[10px] border-2 border-black hover:bg-black hover:text-white transition-all shadow-md"
                       >
                         Direct Inquiry
                       </Link>
@@ -372,7 +372,7 @@ const VehicleDetails: React.FC = () => {
                 <h3 className="text-xl font-bold mb-6 brand-font italic text-[#D4AF37]">Budget Analysis</h3>
                 <p className="text-4xl font-black text-white mb-2 display-font">${(typeof vehicle.price === 'number' ? (vehicle.price * 0.02) : 0).toFixed(0)}<span className="text-sm font-medium text-white/40"> /mo</span></p>
                 <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] mb-10 font-bold">Subject to 5.99% APR & OAC</p>
-                <Link to={`/calculator?price=${vehicle.price}`} className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.5em] group/link text-[#D4AF37] border-b border-[#D4AF37]/20 pb-2">
+                <Link to={`/calculator?price=${vehicle.price}`} className="flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.5em] group/link text-[#D4AF37] border-b border-[#D4AF37]/20 pb-2">
                   CALCULATE TERMS <ArrowRight className="group-hover/link:translate-x-3 transition-transform" size={16} />
                 </Link>
               </div>
@@ -384,8 +384,8 @@ const VehicleDetails: React.FC = () => {
 
       {/* Fee Transparency Modal */}
       {isFeeInfoOpen && (
-        <div className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-md flex items-center justify-center p-8 animate-in fade-in duration-300">
-           <div className="bg-white max-w-lg w-full rounded-[40px] overflow-hidden shadow-3xl relative animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-300">
+           <div className="bg-white max-w-lg w-full max-h-[92dvh] overflow-y-auto rounded-3xl sm:rounded-[40px] shadow-3xl relative animate-in zoom-in-95 duration-300">
               <button 
                 onClick={() => setIsFeeInfoOpen(false)}
                 className="absolute top-6 right-6 text-zinc-400 hover:text-black"
@@ -393,13 +393,13 @@ const VehicleDetails: React.FC = () => {
                 <X size={28} />
               </button>
               
-              <div className="bg-zinc-950 p-12 text-center relative overflow-hidden">
+              <div className="bg-zinc-950 p-7 sm:p-12 text-center relative overflow-hidden">
                  <div className="absolute inset-0 gold-gradient opacity-10"></div>
                  <h2 className="text-3xl font-black brand-font italic text-white relative z-10 mb-2">Transparency Hub</h2>
                  <p className="text-[#D4AF37] font-black uppercase tracking-[0.5em] text-[10px] relative z-10">Wholesale Access Fee Disclosure</p>
               </div>
               
-              <div className="p-12 space-y-8">
+              <div className="p-5 sm:p-8 md:p-12 space-y-6 sm:space-y-8">
                  <p className="text-zinc-500 text-sm leading-relaxed text-center">Our fixed $799 Wholesale Access & Documentation fee ensures the highest safety standards in BC. This is not profit; it covers:</p>
                  
                  <div className="space-y-4">

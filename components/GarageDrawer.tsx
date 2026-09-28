@@ -39,6 +39,20 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
     if (isOpen) loadFavorites();
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
@@ -57,17 +71,17 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
         onClick={onClose}
       />
       <div className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[1600] shadow-4xl transition-transform duration-700 ease-out flex flex-col translate-x-0">
-        <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-zinc-50">
-          <div className="flex items-center gap-3">
+        <div className="p-4 sm:p-8 border-b border-gray-100 flex justify-between items-center gap-2 bg-zinc-50">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Heart size={20} className="text-[#D4AF37]" fill="#D4AF37" />
-            <h2 className="text-2xl font-bold brand-font italic text-black uppercase">Your Garage</h2>
+            <h2 className="text-xl sm:text-2xl font-bold brand-font italic text-black uppercase">Your Garage</h2>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-black transition-colors">
+          <button aria-label="Close garage" onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center text-zinc-600 hover:text-black transition-colors">
             <X size={32} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
               <Loader2 className="text-[#D4AF37] animate-spin" size={32} />
@@ -90,7 +104,7 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
             savedCars.map(car => (
               <div key={car._id || car.id} className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500">
                 <img src={car.images[0]} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h4 className="font-bold text-black">{car.year} {car.make}</h4>

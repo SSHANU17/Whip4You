@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Car, FileText, Settings, LogOut, 
   Plus, Trash2, Edit3, CheckCircle, Clock, X, 
@@ -128,6 +128,9 @@ const AdminDashboard: React.FC = () => {
   const [inventoryStatusFilter, setInventoryStatusFilter] = useState<'all' | Vehicle['status']>('all');
   const [inventoryMakeFilter, setInventoryMakeFilter] = useState('all');
   const [inventoryBodyTypeFilter, setInventoryBodyTypeFilter] = useState('all');
+  const [isReorderingVehicles, setIsReorderingVehicles] = useState(false);
+  const vehicleCardRefs = useRef(new Map<string, HTMLElement>());
+  const previousVehicleCardPositions = useRef<Map<string, { left: number; top: number }> | null>(null);
 
   // Site Configuration State
   const [siteConfig, setSiteConfig] = useState<any>(null);
@@ -170,6 +173,34 @@ const AdminDashboard: React.FC = () => {
     .filter(vehicle => vehicle.status === 'Sold')
     .reduce((total, vehicle) => total + getVehicleListedPrice(vehicle), 0);
   const totalInventoryWorth = vehicles.reduce((total, vehicle) => total + getVehicleListedPrice(vehicle), 0);
+
+  useLayoutEffect(() => {
+    const previousPositions = previousVehicleCardPositions.current;
+    if (!previousPositions) return;
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      vehicleCardRefs.current.forEach((element, vehicleId) => {
+        const previous = previousPositions.get(vehicleId);
+        if (!previous) return;
+        const current = element.getBoundingClientRect();
+        const deltaX = previous.left - current.left;
+        const deltaY = previous.top - current.top;
+        if (deltaX === 0 && deltaY === 0) return;
+
+        element.style.transition = 'none';
+        element.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        void element.offsetWidth;
+        element.style.transition = 'transform 420ms cubic-bezier(0.22, 0.8, 0.25, 1)';
+        element.style.transform = 'translate(0, 0)';
+        element.addEventListener('transitionend', (event) => {
+          if (event.propertyName !== 'transform') return;
+          element.style.transition = '';
+          element.style.transform = '';
+        }, { once: true });
+      });
+    }
+    previousVehicleCardPositions.current = null;
+  }, [vehicles]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -366,17 +397,33 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleReorderVehicle = async (vehicleId: string, direction: -1 | 1) => {
+    if (isReorderingVehicles) return;
     const currentIndex = vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === vehicleId);
     const nextIndex = currentIndex + direction;
     if (currentIndex < 0 || nextIndex < 0 || nextIndex >= vehicles.length) return;
 
     const reorderedVehicles = [...vehicles];
     [reorderedVehicles[currentIndex], reorderedVehicles[nextIndex]] = [reorderedVehicles[nextIndex], reorderedVehicles[currentIndex]];
+    const captureCardPositions = (): Map<string, { left: number; top: number }> => {
+      const positions = new Map<string, { left: number; top: number }>();
+      vehicleCardRefs.current.forEach((element, id) => {
+        const { left, top } = element.getBoundingClientRect();
+        positions.set(id, { left, top });
+      });
+      return positions;
+    };
+
+    previousVehicleCardPositions.current = captureCardPositions();
+    setIsReorderingVehicles(true);
+    setVehicles(reorderedVehicles);
     try {
       await api.reorderVehicles(reorderedVehicles.map(vehicle => vehicle._id || vehicle.id).filter((id): id is string => Boolean(id)));
-      setVehicles(reorderedVehicles.map((vehicle, displayOrder) => ({ ...vehicle, displayOrder })));
     } catch (err: any) {
+      previousVehicleCardPositions.current = captureCardPositions();
+      setVehicles(vehicles);
       alert(err?.message || 'Unable to save vehicle order.');
+    } finally {
+      setIsReorderingVehicles(false);
     }
   };
 
@@ -446,7 +493,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-off-white flex flex-col lg:flex-row text-zinc-900">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-black text-white p-6 flex justify-between items-center sticky top-0 z-50 border-b border-white/10">
+      <div className="lg:hidden bg-black text-white px-4 py-3 sm:p-6 flex justify-between items-center sticky top-0 z-50 border-b border-white/10">
         <div className="text-xl font-bold brand-font italic tracking-[0.12em] text-white">WHIP4YOU <span className="text-[#D4AF37]">SYSTEMS</span></div>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-[#D4AF37]">
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
@@ -509,40 +556,40 @@ const AdminDashboard: React.FC = () => {
         </div>
       </aside>
 
-      <main className="flex-1 p-6 md:p-10 lg:p-16">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 md:p-10 lg:p-12 xl:p-16">
         {loading ? <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-[#D4AF37]" size={48} /></div> : (
           <>
             {activeTab === 'overview' && (
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16 brand-font italic text-zinc-900" style={{ color: '#18181b' }}>Operations Analytics</h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6 md:gap-8">
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-[#D4AF37]">
+                <div className="grid min-w-0 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                  <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-[#D4AF37]">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Units</p>
                     <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{vehicles.length}</h3>
                   </div>
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
+                  <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Available Units</p>
                     <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{vehicles.filter(vehicle => vehicle.status === 'Available').length}</h3>
                   </div>
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-zinc-500">
+                  <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-zinc-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Sold Out Units</p>
                     <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{vehicles.filter(vehicle => vehicle.status === 'Sold').length}</h3>
                   </div>
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
+                  <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-green-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Live Leads</p>
                     <h3 className="text-3xl md:text-4xl font-black text-zinc-900">{leads.filter(l => l.status !== 'done').length}</h3>
                   </div>
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
+                  <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Available Cars Worth</p>
-                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${availableInventoryWorth.toLocaleString()}</h3>
+                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">${availableInventoryWorth.toLocaleString()}</h3>
                   </div>
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-zinc-500">
+                  <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-zinc-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Sold Cars Worth</p>
-                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${soldInventoryWorth.toLocaleString()}</h3>
+                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">${soldInventoryWorth.toLocaleString()}</h3>
                   </div>
-                  <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
+                  <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Inventory Worth</p>
-                    <h3 className="text-3xl md:text-4xl font-black text-zinc-900">${totalInventoryWorth.toLocaleString()}</h3>
+                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">${totalInventoryWorth.toLocaleString()}</h3>
                     <p className="mt-2 text-[9px] font-bold text-zinc-500">Sum of listed prices for all units</p>
                   </div>
                 </div>
@@ -597,7 +644,11 @@ const AdminDashboard: React.FC = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
                       {filteredInventory.map(v => (
-                        <article key={v._id || v.id} className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-[#D4AF37] hover:shadow-lg">
+                        <article key={v._id || v.id} ref={element => {
+                          const cardId = v._id || v.id;
+                          if (element) vehicleCardRefs.current.set(cardId, element);
+                          else vehicleCardRefs.current.delete(cardId);
+                        }} className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-[box-shadow,border-color] duration-300 hover:border-[#D4AF37] hover:shadow-lg">
                           <div className="relative h-52 bg-zinc-100">
                             <img src={v.images?.[0] || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80'} className={`h-full w-full object-cover ${v.status === 'Sold' ? 'grayscale' : ''}`} alt={`${v.year} ${v.make} ${v.model}`} />
                             <span className={`absolute left-4 top-4 rounded-full px-3 py-1.5 text-[9px] font-black uppercase tracking-widest ${v.status === 'Sold' ? 'bg-zinc-900 text-white' : v.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>{v.status}</span>
@@ -612,8 +663,8 @@ const AdminDashboard: React.FC = () => {
                             </div>
                             <div className="flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-4">
                               <div className="flex items-center gap-1" aria-label="Change vehicle display order">
-                                <button onClick={() => handleReorderVehicle(v._id || v.id, -1)} disabled={vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === (v._id || v.id)) === 0} aria-label="Move vehicle earlier" title="Move earlier in public inventory" className="rounded-xl bg-zinc-100 p-2.5 text-zinc-600 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"><ArrowUp size={16} /></button>
-                                <button onClick={() => handleReorderVehicle(v._id || v.id, 1)} disabled={vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === (v._id || v.id)) === vehicles.length - 1} aria-label="Move vehicle later" title="Move later in public inventory" className="rounded-xl bg-zinc-100 p-2.5 text-zinc-600 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"><ArrowDown size={16} /></button>
+                                <button onClick={() => handleReorderVehicle(v._id || v.id, -1)} disabled={isReorderingVehicles || vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === (v._id || v.id)) === 0} aria-label="Move vehicle earlier" title="Move earlier in public inventory" className="rounded-xl bg-zinc-100 p-2.5 text-zinc-600 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"><ArrowUp size={16} /></button>
+                                <button onClick={() => handleReorderVehicle(v._id || v.id, 1)} disabled={isReorderingVehicles || vehicles.findIndex(vehicle => (vehicle._id || vehicle.id) === (v._id || v.id)) === vehicles.length - 1} aria-label="Move vehicle later" title="Move later in public inventory" className="rounded-xl bg-zinc-100 p-2.5 text-zinc-600 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"><ArrowDown size={16} /></button>
                               </div>
                               <button onClick={async () => { const updated = await api.updateVehicle(v._id || v.id, { isHidden: !v.isHidden }); setVehicles(prev => prev.map(item => (item._id || item.id) === (v._id || v.id) ? { ...item, ...updated } : item)); }} className={`rounded-xl px-3 py-2.5 text-[9px] font-black uppercase tracking-widest ${v.isHidden ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'}`}>{v.isHidden ? 'Unhide' : 'Hide'}</button>
                               {v.status === 'Sold' ? (

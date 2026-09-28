@@ -51,7 +51,7 @@ const LoanCalculator: React.FC = () => {
 
   return (
     <div className="bg-off-white min-h-screen pb-20">
-      <div className="bg-black text-white py-16 mb-10 text-center relative overflow-hidden">
+      <div className="bg-black text-white py-12 sm:py-16 mb-6 sm:mb-10 text-center relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 gold-gradient opacity-10 rounded-full blur-3xl -mr-48 -mt-48"></div>
         <div className="container mx-auto px-6 relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 brand-font italic">Loan Architect</h1>
@@ -59,15 +59,15 @@ const LoanCalculator: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
           {/* Inputs */}
-          <div className="bg-white p-10 rounded-[40px] shadow-sm space-y-8 border border-gray-100">
+          <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-3xl sm:rounded-[40px] shadow-sm space-y-6 sm:space-y-8 border border-gray-100">
             <h2 className="text-xl font-bold flex items-center gap-3 brand-font italic uppercase">
               <Calculator className="text-[#D4AF37]" size={24} /> Configuration
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Vehicle Price</label>
                 <div className="relative">
@@ -149,13 +149,13 @@ const LoanCalculator: React.FC = () => {
 
           {/* Results Display */}
           <div className="space-y-8">
-            <div className="bg-black text-white p-12 rounded-[40px] shadow-2xl relative overflow-hidden">
+            <div className="bg-black text-white p-6 sm:p-8 lg:p-12 rounded-3xl sm:rounded-[40px] shadow-2xl relative overflow-hidden">
                <div className="absolute top-0 right-0 w-64 h-64 gold-gradient opacity-10 rounded-full blur-3xl -mr-32 -mt-32"></div>
                
                <p className="text-[#D4AF37] font-black uppercase tracking-[0.4em] text-[10px] mb-6">Estimated Monthly Payment</p>
-               <h3 className="text-6xl md:text-8xl font-bold mb-12 brand-font italic gold-text break-words">${results.monthly.toFixed(2)}</h3>
+               <h3 className="text-5xl sm:text-6xl md:text-8xl font-bold mb-8 sm:mb-12 brand-font italic gold-text break-words">${results.monthly.toFixed(2)}</h3>
                
-               <div className="grid grid-cols-2 gap-10 border-t border-white/5 pt-10">
+               <div className="grid grid-cols-2 gap-4 sm:gap-10 border-t border-white/10 pt-6 sm:pt-10">
                  <div>
                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Financed</p>
                    <p className="text-2xl font-bold">${results.amountFinanced.toLocaleString()}</p>
@@ -167,7 +167,7 @@ const LoanCalculator: React.FC = () => {
                </div>
             </div>
 
-            <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100">
+            <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-3xl sm:rounded-[40px] shadow-sm border border-gray-100">
               <h3 className="text-[10px] font-black mb-8 uppercase tracking-[0.4em] text-zinc-400 border-b border-zinc-100 pb-4">Frequency breakdown</h3>
               <div className="space-y-8">
                 <div className="flex justify-between items-center group">

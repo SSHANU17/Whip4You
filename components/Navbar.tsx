@@ -41,6 +41,20 @@ const Navbar: React.FC = () => {
     setActiveSub(null);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isOpen]);
+
   const navItems = [
     { name: 'Home', path: '/' },
     { 
@@ -163,7 +177,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-4 lg:hidden shrink-0">
             <button 
               onClick={() => setIsGarageOpen(true)}
-              className="relative p-2 text-[#D4AF37]"
+              className="relative flex min-h-11 min-w-11 items-center justify-center p-2 text-[#D4AF37]"
             >
               <Heart size={24} className={favCount > 0 ? 'fill-[#D4AF37]' : ''} />
               {favCount > 0 && (
@@ -172,7 +186,7 @@ const Navbar: React.FC = () => {
                 </span>
               )}
             </button>
-            <button className="text-[#D4AF37] p-2" onClick={() => setIsOpen(!isOpen)}>
+            <button aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'} className="flex min-h-11 min-w-11 items-center justify-center text-[#D4AF37] p-2" onClick={() => setIsOpen(!isOpen)}>
               {isOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
@@ -192,10 +206,10 @@ const Navbar: React.FC = () => {
               {navItems.map((item) => (
                 <div key={item.name} className="border-b border-white/5 pb-6">
                   <div 
-                    className="flex justify-between items-center gap-4 text-lg sm:text-xl font-bold uppercase tracking-[0.24em] sm:tracking-[0.3em] brand-font"
+                    className="flex min-h-11 justify-between items-center gap-4 text-lg sm:text-xl font-bold uppercase tracking-[0.16em] sm:tracking-[0.3em] brand-font"
                     onClick={() => setActiveSub(activeSub === item.name ? null : item.name)}
                   >
-                    <Link to={item.path} onClick={() => !item.sub && setIsOpen(false)} className="hover:text-[#D4AF37] transition-colors break-words">{item.name}</Link>
+                    <Link to={item.path} onClick={() => !item.sub && setIsOpen(false)} className="py-2 hover:text-[#D4AF37] transition-colors break-words">{item.name}</Link>
                     {item.sub && <ChevronDown className={`text-[#D4AF37] transition-transform duration-300 shrink-0 ${activeSub === item.name ? 'rotate-180' : ''}`} />}
                   </div>
                   {item.sub && activeSub === item.name && (

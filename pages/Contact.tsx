@@ -173,7 +173,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
   if (submitted) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
-        <div className="bg-white p-10 md:p-24 rounded-[40px] md:rounded-[60px] shadow-[0_0_100px_rgba(212,175,55,0.1)] max-w-2xl border border-gray-100">
+        <div className="bg-white p-6 sm:p-10 md:p-16 rounded-3xl md:rounded-[60px] shadow-[0_0_100px_rgba(212,175,55,0.1)] max-w-2xl border border-gray-100">
           <div className="w-24 h-24 md:w-32 md:h-32 gold-gradient text-black rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 shadow-2xl animate-bounce">
             <CheckCircle2 size={48} className="md:w-16 md:h-16" />
           </div>
@@ -183,7 +183,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
           </p>
           <button 
             onClick={() => setSubmitted(false)}
-            className="group relative bg-black text-white px-10 md:px-16 py-4 md:py-5 rounded-full font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs hover:bg-[#D4AF37] hover:text-black transition-all overflow-hidden"
+            className="group relative bg-black text-white px-6 sm:px-10 md:px-16 py-4 md:py-5 rounded-full font-bold uppercase tracking-[0.16em] sm:tracking-[0.3em] text-[10px] md:text-xs hover:bg-[#D4AF37] hover:text-black transition-all overflow-hidden"
           >
             <span className="relative z-10">New Inquiry</span>
           </button>
@@ -211,8 +211,8 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
               {isLive ? 'Sales Team Live Now' : 'Concierge Offline'}
             </span>
           </div>
-          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-white mb-6 brand-font italic tracking-tighter leading-none">Connect.</h1>
-          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.6em] text-[10px] md:text-sm">Experience Whip4You</p>
+          <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-bold text-white mb-6 brand-font italic tracking-tighter leading-none">Connect.</h1>
+          <p className="text-[#D4AF37] font-bold uppercase tracking-[0.25em] sm:tracking-[0.4em] md:tracking-[0.6em] text-[10px] md:text-sm">Experience Whip4You</p>
         </div>
       </section>
 
@@ -302,7 +302,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
                   <button 
                     key={tab.id}
                     onClick={() => setFormType(tab.id as any)}
-                    className={`flex items-center justify-center gap-3 px-4 py-4 rounded-[20px] md:rounded-[24px] font-bold uppercase tracking-widest text-[9px] transition-all ${formType === tab.id ? 'bg-black text-[#D4AF37] shadow-xl' : 'text-zinc-700 hover:bg-white hover:text-black'}`}
+                    className={`flex items-center justify-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-4 rounded-[20px] md:rounded-[24px] font-bold uppercase tracking-[0.12em] sm:tracking-widest text-[8px] sm:text-[9px] transition-all ${formType === tab.id ? 'bg-black text-[#D4AF37] shadow-xl' : 'text-zinc-700 hover:bg-white hover:text-black'}`}
                   >
                     {tab.icon} {tab.label}
                   </button>

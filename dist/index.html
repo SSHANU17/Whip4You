@@ -14,6 +14,17 @@
           background-color: #000;
           color: #fff;
           -webkit-font-smoothing: antialiased;
+          overflow-x: hidden;
+          min-width: 320px;
+        }
+
+        #root { min-height: 100dvh; }
+        img, video { max-width: 100%; }
+
+        @media (max-width: 640px) {
+          input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+          select,
+          textarea { font-size: 16px !important; }
         }
         
         h1, h2, h3, .brand-font { 
@@ -89,8 +100,8 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-CsZYdJ3F.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/vendor-DgqLLt6j.js">
+  <script type="module" crossorigin src="/assets/index-C1EpZ6iQ.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-lGbRfATz.js">
 </head>
 <body class="bg-black text-gray-100">
     <div id="root"></div>

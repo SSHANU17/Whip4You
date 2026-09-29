@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, CircleDollarSign, Clock, Users,
@@ -22,13 +22,25 @@ const Home: React.FC = () => {
   const [formType, setFormType] = useState<'General' | 'Car Finder' | 'Trade-In'>('General');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<any>(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('w4u_config_cache') || 'null')?.data ?? null;
+    } catch {
+      return null;
+    }
+  });
+  const [configLoaded, setConfigLoaded] = useState(() => config !== null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const isDraggingCarousel = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartScrollLeft = useRef(0);
+  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
 
   const instagramPosts: string[] = Array.isArray(config?.instagramPosts)
     ? config.instagramPosts.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
     : [];
   const viewportWidth = typeof window === 'undefined' ? 1024 : window.innerWidth;
-  const instagramCardWidth = 326;
+  const instagramCardWidth = Math.max(260, Math.min(390, viewportWidth - 32));
   const instagramSetCopies = Math.max(
     1,
     Math.ceil(viewportWidth / ((instagramCardWidth + 24) * Math.max(instagramPosts.length, 1))) + 1
@@ -49,7 +61,10 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    api.getConfig().then(setConfig);
+    api.getConfig()
+      .then((siteConfig) => setConfig(siteConfig))
+      .catch((error) => console.error('Failed to load site configuration', error))
+      .finally(() => setConfigLoaded(true));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,6 +89,25 @@ const Home: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0 || !carouselRef.current) return;
+    isDraggingCarousel.current = true;
+    dragStartX.current = event.clientX;
+    dragStartScrollLeft.current = carouselRef.current.scrollLeft;
+    setIsManuallyScrolling(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleCarouselPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingCarousel.current || !carouselRef.current) return;
+    carouselRef.current.scrollLeft = dragStartScrollLeft.current - (event.clientX - dragStartX.current);
+  };
+
+  const handleCarouselPointerUp = () => {
+    isDraggingCarousel.current = false;
+    setIsManuallyScrolling(false);
   };
 
   return (
@@ -164,17 +198,31 @@ const Home: React.FC = () => {
       <section className="py-8 md:py-12 bg-zinc-950 text-white">
         <div className="container mx-auto px-4 sm:px-6 text-center">
           {instagramPosts.length > 0 ? (
-            <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
-              <div style={{ animationDuration: `${instagramScrollDuration}s` }} className="flex w-max animate-instagram-scroll hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
+            <div
+              ref={carouselRef}
+              role="region"
+              aria-label="Instagram post carousel"
+              tabIndex={0}
+              className="instagram-scroll-container touch-pan-x overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              onPointerDown={handleCarouselPointerDown}
+              onPointerMove={handleCarouselPointerMove}
+              onPointerUp={handleCarouselPointerUp}
+              onPointerCancel={handleCarouselPointerUp}
+              onTouchStart={() => setIsManuallyScrolling(true)}
+              onTouchEnd={() => window.setTimeout(() => setIsManuallyScrolling(false), 1200)}
+              onTouchCancel={() => setIsManuallyScrolling(false)}
+            >
+              <div style={{ animationDuration: `${instagramScrollDuration}s`, animationPlayState: isManuallyScrolling ? 'paused' : undefined }} className="flex w-max animate-instagram-scroll hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
                 {[...instagramTrackPosts, ...instagramTrackPosts].map((postUrl, index) => {
                   const embedUrl = getInstagramEmbedUrl(postUrl);
                   return embedUrl ? (
-                    <div key={`${postUrl}-${index}`} className="relative mx-3 aspect-[0.98] w-[326px] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
+                    <div key={`${postUrl}-${index}`} style={{ width: `${instagramCardWidth}px`, flex: `0 0 ${instagramCardWidth}px` }} className="relative mx-3 aspect-[0.98] max-w-[calc(100vw-32px)] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
                       <iframe
                         src={embedUrl}
                         title={`Instagram post ${index % instagramPosts.length + 1}`}
                         loading="eager"
-                        className="absolute left-0 top-0 h-[calc(100%+2px)] w-[calc(100%+20px)] max-w-none border-0"
+                        className="pointer-events-none absolute left-0 top-0 h-[calc(100%+2px)] w-[calc(100%+20px)] max-w-none border-0"
                         scrolling="no"
                         allow="autoplay; encrypted-media; picture-in-picture"
                       />
@@ -183,11 +231,13 @@ const Home: React.FC = () => {
                 })}
               </div>
             </div>
-          ) : (
+          ) : configLoaded ? (
             <p className="text-zinc-500 text-sm tracking-wide">Follow us on Instagram for the latest member experiences.</p>
+          ) : (
+            <div className="mx-auto h-[320px] w-[326px] max-w-full animate-pulse rounded-3xl border border-white/10 bg-white/5" aria-label="Loading Instagram posts" />
           )}
         </div>
-        <style>{`@keyframes instagram-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } } .animate-instagram-scroll { animation-name: instagram-scroll; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; backface-visibility: hidden; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
+        <style>{`@keyframes instagram-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } } .animate-instagram-scroll { animation-name: instagram-scroll; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; backface-visibility: hidden; } .instagram-scroll-container::-webkit-scrollbar { display: none; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
       </section>
     </div>
   );

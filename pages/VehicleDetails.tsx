@@ -41,19 +41,15 @@ const VehicleDetails: React.FC = () => {
   const touchStartYRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      Promise.all([api.getVehicleById(id), api.getConfig()])
-        .then(([data, cfg]) => {
-          setVehicle(data);
-          setConfig(cfg);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error(err);
-          setLoading(false);
-        });
-    }
+    if (!id) return;
+    let isMounted = true;
+    setLoading(true);
+    api.getVehicleById(id)
+      .then(data => { if (isMounted) setVehicle(data); })
+      .catch(err => { console.error(err); if (isMounted) setVehicle(null); })
+      .finally(() => { if (isMounted) setLoading(false); });
+    api.getConfig().then(cfg => { if (isMounted) setConfig(cfg); }).catch(err => console.error('Failed to load site configuration', err));
+    return () => { isMounted = false; };
   }, [id]);
 
   useEffect(() => {

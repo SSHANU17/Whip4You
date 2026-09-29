@@ -28,7 +28,7 @@ const Home: React.FC = () => {
     ? config.instagramPosts.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
     : [];
   const viewportWidth = typeof window === 'undefined' ? 1024 : window.innerWidth;
-  const instagramCardWidth = viewportWidth >= 1024 ? 460 : viewportWidth >= 640 ? 400 : 320;
+  const instagramCardWidth = 326;
   const instagramSetCopies = Math.max(
     1,
     Math.ceil(viewportWidth / ((instagramCardWidth + 24) * Math.max(instagramPosts.length, 1))) + 1
@@ -42,7 +42,7 @@ const Home: React.FC = () => {
       const url = new URL((permalink || postUrl).trim().replace(/&amp;/g, '&'));
       if (!['instagram.com', 'www.instagram.com'].includes(url.hostname)) return null;
       const match = url.pathname.match(/^\/(?:p|reel|tv)\/([\w-]+)/);
-      return match ? `https://www.instagram.com/${url.pathname.split('/')[1]}/${match[1]}/embed/?hidecaption=true` : null;
+      return match ? `https://www.instagram.com/${url.pathname.split('/')[1]}/${match[1]}/embed/?hidecaption=true&autoplay=1&muted=1` : null;
     } catch {
       return null;
     }
@@ -161,7 +161,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-32 bg-zinc-950 text-white">
+      <section className="py-8 md:py-12 bg-zinc-950 text-white">
         <div className="container mx-auto px-4 sm:px-6 text-center">
           {instagramPosts.length > 0 ? (
             <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
@@ -169,13 +169,14 @@ const Home: React.FC = () => {
                 {[...instagramTrackPosts, ...instagramTrackPosts].map((postUrl, index) => {
                   const embedUrl = getInstagramEmbedUrl(postUrl);
                   return embedUrl ? (
-                    <div key={`${postUrl}-${index}`} className="relative mx-3 aspect-[1.25] w-[320px] sm:w-[400px] lg:w-[460px] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
+                    <div key={`${postUrl}-${index}`} className="relative mx-3 aspect-[0.98] w-[326px] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
                       <iframe
                         src={embedUrl}
                         title={`Instagram post ${index % instagramPosts.length + 1}`}
-                        loading={index < instagramPosts.length ? 'eager' : 'lazy'}
-                        className="absolute -top-[72px] left-0 h-[calc(100%+74px)] w-[calc(100%+20px)] max-w-none border-0"
+                        loading="eager"
+                        className="absolute left-0 top-0 h-[calc(100%+2px)] w-[calc(100%+20px)] max-w-none border-0"
                         scrolling="no"
+                        allow="autoplay; encrypted-media; picture-in-picture"
                       />
                     </div>
                   ) : null;

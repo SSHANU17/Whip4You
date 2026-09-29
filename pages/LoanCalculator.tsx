@@ -27,7 +27,8 @@ const LoanCalculator: React.FC = () => {
     const safeDown = Math.max(0, Number(downPayment) || 0);
     const safeTrade = Math.max(0, Number(tradeValue) || 0);
     
-    const principal = safePrice - safeDown - safeTrade;
+    const tax = safePrice * 0.12;
+    const principal = safePrice + tax - safeDown - safeTrade;
     const r = (Math.max(0, Number(interestRate) || 0) / 100) / 12;
     const n = term;
 
@@ -108,6 +109,15 @@ const LoanCalculator: React.FC = () => {
                 </div>
               </div>
               <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Tax (12%)</label>
+                <div className="relative">
+                  <div className="w-full bg-zinc-100 border-b border-zinc-200 p-4 pl-10 rounded-xl text-zinc-500 font-bold" aria-live="polite">
+                    {(Math.max(0, Number(vehiclePrice) || 0) * 0.12).toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 })}
+                  </div>
+                  <DollarSign className="absolute left-3 top-4 text-gray-400" size={18} />
+                </div>
+              </div>
+              <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Interest Rate (%)</label>
                 <div className="relative">
                   <input 
@@ -157,7 +167,7 @@ const LoanCalculator: React.FC = () => {
                
                <div className="grid grid-cols-2 gap-4 sm:gap-10 border-t border-white/10 pt-6 sm:pt-10">
                  <div>
-                   <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Financed</p>
+                   <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Financed (incl. 12% tax)</p>
                    <p className="text-2xl font-bold">${results.amountFinanced.toLocaleString()}</p>
                  </div>
                  <div>
@@ -165,6 +175,7 @@ const LoanCalculator: React.FC = () => {
                    <p className="text-2xl font-bold text-[#D4AF37]">${results.totalInterest.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                  </div>
                </div>
+               <p className="mt-6 text-xs text-zinc-400">The financed amount includes a flat 12% tax on the vehicle price, less your down payment and trade-in.</p>
             </div>
 
             <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-3xl sm:rounded-[40px] shadow-sm border border-gray-100">

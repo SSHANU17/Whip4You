@@ -581,15 +581,15 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Available Cars Worth</p>
-                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">${availableInventoryWorth.toLocaleString()}</h3>
+                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">$ {availableInventoryWorth.toLocaleString()}</h3>
                   </div>
                   <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-zinc-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Sold Cars Worth</p>
-                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">${soldInventoryWorth.toLocaleString()}</h3>
+                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">$ {soldInventoryWorth.toLocaleString()}</h3>
                   </div>
                   <div className="bg-white p-5 sm:p-8 md:p-10 rounded-3xl shadow-sm border border-zinc-200 border-l-4 border-l-blue-500">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Total Inventory Worth</p>
-                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">${totalInventoryWorth.toLocaleString()}</h3>
+                    <h3 className="max-w-full text-2xl sm:text-3xl font-black leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere]">$ {totalInventoryWorth.toLocaleString()}</h3>
                     <p className="mt-2 text-[9px] font-bold text-zinc-500">Sum of listed prices for all units</p>
                   </div>
                 </div>

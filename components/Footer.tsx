@@ -27,9 +27,9 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-black text-white pt-12 sm:pt-16 md:pt-24 pb-8 sm:pb-12 border-t border-white/5">
+    <footer className="bg-black text-white pt-16 md:pt-24 pb-12 border-t border-white/5">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 md:gap-16 mb-12 md:mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 md:gap-16 mb-16 md:mb-24">
           <div className="lg:col-span-4">
             <Link to="/" className="mb-8 inline-flex max-w-full items-center gap-3 sm:gap-4">
               <BrandLogo className="h-12 w-12 sm:h-14 sm:w-14 shrink-0" />
@@ -128,8 +128,8 @@ const Footer: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email address"
-                  className="w-full bg-zinc-900 border border-white/10 p-4 sm:p-5 pr-14 rounded-2xl outline-none focus:border-[#D4AF37] transition-all text-sm sm:text-[10px] font-bold sm:font-black sm:uppercase sm:tracking-widest placeholder:text-zinc-400 text-white"
+                  placeholder="ENTER DIGITAL IDENTITY"
+                  className="w-full bg-zinc-900 border border-white/5 p-5 pr-14 rounded-2xl outline-none focus:border-[#D4AF37] transition-all text-[10px] font-black uppercase tracking-widest placeholder:text-zinc-700 text-white"
                 />
                 <button
                   type="submit"
@@ -161,7 +161,7 @@ const Footer: React.FC = () => {
             <div className="flex items-center gap-3">
               <span className="text-zinc-800 text-[8px] font-black uppercase tracking-widest">Engine by</span>
               <div className="bg-white px-2 py-0.5 rounded shadow-lg">
-                <span className="text-black font-black italic tracking-tighter text-[10px] display-font">AUTOBUNNY</span>
+                <span className="text-black font-black italic tracking-tighter text-[10px] display-font">VOODAK</span>
               </div>
             </div>
           </div>

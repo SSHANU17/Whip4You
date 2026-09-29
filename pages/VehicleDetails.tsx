@@ -8,6 +8,7 @@ import {
   Info, X, ShieldCheck, Search, FileCheck, Loader2
 } from 'lucide-react';
 import { api } from '../api.ts';
+import { imageSrcSet } from '../utils/images.ts';
 import { Vehicle } from '../types.ts';
 
 const capitalizeWords = (str?: string) => {
@@ -54,6 +55,15 @@ const VehicleDetails: React.FC = () => {
         });
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!vehicle) return;
+    document.title = `${vehicle.year} ${vehicle.make} ${vehicle.model} for Sale in Surrey, BC | Whip4You`;
+    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (!description) return;
+    const details = vehicle.description?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    description.content = `${vehicle.year} ${vehicle.make} ${vehicle.model} for sale in Surrey, BC. ${details || 'View photos, specifications and financing details at Whip4You.'}`.slice(0, 160);
+  }, [vehicle]);
 
   useEffect(() => {
     if (id) {
@@ -199,7 +209,11 @@ const VehicleDetails: React.FC = () => {
               >
                 <img 
                   src={vehicle.images[activeImage]} 
-                  alt={`${vehicle.year} ${vehicle.make} ${vehicle.model} photo ${activeImage + 1}`}
+                  srcSet={imageSrcSet(vehicle.images[activeImage])}
+                  sizes="(max-width: 768px) 100vw, 60vw"
+                  fetchPriority="high"
+                  loading="eager"
+                  alt={vehicle.imageAlts?.[activeImage] || `${vehicle.year} ${vehicle.make} ${vehicle.model} for sale in Surrey, BC`}
                   className="block h-auto w-full"
                 />
                 {vehicle.isNewArrival !== false && vehicle.newArrivalExpiryDate && new Date(vehicle.newArrivalExpiryDate) > new Date() && (
@@ -246,7 +260,7 @@ const VehicleDetails: React.FC = () => {
                     aria-pressed={activeImage === idx}
                     className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-[#D4AF37] scale-95 shadow-xl' : 'border-transparent opacity-60 hover:opacity-100'}`}
                   >
-                    <img src={img} className="w-full h-full object-cover" alt="" />
+                  <img src={img} srcSet={imageSrcSet(img)} sizes="120px" loading="lazy" className="w-full h-full object-cover" alt={vehicle.imageAlts?.[idx] || `${vehicle.year} ${vehicle.make} ${vehicle.model}, photo ${idx + 1}`} />
                   </button>
                 ))}
               </div>

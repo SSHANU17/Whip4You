@@ -19,6 +19,7 @@ export interface Vehicle {
   interiorColor: string;
   features: string[];
   images: string[];
+  imageAlts?: string[];
   status: 'Available' | 'Pending' | 'Sold';
   condition?: 'New' | 'Used' | 'Certified';
   description: string;

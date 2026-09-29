@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { api } from '../api.ts';
 import { Vehicle, SortOption } from '../types.ts';
+import { imageSrcSet } from '../utils/images.ts';
 
 const capitalizeWords = (str?: string) => {
   if (!str) return '';
@@ -25,7 +26,6 @@ const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [vinSearchTerm, setVinSearchTerm] = useState('');
   const mainGridRef = useRef<HTMLDivElement>(null);
-  const preloadedImageUrls = useRef(new Set<string>());
 
   // Synchronous cache-first state initialization for Eager Loading & instant rendering
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
@@ -55,6 +55,7 @@ const Inventory: React.FC = () => {
   });
 
   const [loading, setLoading] = useState<boolean>(() => vehicles.length === 0);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState<number>(12);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -85,17 +86,19 @@ const Inventory: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    Promise.all([api.getVehicles(), api.getConfig()])
-      .then(([data, cfg]) => {
+    api.getVehicles()
+      .then(data => {
         if (!isMounted) return;
         setVehicles(data);
-        setConfig(cfg);
-        setLoading(false);
+        setLoadError(null);
+        try { sessionStorage.setItem('w4u_vehicles_cache', JSON.stringify({ timestamp: Date.now(), data })); } catch {}
       })
       .catch(err => {
-        console.error('Failed to scan fleet registry', err);
-        if (isMounted) setLoading(false);
-      });
+        console.error('Failed to load inventory', err);
+        if (isMounted && !vehicles.length) setLoadError('We could not load our vehicle inventory. Please check your connection and try again.');
+      })
+      .finally(() => { if (isMounted) setLoading(false); });
+    api.getConfig().then(cfg => { if (isMounted) setConfig(cfg); }).catch(err => console.error('Failed to load site configuration', err));
     return () => { isMounted = false; };
   }, []);
 
@@ -160,32 +163,6 @@ const Inventory: React.FC = () => {
   }, [vehicles, searchTerm, vinSearchTerm, makeFilter, bodyTypeFilter, transmissionFilter, colorFilter, yearMin, yearMax, priceMin, priceMax, mileageMin, mileageMax, sortBy]);
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, vinSearchTerm, makeFilter, bodyTypeFilter, transmissionFilter, colorFilter, yearMin, yearMax, priceMin, priceMax, mileageMin, mileageMax, sortBy]);
-
-  // Start fetching every lead vehicle photo as soon as the Inventory route has
-  // vehicle data. This also works for cache-first navigation back to this page.
-  // The inventory only renders each vehicle's lead photo; gallery photos remain
-  // deferred until a visitor opens that vehicle's detail page.
-  useEffect(() => {
-    if (loading || !vehicles.length) return;
-
-    vehicles.forEach((vehicle, index) => {
-      const url = vehicle.images?.[0];
-      if (!url || preloadedImageUrls.current.has(url)) return;
-      preloadedImageUrls.current.add(url);
-
-      const preload = document.createElement('link');
-      preload.rel = 'preload';
-      preload.as = 'image';
-      preload.href = url;
-      // Prioritize the initially visible inventory cards, while still starting
-      // every remaining car image immediately.
-      preload.setAttribute('fetchpriority', index < 12 ? 'high' : 'low');
-      document.head.appendChild(preload);
-
-      const image = new Image();
-      image.src = url;
-    });
-  }, [vehicles, loading]);
 
   const activeFilters = useMemo(() => {
     const chips: { label: string; key: string; value: any }[] = [];
@@ -387,7 +364,7 @@ const Inventory: React.FC = () => {
                 </h3>
                 <div className="flex items-center gap-3">
                   <button onClick={handleClearFilters} className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:text-black transition-colors">Reset</button>
-                  <button type="button" onClick={() => setIsMobileFiltersOpen(false)} className="lg:hidden text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Close</button>
+                  <button type="button" onClick={() => setIsMobileFiltersOpen(false)} className="lg:hidden text-[10px] font-bold uppercase tracking-widest text-gray-700 hover:text-black transition-colors">Close</button>
                 </div>
               </div>
               
@@ -401,7 +378,7 @@ const Inventory: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Keyword Search</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-700 block mb-2">Keyword Search</label>
                   <div className="relative">
                     <input type="text" placeholder="Make, model..." className="w-full bg-gray-50 border border-gray-200 p-2.5 pl-9 rounded-lg outline-none text-sm focus:border-[#D4AF37] text-black" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
@@ -409,7 +386,7 @@ const Inventory: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">VIN Search</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-700 block mb-2">VIN Search</label>
                   <div className="relative">
                     <input type="text" placeholder="Enter VIN..." className="w-full bg-gray-50 border border-gray-200 p-2.5 pl-9 rounded-lg outline-none text-sm focus:border-[#D4AF37] text-black" value={vinSearchTerm} onChange={(e) => setVinSearchTerm(e.target.value)} />
                     <Hash className="absolute left-3 top-2.5 text-gray-400" size={16} />
@@ -420,7 +397,7 @@ const Inventory: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Make</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-700 block mb-2">Make</label>
                     <select className="w-full bg-gray-50 border border-gray-200 p-2.5 rounded-lg outline-none text-sm focus:border-[#D4AF37] text-black" value={makeFilter} onChange={(e) => setMakeFilter(e.target.value)}>
                       <option value="">All Makes</option>
                       {uniqueMakes.map(make => <option key={make} value={make}>{make}</option>)}
@@ -428,7 +405,7 @@ const Inventory: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Body Type</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-700 block mb-2">Body Type</label>
                     <select className="w-full bg-gray-50 border border-gray-200 p-2.5 rounded-lg outline-none text-sm focus:border-[#D4AF37] text-black" value={bodyTypeFilter} onChange={(e) => setBodyTypeFilter(e.target.value)}>
                       <option value="">All Types</option>
                       <option value="Sedan">Sedan</option>
@@ -443,7 +420,7 @@ const Inventory: React.FC = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-2 flex items-center gap-1"><DollarSign size={12} /> Price Range</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-700 block mb-2 flex items-center gap-1"><DollarSign size={12} /> Price Range</label>
                     <div className="grid grid-cols-2 gap-2">
                       <input type="number" placeholder="Min" className="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg text-sm outline-none focus:border-[#D4AF37] text-black" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} />
                       <input type="number" placeholder="Max" className="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg text-sm outline-none focus:border-[#D4AF37] text-black" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} />
@@ -514,17 +491,22 @@ const Inventory: React.FC = () => {
                   ))}
                 </div>
               </div>
+            ) : loadError && vehicles.length === 0 ? (
+              <div role="alert" className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
+                <h2 className="text-xl font-bold text-black mb-2">Inventory is temporarily unavailable</h2>
+                <p className="text-gray-700 mb-6">{loadError}</p>
+                <button onClick={() => window.location.reload()} className="bg-black text-white px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest">Try again</button>
+              </div>
             ) : paginatedVehicles.length === 0 ? (
               <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
                 <Car size={48} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-bold text-black brand-font mb-2">No Matching Vehicles Found</h3>
-                <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">Try adjusting your filters or search terms to explore available vehicles in our fleet registry.</p>
-                <button
-                  onClick={handleClearFilters}
-                  className="bg-black text-white px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all"
-                >
-                  Reset All Filters
-                </button>
+                <h2 className="text-xl font-bold text-black brand-font mb-2">{vehicles.length ? 'No Matching Vehicles Found' : 'No Vehicles Available Right Now'}</h2>
+                <p className="text-gray-600 text-sm mb-6 max-w-md mx-auto">{vehicles.length ? 'Try adjusting your filters or search terms to explore available vehicles in our fleet.' : 'Please check back soon or contact our team for help finding your next vehicle.'}</p>
+                {vehicles.length ? (
+                  <button onClick={handleClearFilters} className="bg-black text-white px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all">Reset All Filters</button>
+                ) : (
+                  <Link to="/contact" className="inline-block bg-black text-white px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all">Contact Us</Link>
+                )}
               </div>
             ) : (
               <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8' : 'flex flex-col gap-6'}>
@@ -535,7 +517,7 @@ const Inventory: React.FC = () => {
                         <div className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full z-10">New Arrival</div>
                       )}
                       <Link to={`/vehicle/${v._id || v.id}`} className="block h-full relative">
-                        <img src={v.images[0]} alt={v.make} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="eager" />
+                        <img src={v.images[0]} srcSet={imageSrcSet(v.images[0])} sizes="(max-width: 767px) 100vw, (max-width: 1200px) 50vw, 600px" alt={v.imageAlts?.[0] || `${v.year} ${v.make} ${v.model} for sale in Surrey, BC`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading={paginatedVehicles.indexOf(v) < 2 ? 'eager' : 'lazy'} fetchPriority={paginatedVehicles.indexOf(v) < 2 ? 'high' : 'auto'} />
                         {v.status === 'Sold' && (
                           <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-10">
                             <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.25em] px-4 py-2 rounded-full shadow-2xl border border-red-500/20">
@@ -554,7 +536,7 @@ const Inventory: React.FC = () => {
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
                         <Link to={`/vehicle/${v._id || v.id}`} className="hover:text-[#D4AF37] transition-colors min-w-0">
                           <h3 className="text-xl font-bold text-black">{v.year} {v.make} {v.model}</h3>
-                          <p className="text-sm text-gray-400 font-medium">{v.trim}</p>
+                          <p className="text-sm text-gray-700 font-medium">{v.trim}</p>
                         </Link>
                         <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
                           {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}

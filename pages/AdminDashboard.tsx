@@ -349,7 +349,8 @@ const AdminDashboard: React.FC = () => {
       if (uploadedUrls.length > 0) {
         setNewVehicle(prev => ({
           ...prev,
-          images: [...(prev.images || []), ...uploadedUrls]
+          images: [...(prev.images || []), ...uploadedUrls],
+          imageAlts: [...(prev.imageAlts || []), ...uploadedUrls.map(() => '')]
         }));
       }
 
@@ -379,6 +380,7 @@ const AdminDashboard: React.FC = () => {
       ...vehicle,
       price: vehicle.price === 'Call For Price' ? 0 : Number(vehicle.price),
       images: vehicle.images || [],
+      imageAlts: vehicle.imageAlts || [],
       features: vehicle.features || []
     });
     setIsAddingVehicle(true);
@@ -395,6 +397,7 @@ const AdminDashboard: React.FC = () => {
       price: newVehicle.price === 'Call For Price' ? 0 : Number(newVehicle.price),
       actualPrice: newVehicle.actualPrice ? Number(newVehicle.actualPrice) : undefined,
       images: newVehicle.images || [],
+      imageAlts: newVehicle.imageAlts || [],
       features: newVehicle.features || []
     };
 
@@ -1068,21 +1071,27 @@ const AdminDashboard: React.FC = () => {
                         if (draggedImgIndex === null || draggedImgIndex === i) return;
                         setNewVehicle(prev => {
                           const imgs = [...(prev.images || [])];
+                          const alts = [...(prev.imageAlts || [])];
                           const draggedImg = imgs[draggedImgIndex];
+                          const draggedAlt = alts[draggedImgIndex] || '';
                           imgs.splice(draggedImgIndex, 1);
+                          alts.splice(draggedImgIndex, 1);
                           imgs.splice(i, 0, draggedImg);
-                          return { ...prev, images: imgs };
+                          alts.splice(i, 0, draggedAlt);
+                          return { ...prev, images: imgs, imageAlts: alts };
                         });
                         setDraggedImgIndex(null);
                       }}
                       onDragEnd={() => setDraggedImgIndex(null)}
                       className={`relative aspect-square rounded-xl overflow-hidden border-2 cursor-move transition-all ${draggedImgIndex === i ? 'opacity-50 border-[#D4AF37]' : 'border-transparent hover:border-[#D4AF37]'}`}
                     >
-                      <img src={img} className="w-full h-full object-cover pointer-events-none" alt="" />
+                      <img src={img} className="w-full h-full object-cover pointer-events-none" alt={newVehicle.imageAlts?.[i] || ''} />
+                      <input aria-label={`Image ${i + 1} description`} value={newVehicle.imageAlts?.[i] || ''} onChange={e => setNewVehicle(prev => { const alts = [...(prev.imageAlts || [])]; alts[i] = e.target.value; return { ...prev, imageAlts: alts }; })} placeholder="Describe this photo" className="absolute bottom-0 left-0 w-full bg-white/95 p-2 text-xs text-black outline-none" />
                       <button 
                         type="button"
-                        onClick={() => setNewVehicle(prev => ({ ...prev, images: prev.images?.filter((_, idx) => idx !== i) }))}
-                        className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity z-10"
+                        onClick={() => setNewVehicle(prev => ({ ...prev, images: prev.images?.filter((_, idx) => idx !== i), imageAlts: prev.imageAlts?.filter((_, idx) => idx !== i) }))}
+                        aria-label={`Remove image ${i + 1}`}
+                        className="absolute right-1 top-1 bg-black/75 p-1.5 rounded-full text-white hover:bg-red-600 transition-colors z-20"
                       >
                         <X size={20} className="text-white" />
                       </button>

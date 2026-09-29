@@ -1,21 +1,22 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import Footer from './components/Footer.tsx';
-import Home from './pages/Home.tsx';
-import Inventory from './pages/Inventory.tsx';
-import LoanCalculator from './pages/LoanCalculator.tsx';
-import Finance from './pages/Finance.tsx';
-import VehicleDetails from './pages/VehicleDetails.tsx';
-import Contact from './pages/Contact.tsx';
-import About from './pages/About.tsx';
-import AdminDashboard from './pages/AdminDashboard.tsx';
-import Privacy from './pages/Privacy.tsx';
+const Home = React.lazy(() => import('./pages/Home.tsx'));
+const Inventory = React.lazy(() => import('./pages/Inventory.tsx'));
+const LoanCalculator = React.lazy(() => import('./pages/LoanCalculator.tsx'));
+const Finance = React.lazy(() => import('./pages/Finance.tsx'));
+const VehicleDetails = React.lazy(() => import('./pages/VehicleDetails.tsx'));
+const Contact = React.lazy(() => import('./pages/Contact.tsx'));
+const About = React.lazy(() => import('./pages/About.tsx'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard.tsx'));
+const Privacy = React.lazy(() => import('./pages/Privacy.tsx'));
 import { ENGINE_SOUND_URL } from './constants.tsx';
 import { Play, Loader2 } from 'lucide-react';
 import BrandLogo from './components/BrandLogo.tsx';
 import { api } from './api.ts';
+import RouteMeta from './components/RouteMeta.tsx';
 
 const ENTRY_GATE_STORAGE_KEY = 'w4u_has_entered_site';
 
@@ -80,7 +81,11 @@ const AppFrame: React.FC<AppFrameProps> = ({
                 }`}
               >
                 <img
-                  src={slide}
+                  src={index === currentSlide || index === (currentSlide + 1) % ENTRY_SLIDES.length ? slide : undefined}
+                  srcSet={index === currentSlide || index === (currentSlide + 1) % ENTRY_SLIDES.length ? `${slide.replace('w=2000', 'w=480')} 480w, ${slide.replace('w=2000', 'w=768')} 768w, ${slide.replace('w=2000', 'w=1280')} 1280w, ${slide.replace('w=2000', 'w=1800')} 1800w` : undefined}
+                  sizes="100vw"
+                  fetchPriority={index === currentSlide ? 'high' : 'auto'}
+                  loading={index === currentSlide ? 'eager' : 'lazy'}
                   className={`w-full h-full object-cover grayscale brightness-50 transition-transform duration-[10000ms] ease-linear ${
                     currentSlide === index ? 'scale-110' : 'scale-100'
                   }`}
@@ -126,22 +131,27 @@ const AppFrame: React.FC<AppFrameProps> = ({
       <div className={`flex flex-col min-h-screen ${showEntryGate ? 'hidden' : 'animate-in fade-in duration-1000'}`}>
         {!isAdminRoute && <Navbar />}
         <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/vehicle/:id" element={<VehicleDetails />} />
-            <Route path="/finance" element={<Finance />} />
-            <Route path="/calculator" element={<LoanCalculator />} />
-            <Route path="/apply" element={<Finance />} />
-            <Route path="/car-finder" element={<Contact type="Car Finder" />} />
-            <Route path="/trade-in" element={<Contact type="Trade-In" />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/directions" element={<Contact />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="*" element={<Home />} />
-          </Routes>
+          <RouteMeta />
+          {!showEntryGate && (
+            <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center text-sm text-zinc-400" role="status">Loading page…</div>}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/inventory" element={<Inventory />} />
+                <Route path="/vehicle/:id" element={<VehicleDetails />} />
+                <Route path="/finance" element={<Finance />} />
+                <Route path="/calculator" element={<LoanCalculator />} />
+                <Route path="/apply" element={<Finance />} />
+                <Route path="/car-finder" element={<Contact type="Car Finder" />} />
+                <Route path="/trade-in" element={<Contact type="Trade-In" />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/directions" element={<Contact />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="*" element={<Home />} />
+              </Routes>
+            </Suspense>
+          )}
         </main>
         {!isAdminRoute && <Footer />}
       </div>

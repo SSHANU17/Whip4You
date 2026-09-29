@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, CircleDollarSign, Clock, Users,
@@ -7,6 +7,8 @@ import {
   CheckCircle2, MessageSquare
 } from 'lucide-react';
 import { api } from '../api.ts';
+import { imageSrcSet } from '../utils/images.ts';
+import InstagramCard from '../components/InstagramCard.tsx';
 
 const HOME_BODY_TYPES = [
   { name: 'Sedan', size: 'md', image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=400' },
@@ -30,35 +32,10 @@ const Home: React.FC = () => {
     }
   });
   const [configLoaded, setConfigLoaded] = useState(() => config !== null);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const isDraggingCarousel = useRef(false);
-  const dragStartX = useRef(0);
-  const dragStartScrollLeft = useRef(0);
-  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
 
   const instagramPosts: string[] = Array.isArray(config?.instagramPosts)
     ? config.instagramPosts.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
     : [];
-  const viewportWidth = typeof window === 'undefined' ? 1024 : window.innerWidth;
-  const instagramCardWidth = Math.max(260, Math.min(390, viewportWidth - 32));
-  const instagramSetCopies = Math.max(
-    1,
-    Math.ceil(viewportWidth / ((instagramCardWidth + 24) * Math.max(instagramPosts.length, 1))) + 1
-  );
-  const instagramTrackPosts = Array.from({ length: instagramSetCopies }, () => instagramPosts).flat();
-  const instagramScrollDuration = Math.max(90, (instagramTrackPosts.length * (instagramCardWidth + 24)) / 22);
-
-  const getInstagramEmbedUrl = (postUrl: string) => {
-    try {
-      const permalink = postUrl.match(/data-instgrm-permalink\s*=\s*["']([^"']+)/i)?.[1];
-      const url = new URL((permalink || postUrl).trim().replace(/&amp;/g, '&'));
-      if (!['instagram.com', 'www.instagram.com'].includes(url.hostname)) return null;
-      const match = url.pathname.match(/^\/(?:p|reel|tv)\/([\w-]+)/);
-      return match ? `https://www.instagram.com/${url.pathname.split('/')[1]}/${match[1]}/embed/?hidecaption=true&autoplay=1&muted=1` : null;
-    } catch {
-      return null;
-    }
-  };
 
   useEffect(() => {
     api.getConfig()
@@ -91,30 +68,11 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse' || event.button !== 0 || !carouselRef.current) return;
-    isDraggingCarousel.current = true;
-    dragStartX.current = event.clientX;
-    dragStartScrollLeft.current = carouselRef.current.scrollLeft;
-    setIsManuallyScrolling(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handleCarouselPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDraggingCarousel.current || !carouselRef.current) return;
-    carouselRef.current.scrollLeft = dragStartScrollLeft.current - (event.clientX - dragStartX.current);
-  };
-
-  const handleCarouselPointerUp = () => {
-    isDraggingCarousel.current = false;
-    setIsManuallyScrolling(false);
-  };
-
   return (
     <div className="flex flex-col">
       <section className="relative min-h-[78svh] md:min-h-[90vh] bg-black overflow-hidden py-24 md:py-0">
         <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2000" className="w-full h-full object-cover opacity-50 scale-105" alt="Hero" />
+          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=70&w=1280" srcSet="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=65&w=640 640w, https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=70&w=1280 1280w, https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=70&w=1800 1800w" sizes="100vw" fetchPriority="high" className="w-full h-full object-cover opacity-50 scale-105" alt="Premium pre-owned sports car available at Whip4You in Surrey, BC" />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
         </div>
         <div className="container mx-auto px-4 sm:px-6 h-full flex flex-col justify-center relative z-10">
@@ -143,6 +101,7 @@ const Home: React.FC = () => {
                 }`}>
                   <img 
                     src={type.image} 
+                    loading="lazy"
                     alt={type.name}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
                   />
@@ -198,38 +157,10 @@ const Home: React.FC = () => {
       <section className="py-8 md:py-12 bg-zinc-950 text-white">
         <div className="container mx-auto px-4 sm:px-6 text-center">
           {instagramPosts.length > 0 ? (
-            <div
-              ref={carouselRef}
-              role="region"
-              aria-label="Instagram post carousel"
-              tabIndex={0}
-              className="instagram-scroll-container touch-pan-x overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              onPointerDown={handleCarouselPointerDown}
-              onPointerMove={handleCarouselPointerMove}
-              onPointerUp={handleCarouselPointerUp}
-              onPointerCancel={handleCarouselPointerUp}
-              onTouchStart={() => setIsManuallyScrolling(true)}
-              onTouchEnd={() => window.setTimeout(() => setIsManuallyScrolling(false), 1200)}
-              onTouchCancel={() => setIsManuallyScrolling(false)}
-            >
-              <div style={{ animationDuration: `${instagramScrollDuration}s`, animationPlayState: isManuallyScrolling ? 'paused' : undefined }} className="flex w-max animate-instagram-scroll hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
-                {[...instagramTrackPosts, ...instagramTrackPosts].map((postUrl, index) => {
-                  const embedUrl = getInstagramEmbedUrl(postUrl);
-                  return embedUrl ? (
-                    <div key={`${postUrl}-${index}`} style={{ width: `${instagramCardWidth}px`, flex: `0 0 ${instagramCardWidth}px` }} className="relative mx-3 aspect-[0.98] max-w-[calc(100vw-32px)] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
-                      <iframe
-                        src={embedUrl}
-                        title={`Instagram post ${index % instagramPosts.length + 1}`}
-                        loading="eager"
-                        className="pointer-events-none absolute left-0 top-0 h-[calc(100%+2px)] w-[calc(100%+20px)] max-w-none border-0"
-                        scrolling="no"
-                        allow="autoplay; encrypted-media; picture-in-picture"
-                      />
-                    </div>
-                  ) : null;
-                })}
-              </div>
+            <div className="insta-slider-container" role="region" aria-label="Instagram post carousel">
+              {instagramPosts.map((postUrl, index) => (
+                <InstagramCard key={`${postUrl}-${index}`} postUrl={postUrl} />
+              ))}
             </div>
           ) : configLoaded ? (
             <p className="text-zinc-500 text-sm tracking-wide">Follow us on Instagram for the latest member experiences.</p>
@@ -237,7 +168,6 @@ const Home: React.FC = () => {
             <div className="mx-auto h-[320px] w-[326px] max-w-full animate-pulse rounded-3xl border border-white/10 bg-white/5" aria-label="Loading Instagram posts" />
           )}
         </div>
-        <style>{`@keyframes instagram-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } } .animate-instagram-scroll { animation-name: instagram-scroll; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; backface-visibility: hidden; } .instagram-scroll-container::-webkit-scrollbar { display: none; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
       </section>
     </div>
   );

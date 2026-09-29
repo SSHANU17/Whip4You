@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, CircleDollarSign, Clock, Users,
@@ -19,7 +19,55 @@ const HOME_BODY_TYPES = [
   { name: 'Truck', size: 'lg', image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=400' }
 ];
 
+// ─── Infinite Auto-Scrolling Marquee ─────────────────────────────────────────
+const InstagramMarquee: React.FC<{ track: string[] }> = ({ track }) => {
+  const [paused, setPaused] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartScroll = useRef(0);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    dragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartScroll.current = scrollRef.current?.scrollLeft ?? 0;
+    setPaused(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging.current || !scrollRef.current) return;
+    scrollRef.current.scrollLeft = dragStartScroll.current - (e.clientX - dragStartX.current);
+  };
+  const onPointerUp = () => { dragging.current = false; };
+
+  return (
+    <div
+      ref={scrollRef}
+      className="w-full overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing select-none ig-scroll-host"
+      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => { if (!dragging.current) setPaused(false); }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onTouchStart={() => setPaused(true)}
+      onTouchEnd={() => setTimeout(() => setPaused(false), 1200)}
+      aria-label="Instagram post carousel"
+      role="region"
+    >
+      <div className={`ig-track flex gap-5 py-5 px-3 w-max${paused ? ' paused' : ''}`}>
+        {track.map((url, i) => (
+          <InstagramCard key={`${url}-${i}`} postUrl={url} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Home: React.FC = () => {
+
   const navigate = useNavigate();
   const [formType, setFormType] = useState<'General' | 'Car Finder' | 'Trade-In'>('General');
   const [submitted, setSubmitted] = useState(false);
@@ -154,20 +202,36 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-8 md:py-12 bg-zinc-950 text-white">
-        <div className="container mx-auto px-4 sm:px-6 text-center">
-          {instagramPosts.length > 0 ? (
-            <div className="insta-slider-container" role="region" aria-label="Instagram post carousel">
-              {instagramPosts.map((postUrl, index) => (
-                <InstagramCard key={`${postUrl}-${index}`} postUrl={postUrl} />
+      <section className="py-8 md:py-12 bg-zinc-950 text-white overflow-hidden">
+        <div className="w-full">
+          {instagramPosts.length > 0 ? (() => {
+            const minCopies = Math.max(3, Math.ceil(1600 / (270 * instagramPosts.length)) + 1);
+            const track = Array.from({ length: minCopies * 2 }, (_, i) => instagramPosts[i % instagramPosts.length]);
+            return <InstagramMarquee track={track} />;
+          })() : configLoaded ? (
+            <p className="text-center text-zinc-500 text-sm tracking-wide py-8">Follow us on Instagram for the latest member experiences.</p>
+          ) : (
+            <div className="flex gap-5 px-4 overflow-hidden">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="shrink-0 w-[250px] h-[370px] animate-pulse rounded-[22px] border-2 border-[rgba(212,175,55,0.3)] bg-zinc-900" />
               ))}
             </div>
-          ) : configLoaded ? (
-            <p className="text-zinc-500 text-sm tracking-wide">Follow us on Instagram for the latest member experiences.</p>
-          ) : (
-            <div className="mx-auto h-[320px] w-[326px] max-w-full animate-pulse rounded-3xl border border-white/10 bg-white/5" aria-label="Loading Instagram posts" />
           )}
         </div>
+        <style>{`
+          @keyframes ig-scroll {
+            from { transform: translate3d(0,0,0); }
+            to   { transform: translate3d(-50%,0,0); }
+          }
+          .ig-track {
+            animation: ig-scroll 36s linear infinite;
+            will-change: transform;
+            backface-visibility: hidden;
+          }
+          .ig-track.paused { animation-play-state: paused !important; }
+          .ig-scroll-host::-webkit-scrollbar { display: none !important; }
+          @media (prefers-reduced-motion: reduce) { .ig-track { animation: none; } }
+        `}</style>
       </section>
     </div>
   );

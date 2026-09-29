@@ -286,7 +286,22 @@ const AdminDashboard: React.FC = () => {
       alert('Inventory grid size must be between 10 and 20.');
       return;
     }
-    const updated = await api.updateConfig({ ...siteConfig, inventoryGridSize: gridSize });
+    const instagramPosts = (Array.isArray(siteConfig?.instagramPosts) ? siteConfig.instagramPosts : [])
+      .map((url: string) => url.trim())
+      .filter(Boolean);
+    const invalidInstagramUrl = instagramPosts.find((postUrl: string) => {
+      try {
+        const url = new URL(postUrl);
+        return !['instagram.com', 'www.instagram.com'].includes(url.hostname) || !/^\/(p|reel|tv)\/[\w-]+/.test(url.pathname);
+      } catch {
+        return true;
+      }
+    });
+    if (invalidInstagramUrl) {
+      alert('Please enter Instagram post, reel, or video URLs (instagram.com/p/…, /reel/…, or /tv/…).');
+      return;
+    }
+    const updated = await api.updateConfig({ ...siteConfig, inventoryGridSize: gridSize, instagramPosts });
     setSiteConfig(updated);
     alert("Configuration Deployed Successfully.");
   };
@@ -741,6 +756,19 @@ const AdminDashboard: React.FC = () => {
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">HERO HEADLINE</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.heroHeadline} onChange={e => setSiteConfig({...siteConfig, heroHeadline: e.target.value})} /></div>
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">PROMO RATE (%)</label><input className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.promoRate} onChange={e => setSiteConfig({...siteConfig, promoRate: e.target.value})} /></div>
                   <div className="space-y-2"><label className="text-[10px] font-black text-zinc-700">INVENTORY GRID SIZE (10-20)</label><input type="number" min="10" max="20" className="w-full bg-white border-2 border-zinc-200 p-5 rounded-2xl outline-none focus:border-[#D4AF37] transition-all font-bold text-black caret-black placeholder:text-zinc-500" value={siteConfig?.inventoryGridSize ?? ''} onChange={e => setSiteConfig({...siteConfig, inventoryGridSize: e.target.value === '' ? '' : Number(e.target.value)})} /></div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[10px] font-black text-zinc-700">INSTAGRAM POSTS AND REELS</label>
+                      <p className="mt-2 text-xs text-zinc-500">Add one public Instagram post, reel, or video URL per row. These appear in the scrolling Member Experiences section.</p>
+                    </div>
+                    {(Array.isArray(siteConfig?.instagramPosts) ? siteConfig.instagramPosts : []).map((postUrl: string, index: number) => (
+                      <div key={index} className="flex gap-3">
+                        <input type="url" placeholder="https://www.instagram.com/reel/..." className="min-w-0 flex-1 bg-white border-2 border-zinc-200 p-4 rounded-2xl outline-none focus:border-[#D4AF37] font-bold text-black" value={postUrl} onChange={e => setSiteConfig({...siteConfig, instagramPosts: siteConfig.instagramPosts.map((url: string, row: number) => row === index ? e.target.value : url)})} />
+                        <button type="button" aria-label={`Remove Instagram URL ${index + 1}`} onClick={() => setSiteConfig({...siteConfig, instagramPosts: siteConfig.instagramPosts.filter((_: string, row: number) => row !== index)})} className="rounded-2xl border border-zinc-200 px-4 text-zinc-600 hover:border-red-300 hover:text-red-600"><Trash2 size={18} /></button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setSiteConfig({...siteConfig, instagramPosts: [...(Array.isArray(siteConfig?.instagramPosts) ? siteConfig.instagramPosts : []), '']})} className="rounded-2xl border-2 border-dashed border-zinc-300 px-5 py-4 text-xs font-black uppercase tracking-widest text-zinc-600 hover:border-[#D4AF37]">+ Add Instagram URL</button>
+                  </div>
                   <button onClick={handleUpdateConfig} className="w-full bg-black text-white py-6 rounded-3xl font-black uppercase tracking-widest text-[10px]">Update Global Config</button>
                 </div>
               </div>

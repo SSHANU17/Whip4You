@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  ShieldCheck, CircleDollarSign, Clock, Users, Star, 
+  ShieldCheck, CircleDollarSign, Clock, Users, Star,
   ChevronRight, Instagram, Send, Search, ArrowRightLeft, 
   CheckCircle2, MessageSquare
 } from 'lucide-react';
@@ -24,6 +24,21 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
+
+  const instagramPosts: string[] = Array.isArray(config?.instagramPosts)
+    ? config.instagramPosts.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
+    : [];
+
+  const getInstagramEmbedUrl = (postUrl: string) => {
+    try {
+      const url = new URL(postUrl);
+      if (!['instagram.com', 'www.instagram.com'].includes(url.hostname)) return null;
+      const match = url.pathname.match(/^\/(?:p|reel|tv)\/([\w-]+)/);
+      return match ? `https://www.instagram.com/${url.pathname.split('/')[1]}/${match[1]}/embed/` : null;
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     api.getReviews().then(setReviews);
@@ -142,18 +157,44 @@ const Home: React.FC = () => {
       <section className="py-20 md:py-32 bg-zinc-950 text-white">
         <div className="container mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-12 md:mb-24 brand-font italic uppercase">Member Experiences</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
-            {reviews.map((review, i) => (
-              <div key={review._id || review.id || i} className="bg-black p-6 sm:p-8 md:p-12 rounded-[32px] md:rounded-[50px] border border-white/5 text-left group relative overflow-hidden">
-                <div className="flex gap-1 mb-8">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < review.rating ? '#D4AF37' : 'none'} className={i < review.rating ? 'text-[#D4AF37]' : 'text-zinc-800'} />)}
-                </div>
-                <p className="text-zinc-400 mb-8 md:mb-10 text-base md:text-lg font-light italic">"{review.text}"</p>
-                <h4 className="font-black uppercase tracking-[0.2em] text-sm">{review.name}</h4>
+          {instagramPosts.length > 0 ? (
+            <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
+              <div className="flex w-max animate-instagram-scroll hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
+                {[...instagramPosts, ...instagramPosts].map((postUrl, index) => {
+                  const embedUrl = getInstagramEmbedUrl(postUrl);
+                  return embedUrl ? (
+                    <div key={`${postUrl}-${index}`} className="mx-3 w-[280px] sm:w-[326px] shrink-0 overflow-hidden rounded-3xl bg-white text-black shadow-2xl">
+                      <iframe
+                        src={embedUrl}
+                        title={`Instagram post ${index % instagramPosts.length + 1}`}
+                        loading={index < instagramPosts.length ? 'eager' : 'lazy'}
+                        className="h-[440px] w-full border-0"
+                        allow="autoplay; encrypted-media; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : null;
+                })}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <p className="text-zinc-500 text-sm tracking-wide">Follow us on Instagram for the latest member experiences.</p>
+          )}
+          {reviews.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 mt-14 md:mt-20 text-left">
+              {reviews.map((review, index) => (
+                <div key={review._id || review.id || index} className="bg-black p-6 sm:p-8 md:p-12 rounded-[32px] md:rounded-[50px] border border-white/5">
+                  <div className="flex gap-1 mb-8">
+                    {[...Array(5)].map((_, starIndex) => <Star key={starIndex} size={14} fill={starIndex < review.rating ? '#D4AF37' : 'none'} className={starIndex < review.rating ? 'text-[#D4AF37]' : 'text-zinc-800'} />)}
+                  </div>
+                  <p className="text-zinc-400 mb-8 md:mb-10 text-base md:text-lg font-light italic">"{review.text}"</p>
+                  <h4 className="font-black uppercase tracking-[0.2em] text-sm">{review.name}</h4>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+        <style>{`@keyframes instagram-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } } .animate-instagram-scroll { animation: instagram-scroll 45s linear infinite; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
       </section>
     </div>
   );

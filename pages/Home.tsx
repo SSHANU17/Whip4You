@@ -28,13 +28,17 @@ const Home: React.FC = () => {
   const instagramPosts: string[] = Array.isArray(config?.instagramPosts)
     ? config.instagramPosts.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
     : [];
+  const instagramSetCopies = typeof window === 'undefined'
+    ? 2
+    : Math.max(1, Math.ceil(window.innerWidth / (305 * Math.max(instagramPosts.length, 1))) + 1);
+  const instagramTrackPosts = Array.from({ length: instagramSetCopies }, () => instagramPosts).flat();
 
   const getInstagramEmbedUrl = (postUrl: string) => {
     try {
       const url = new URL(postUrl);
       if (!['instagram.com', 'www.instagram.com'].includes(url.hostname)) return null;
       const match = url.pathname.match(/^\/(?:p|reel|tv)\/([\w-]+)/);
-      return match ? `https://www.instagram.com/${url.pathname.split('/')[1]}/${match[1]}/embed/` : null;
+      return match ? `https://www.instagram.com/${url.pathname.split('/')[1]}/${match[1]}/embed/?hidecaption=true` : null;
     } catch {
       return null;
     }
@@ -160,17 +164,16 @@ const Home: React.FC = () => {
           {instagramPosts.length > 0 ? (
             <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
               <div className="flex w-max animate-instagram-scroll hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
-                {[...instagramPosts, ...instagramPosts].map((postUrl, index) => {
+                {[...instagramTrackPosts, ...instagramTrackPosts].map((postUrl, index) => {
                   const embedUrl = getInstagramEmbedUrl(postUrl);
                   return embedUrl ? (
-                    <div key={`${postUrl}-${index}`} className="mx-3 w-[280px] sm:w-[326px] shrink-0 overflow-hidden rounded-3xl bg-white text-black shadow-2xl">
+                    <div key={`${postUrl}-${index}`} className="mx-3 h-[350px] w-[280px] sm:h-[405px] sm:w-[326px] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-white text-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
                       <iframe
                         src={embedUrl}
                         title={`Instagram post ${index % instagramPosts.length + 1}`}
                         loading={index < instagramPosts.length ? 'eager' : 'lazy'}
-                        className="h-[440px] w-full border-0"
-                        allow="autoplay; encrypted-media; picture-in-picture; web-share"
-                        allowFullScreen
+                        className="h-[calc(100%+2px)] w-[calc(100%+20px)] max-w-none border-0"
+                        scrolling="no"
                       />
                     </div>
                   ) : null;
@@ -194,7 +197,7 @@ const Home: React.FC = () => {
             </div>
           )}
         </div>
-        <style>{`@keyframes instagram-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } } .animate-instagram-scroll { animation: instagram-scroll 45s linear infinite; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
+        <style>{`@keyframes instagram-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } } .animate-instagram-scroll { animation: instagram-scroll 80s linear infinite; will-change: transform; backface-visibility: hidden; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
       </section>
     </div>
   );

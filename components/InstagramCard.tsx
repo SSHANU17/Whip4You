@@ -21,7 +21,7 @@ const InstagramCard: React.FC<{ postUrl: string }> = ({ postUrl }) => {
       <iframe
         src={embedUrl}
         title="Whip4You Instagram post"
-        loading="eager"
+        loading="lazy"
         allow="autoplay; encrypted-media; picture-in-picture; web-share"
         referrerPolicy="strict-origin-when-cross-origin"
       />

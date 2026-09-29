@@ -24,6 +24,8 @@ h1, h2, h3, .brand-font { font-family: 'Cinzel', serif; letter-spacing: .1em; }
 .bg-gray-50 .text-gray-400, .bg-gray-50 .text-zinc-400,
 .bg-zinc-50 .text-gray-400, .bg-zinc-50 .text-zinc-400,
 .bg-off-white .text-gray-400, .bg-off-white .text-zinc-400 { color: #52525b; }
+.bg-white [class~="text-[#D4AF37]"], .bg-gray-50 [class~="text-[#D4AF37]"],
+.bg-zinc-50 [class~="text-[#D4AF37]"], .bg-off-white [class~="text-[#D4AF37]"] { color: #765700; }
 .display-font { font-family: 'Outfit', sans-serif; letter-spacing: -.02em; }
 .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #F1D592 50%, #D4AF37 100%); }
 .gold-text { background: linear-gradient(135deg, #D4AF37 0%, #F1D592 50%, #D4AF37 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }

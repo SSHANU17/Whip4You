@@ -201,6 +201,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
             src="https://images.unsplash.com/photo-1562141982-c1a7459e4261?auto=format&fit=crop&q=80&w=2000" 
             className="w-full h-full object-cover opacity-30 grayscale"
             alt="Contact Hero"
+            fetchPriority="high"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-off-white via-transparent to-black/90"></div>
         </div>
@@ -279,7 +280,7 @@ const Contact: React.FC<ContactProps> = ({ type = 'General' }) => {
             <div className="bg-white p-6 md:p-16 rounded-[30px] md:rounded-[60px] shadow-2xl border border-gray-100">
               {vehicleContext && (
                 <div className="bg-zinc-50 p-5 sm:p-6 rounded-[28px] border border-zinc-200 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 animate-in slide-in-from-left duration-500">
-                   <img src={vehicleContext.images[0]} className="w-24 h-24 object-cover rounded-2xl shadow-md border-2 border-white" alt="" />
+                   <img src={vehicleContext.images[0]} loading="lazy" className="w-24 h-24 object-cover rounded-2xl shadow-md border-2 border-white" alt={`${vehicleContext.year} ${vehicleContext.make} ${vehicleContext.model}`} />
                    <div>
                      <span className="text-[#D4AF37] font-black uppercase tracking-[0.3em] text-[8px] mb-1 block">Active Interest</span>
                      <h3 className="text-xl font-bold brand-font text-black">{vehicleContext.year} {vehicleContext.make} {vehicleContext.model}</h3>

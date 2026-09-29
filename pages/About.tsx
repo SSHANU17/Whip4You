@@ -12,6 +12,7 @@ const About: React.FC = () => {
             src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=2000" 
             className="w-full h-full object-cover opacity-50"
             alt="About Hero"
+            fetchPriority="high"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black"></div>
         </div>
@@ -54,7 +55,7 @@ const About: React.FC = () => {
             </div>
             <div className="relative">
               <div className="aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl">
-                 <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000" className="w-full h-full object-cover" alt="" />
+                 <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=70&w=900" loading="lazy" className="w-full h-full object-cover" alt="Pre-owned vehicle at Whip4You in Surrey, British Columbia" />
               </div>
               <div className="absolute -bottom-10 -left-10 bg-[#D4AF37] text-black p-10 rounded-3xl shadow-xl hidden md:block">
                 <Award size={48} className="mb-4" />

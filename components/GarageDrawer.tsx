@@ -103,7 +103,7 @@ const GarageDrawer: React.FC<GarageDrawerProps> = ({ isOpen, onClose }) => {
           ) : (
             savedCars.map(car => (
               <div key={car._id || car.id} className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500">
-                <img src={car.images[0]} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                <img src={car.images[0]} loading="lazy" className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700" alt={`${car.year} ${car.make} ${car.model}`} />
                 <div className="p-4 sm:p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>

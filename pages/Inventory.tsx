@@ -572,6 +572,7 @@ const Inventory: React.FC = () => {
                         src={v.images[0]} 
                         className="w-14 h-14 rounded-xl border-2 border-black object-cover"
                         alt={v.make}
+                        loading="lazy"
                       />
                       <button 
                         onClick={() => toggleCompare(v._id || v.id)}
@@ -636,7 +637,7 @@ const Inventory: React.FC = () => {
                     </th>
                     {vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => (
                       <th key={v._id || v.id} className="p-8 w-1/4 border-r border-gray-100">
-                        <img src={v.images[0]} className="w-full h-32 object-cover rounded-xl mb-4 shadow-sm" alt="" />
+                        <img src={v.images[0]} loading="lazy" className="w-full h-32 object-cover rounded-xl mb-4 shadow-sm" alt={`${v.year} ${v.make} ${v.model}`} />
                         <h4 className="font-bold text-lg text-zinc-900">{v.year} {v.make}</h4>
                         <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">{v.model} {v.trim}</p>
                         <p className="text-[#D4AF37] font-bold text-xl mt-2 brand-font">

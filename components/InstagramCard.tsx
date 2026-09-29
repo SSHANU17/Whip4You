@@ -261,7 +261,7 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
       </div>
 
       {/* ── Media ── */}
-      <div className="relative bg-zinc-950 overflow-hidden" style={{ height: 220 }}>
+      <div className="relative bg-zinc-950 overflow-hidden" style={{ height: 340 }}>
         {loading ? (
           <div className="w-full h-full animate-pulse bg-zinc-800" />
         ) : slide ? (

@@ -19,45 +19,75 @@ const HOME_BODY_TYPES = [
   { name: 'Truck', size: 'lg', image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=400' }
 ];
 
-// ─── Infinite Auto-Scrolling Marquee ─────────────────────────────────────────
+// ─── Infinite Auto-Scrolling Marquee (rAF-based, no CSS animation conflict) ──
 const InstagramMarquee: React.FC<{ track: string[] }> = ({ track }) => {
-  const [paused, setPaused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pausedRef = useRef(false);
   const dragging = useRef(false);
   const dragStartX = useRef(0);
   const dragStartScroll = useRef(0);
+  const animRef = useRef<number>(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Keep pausedRef in sync so the rAF loop reads the latest value without re-subscribing
+  useEffect(() => { pausedRef.current = isPaused; }, [isPaused]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const SPEED = 0.55; // px per frame (~33px/s @ 60fps)
+
+    const step = () => {
+      if (!pausedRef.current && container) {
+        container.scrollLeft += SPEED;
+        // Seamless loop: when we reach the halfway point, jump back to 0
+        const half = container.scrollWidth / 2;
+        if (container.scrollLeft >= half) {
+          container.scrollLeft -= half;
+        }
+      }
+      animRef.current = requestAnimationFrame(step);
+    };
+
+    animRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animRef.current);
+  }, []);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'mouse' || e.button !== 0) return;
     dragging.current = true;
     dragStartX.current = e.clientX;
     dragStartScroll.current = scrollRef.current?.scrollLeft ?? 0;
-    setPaused(true);
+    setIsPaused(true);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragging.current || !scrollRef.current) return;
     scrollRef.current.scrollLeft = dragStartScroll.current - (e.clientX - dragStartX.current);
   };
-  const onPointerUp = () => { dragging.current = false; };
+  const onPointerUp = () => {
+    dragging.current = false;
+    setTimeout(() => setIsPaused(false), 800);
+  };
 
   return (
     <div
       ref={scrollRef}
-      className="w-full overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing select-none ig-scroll-host"
+      className="w-full overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing select-none"
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => { if (!dragging.current) setPaused(false); }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => { if (!dragging.current) setIsPaused(false); }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setTimeout(() => setPaused(false), 1200)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setTimeout(() => setIsPaused(false), 1500)}
       aria-label="Instagram post carousel"
       role="region"
     >
-      <div className={`ig-track flex gap-5 py-5 px-3 w-max${paused ? ' paused' : ''}`}>
+      <div className="flex gap-5 py-6 px-4 w-max">
         {track.map((url, i) => (
           <InstagramCard key={`${url}-${i}`} postUrl={url} />
         ))}
@@ -218,20 +248,7 @@ const Home: React.FC = () => {
             </div>
           )}
         </div>
-        <style>{`
-          @keyframes ig-scroll {
-            from { transform: translate3d(0,0,0); }
-            to   { transform: translate3d(-50%,0,0); }
-          }
-          .ig-track {
-            animation: ig-scroll 36s linear infinite;
-            will-change: transform;
-            backface-visibility: hidden;
-          }
-          .ig-track.paused { animation-play-state: paused !important; }
-          .ig-scroll-host::-webkit-scrollbar { display: none !important; }
-          @media (prefers-reduced-motion: reduce) { .ig-track { animation: none; } }
-        `}</style>
+        <style>{`.ig-scroller::-webkit-scrollbar{display:none!important}`}</style>
       </section>
     </div>
   );

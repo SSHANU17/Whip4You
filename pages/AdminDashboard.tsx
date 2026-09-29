@@ -72,6 +72,18 @@ const getLeadDetailEntries = (details?: Record<string, unknown>) => {
     .filter((entry) => entry.value.length > 0);
 };
 
+const getInstagramPermalink = (value: string) => {
+  const embedPermalink = value.match(/data-instgrm-permalink\s*=\s*["']([^"']+)/i)?.[1];
+  const candidate = (embedPermalink || value).trim().replace(/&amp;/g, '&');
+  try {
+    const url = new URL(candidate);
+    if (!['instagram.com', 'www.instagram.com'].includes(url.hostname) || !/^\/(p|reel|tv)\/[\w-]+/.test(url.pathname)) return null;
+    return `https://www.instagram.com${url.pathname}`;
+  } catch {
+    return null;
+  }
+};
+
 const createInitialVehicleForm = (): Partial<Vehicle> => ({
   make: '',
   model: '',
@@ -286,21 +298,15 @@ const AdminDashboard: React.FC = () => {
       alert('Inventory grid size must be between 10 and 20.');
       return;
     }
-    const instagramPosts = (Array.isArray(siteConfig?.instagramPosts) ? siteConfig.instagramPosts : [])
+    const instagramInputs = (Array.isArray(siteConfig?.instagramPosts) ? siteConfig.instagramPosts : [])
       .map((url: string) => url.trim())
       .filter(Boolean);
-    const invalidInstagramUrl = instagramPosts.find((postUrl: string) => {
-      try {
-        const url = new URL(postUrl);
-        return !['instagram.com', 'www.instagram.com'].includes(url.hostname) || !/^\/(p|reel|tv)\/[\w-]+/.test(url.pathname);
-      } catch {
-        return true;
-      }
-    });
-    if (invalidInstagramUrl) {
-      alert('Please enter Instagram post, reel, or video URLs (instagram.com/p/…, /reel/…, or /tv/…).');
+    const normalizedInstagramPosts = instagramInputs.map(getInstagramPermalink);
+    if (normalizedInstagramPosts.some((postUrl: string | null) => postUrl === null)) {
+      alert('Please enter an Instagram post, reel, or video URL, or paste Instagram embed code for one (instagram.com/p/…, /reel/…, or /tv/…).');
       return;
     }
+    const instagramPosts = normalizedInstagramPosts.filter((postUrl): postUrl is string => postUrl !== null);
     const updated = await api.updateConfig({ ...siteConfig, inventoryGridSize: gridSize, instagramPosts });
     setSiteConfig(updated);
     alert("Configuration Deployed Successfully.");
@@ -759,11 +765,11 @@ const AdminDashboard: React.FC = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="text-[10px] font-black text-zinc-700">INSTAGRAM POSTS AND REELS</label>
-                      <p className="mt-2 text-xs text-zinc-500">Add one public Instagram post, reel, or video URL per row. These appear in the scrolling Member Experiences section.</p>
+                      <p className="mt-2 text-xs text-zinc-500">Paste a public Instagram URL or Instagram embed code per row. These appear in the scrolling Member Experiences section.</p>
                     </div>
                     {(Array.isArray(siteConfig?.instagramPosts) ? siteConfig.instagramPosts : []).map((postUrl: string, index: number) => (
                       <div key={index} className="flex gap-3">
-                        <input type="url" placeholder="https://www.instagram.com/reel/..." className="min-w-0 flex-1 bg-white border-2 border-zinc-200 p-4 rounded-2xl outline-none focus:border-[#D4AF37] font-bold text-black" value={postUrl} onChange={e => setSiteConfig({...siteConfig, instagramPosts: siteConfig.instagramPosts.map((url: string, row: number) => row === index ? e.target.value : url)})} />
+                        <textarea rows={2} placeholder="Paste an Instagram post URL or embed code" className="min-w-0 flex-1 resize-y bg-white border-2 border-zinc-200 p-4 rounded-2xl outline-none focus:border-[#D4AF37] font-bold text-black" value={postUrl} onChange={e => setSiteConfig({...siteConfig, instagramPosts: siteConfig.instagramPosts.map((url: string, row: number) => row === index ? e.target.value : url)})} />
                         <button type="button" aria-label={`Remove Instagram URL ${index + 1}`} onClick={() => setSiteConfig({...siteConfig, instagramPosts: siteConfig.instagramPosts.filter((_: string, row: number) => row !== index)})} className="rounded-2xl border border-zinc-200 px-4 text-zinc-600 hover:border-red-300 hover:text-red-600"><Trash2 size={18} /></button>
                       </div>
                     ))}

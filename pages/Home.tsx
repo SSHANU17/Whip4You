@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  ShieldCheck, CircleDollarSign, Clock, Users, Star,
+  ShieldCheck, CircleDollarSign, Clock, Users,
   ChevronRight, Instagram, Send, Search, ArrowRightLeft, 
   CheckCircle2, MessageSquare
 } from 'lucide-react';
@@ -22,20 +22,24 @@ const Home: React.FC = () => {
   const [formType, setFormType] = useState<'General' | 'Car Finder' | 'Trade-In'>('General');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [reviews, setReviews] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
 
   const instagramPosts: string[] = Array.isArray(config?.instagramPosts)
     ? config.instagramPosts.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
     : [];
-  const instagramSetCopies = typeof window === 'undefined'
-    ? 2
-    : Math.max(1, Math.ceil(window.innerWidth / (305 * Math.max(instagramPosts.length, 1))) + 1);
+  const viewportWidth = typeof window === 'undefined' ? 1024 : window.innerWidth;
+  const instagramCardWidth = viewportWidth >= 1024 ? 460 : viewportWidth >= 640 ? 400 : 320;
+  const instagramSetCopies = Math.max(
+    1,
+    Math.ceil(viewportWidth / ((instagramCardWidth + 24) * Math.max(instagramPosts.length, 1))) + 1
+  );
   const instagramTrackPosts = Array.from({ length: instagramSetCopies }, () => instagramPosts).flat();
+  const instagramScrollDuration = Math.max(90, (instagramTrackPosts.length * (instagramCardWidth + 24)) / 22);
 
   const getInstagramEmbedUrl = (postUrl: string) => {
     try {
-      const url = new URL(postUrl);
+      const permalink = postUrl.match(/data-instgrm-permalink\s*=\s*["']([^"']+)/i)?.[1];
+      const url = new URL((permalink || postUrl).trim().replace(/&amp;/g, '&'));
       if (!['instagram.com', 'www.instagram.com'].includes(url.hostname)) return null;
       const match = url.pathname.match(/^\/(?:p|reel|tv)\/([\w-]+)/);
       return match ? `https://www.instagram.com/${url.pathname.split('/')[1]}/${match[1]}/embed/?hidecaption=true` : null;
@@ -45,7 +49,6 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    api.getReviews().then(setReviews);
     api.getConfig().then(setConfig);
   }, []);
 
@@ -160,19 +163,18 @@ const Home: React.FC = () => {
 
       <section className="py-20 md:py-32 bg-zinc-950 text-white">
         <div className="container mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-12 md:mb-24 brand-font italic uppercase">Member Experiences</h2>
           {instagramPosts.length > 0 ? (
             <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
-              <div className="flex w-max animate-instagram-scroll hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
+              <div style={{ animationDuration: `${instagramScrollDuration}s` }} className="flex w-max animate-instagram-scroll hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
                 {[...instagramTrackPosts, ...instagramTrackPosts].map((postUrl, index) => {
                   const embedUrl = getInstagramEmbedUrl(postUrl);
                   return embedUrl ? (
-                    <div key={`${postUrl}-${index}`} className="mx-3 h-[350px] w-[280px] sm:h-[405px] sm:w-[326px] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-white text-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
+                    <div key={`${postUrl}-${index}`} className="relative mx-3 aspect-[1.25] w-[320px] sm:w-[400px] lg:w-[460px] shrink-0 overflow-hidden rounded-3xl border border-[#D4AF37]/70 bg-black shadow-[0_0_16px_rgba(212,175,55,0.45),0_0_38px_rgba(212,175,55,0.2)]">
                       <iframe
                         src={embedUrl}
                         title={`Instagram post ${index % instagramPosts.length + 1}`}
                         loading={index < instagramPosts.length ? 'eager' : 'lazy'}
-                        className="h-[calc(100%+2px)] w-[calc(100%+20px)] max-w-none border-0"
+                        className="absolute -top-[72px] left-0 h-[calc(100%+74px)] w-[calc(100%+20px)] max-w-none border-0"
                         scrolling="no"
                       />
                     </div>
@@ -183,21 +185,8 @@ const Home: React.FC = () => {
           ) : (
             <p className="text-zinc-500 text-sm tracking-wide">Follow us on Instagram for the latest member experiences.</p>
           )}
-          {reviews.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 mt-14 md:mt-20 text-left">
-              {reviews.map((review, index) => (
-                <div key={review._id || review.id || index} className="bg-black p-6 sm:p-8 md:p-12 rounded-[32px] md:rounded-[50px] border border-white/5">
-                  <div className="flex gap-1 mb-8">
-                    {[...Array(5)].map((_, starIndex) => <Star key={starIndex} size={14} fill={starIndex < review.rating ? '#D4AF37' : 'none'} className={starIndex < review.rating ? 'text-[#D4AF37]' : 'text-zinc-800'} />)}
-                  </div>
-                  <p className="text-zinc-400 mb-8 md:mb-10 text-base md:text-lg font-light italic">"{review.text}"</p>
-                  <h4 className="font-black uppercase tracking-[0.2em] text-sm">{review.name}</h4>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-        <style>{`@keyframes instagram-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } } .animate-instagram-scroll { animation: instagram-scroll 80s linear infinite; will-change: transform; backface-visibility: hidden; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
+        <style>{`@keyframes instagram-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } } .animate-instagram-scroll { animation-name: instagram-scroll; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; backface-visibility: hidden; } @media (prefers-reduced-motion: reduce) { .animate-instagram-scroll { animation: none; } }`}</style>
       </section>
     </div>
   );

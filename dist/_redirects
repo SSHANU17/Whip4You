@@ -1,0 +1,3 @@
+/sitemap.xml  https://whip4-you-be.vercel.app/api/sitemap.xml  200
+/api/*        https://whip4-you-be.vercel.app/api/:splat       200
+/*            /index.html                                      200

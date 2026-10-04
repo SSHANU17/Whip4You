@@ -64,7 +64,8 @@ const AppFrame: React.FC<AppFrameProps> = ({
 }) => {
   const { pathname } = useLocation();
   const isAdminRoute = pathname === '/admin';
-  const showEntryGate = !hasInteracted && !isAdminRoute;
+  const isRootPage = pathname === '/' || pathname === '';
+  const showEntryGate = !hasInteracted && !isAdminRoute && isRootPage;
 
   return (
     <>
@@ -160,9 +161,13 @@ const AppFrame: React.FC<AppFrameProps> = ({
 };
 
 const App: React.FC = () => {
-  const [hasInteracted, setHasInteracted] = useState(
-    () => localStorage.getItem(ENTRY_GATE_STORAGE_KEY) === 'true'
-  );
+  const [hasInteracted, setHasInteracted] = useState(() => {
+    try {
+      return localStorage.getItem(ENTRY_GATE_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isStarting, setIsStarting] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -174,6 +179,19 @@ const App: React.FC = () => {
   const goPrev = () => {
     setCurrentSlide((prev) => (prev - 1 + ENTRY_SLIDES.length) % ENTRY_SLIDES.length);
   };
+
+  useEffect(() => {
+    // If visitor directly opened or reloaded an inner route, grant immediate access
+    // and remember it so navigating to the home page doesn't show the entry gate.
+    if (window.location.pathname !== '/' && window.location.pathname !== '') {
+      try {
+        localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
+      } catch (err) {
+        // Safe fallback
+      }
+      setHasInteracted(true);
+    }
+  }, []);
 
   useEffect(() => {
     // Eagerly pre-fetch fleet registry & config in the background so navigation is instant
@@ -195,7 +213,11 @@ const App: React.FC = () => {
     setIsStarting(true);
 
     const enterSite = () => {
-      localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
+      try {
+        localStorage.setItem(ENTRY_GATE_STORAGE_KEY, 'true');
+      } catch (err) {
+        // Safe fallback
+      }
       setHasInteracted(true);
     };
 

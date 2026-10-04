@@ -19,9 +19,10 @@ const pageMeta: Record<string, { title: string; description: string }> = {
 export default function RouteMeta() {
   const { pathname } = useLocation();
   useEffect(() => {
-    const meta = pathname.startsWith('/vehicle/')
+    const normalizedPath = pathname.replace(/\/+$/, '') || '/';
+    const meta = normalizedPath.startsWith('/vehicle/')
       ? { title: 'Pre-Owned Vehicle for Sale in Surrey, BC | Whip4You', description: 'View vehicle details, photos and financing information for this pre-owned vehicle at Whip4You in Surrey, BC.' }
-      : pageMeta[pathname] || pageMeta['/'];
+      : pageMeta[normalizedPath] || pageMeta['/'];
     document.title = meta.title;
     let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!description) { description = document.createElement('meta'); description.name = 'description'; document.head.appendChild(description); }

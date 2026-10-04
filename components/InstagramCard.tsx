@@ -61,6 +61,24 @@ function parseHtml(html: string, permalink: string): IGMedia | null {
   } catch { return null; }
 }
 
+function parseJinaMarkdown(markdown: string, permalink: string, isReel: boolean): IGMedia | null {
+  try {
+    const cdnMatches = [...markdown.matchAll(/\((https:\/\/[^)]+cdninstagram\.com[^)]+)\)/g)].map(m => m[1]);
+    if (!cdnMatches.length) return null;
+    const profilePic = cdnMatches[0] || null;
+    const displayUrl = cdnMatches[1] || cdnMatches[0];
+    return {
+      username: 'whip4you',
+      profilePicUrl: profilePic,
+      isVideo: isReel,
+      videoUrl: null,
+      displayUrl,
+      permalink,
+      slides: [{ isVideo: false, displayUrl, videoUrl: null }]
+    };
+  } catch { return null; }
+}
+
 function fetchMedia(rawUrl: string): Promise<IGMedia | null> {
   const target = extractTarget(rawUrl);
   if (!target) return Promise.resolve(null);
@@ -68,7 +86,7 @@ function fetchMedia(rawUrl: string): Promise<IGMedia | null> {
   if (cache.has(key)) return cache.get(key)!;
 
   const p = (async (): Promise<IGMedia | null> => {
-    // 1. Try serverless endpoint
+    // 1. Try internal /api/instagram endpoint (Vite dev middleware or Vercel serverless)
     try {
       const r = await fetch(`/api/instagram?url=${encodeURIComponent(target.permalink)}`);
       if (r.ok) {
@@ -76,16 +94,29 @@ function fetchMedia(rawUrl: string): Promise<IGMedia | null> {
         if (d?.displayUrl || d?.videoUrl) return d as IGMedia;
       }
     } catch { /**/ }
-    // 2. Fallback: direct embed parse via allorigins
+
+    // 2. Direct client fallback via jina reader (returns pure markdown with cdninstagram image URLs)
+    try {
+      const jinaUrl = `https://r.jina.ai/${encodeURIComponent(target.permalink + 'embed/')}`;
+      const r = await fetch(jinaUrl);
+      if (r.ok) {
+        const text = await r.text();
+        const parsed = parseJinaMarkdown(text, target.permalink, target.postType === 'reel');
+        if (parsed) return parsed;
+      }
+    } catch { /**/ }
+
+    // 3. Fallback via allorigins proxy if available
     try {
       const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(target.permalink + 'embed/')}`;
-      const r = await fetch(proxy);
+      const r = await fetch(proxy, { signal: AbortSignal.timeout(4000) });
       if (r.ok) {
         const { contents } = await r.json();
         const parsed = parseHtml(contents || '', target.permalink);
         if (parsed) return parsed;
       }
     } catch { /**/ }
+
     return null;
   })();
 
@@ -328,14 +359,19 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
             )}
           </>
         ) : (
-          /* iframe fallback if API fetch failed */
-          <iframe
-            src={`${permalink}embed/?hidecaption=true`}
-            title="Instagram post"
-            scrolling="no"
-            className="pointer-events-none absolute -top-[52px] left-0 w-[calc(100%+18px)] border-0"
-            style={{ height: 440 }}
-          />
+          /* Clean placeholder if media cannot be fetched */
+          <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900 text-zinc-400 p-4 text-center">
+            <span className="text-xs mb-2">View post on Instagram</span>
+            <a
+              href={permalink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-[#D4AF37] hover:underline"
+              onClick={e => e.stopPropagation()}
+            >
+              Open Post ↗
+            </a>
+          </div>
         )}
       </div>
 
@@ -354,25 +390,6 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
         </div>
         <a href={permalink} target="_blank" rel="noopener noreferrer" aria-label="Save post" className="text-gray-900 hover:text-gray-500 transition-colors" onClick={e => e.stopPropagation()}>
           <BookmarkIcon />
-        </a>
-      </div>
-
-      {/* ── Caption + View on Instagram ── */}
-      <div className="px-3 pb-3 space-y-1">
-        <p className="text-xs text-gray-900 leading-snug line-clamp-2">
-          <a href={`https://www.instagram.com/${username}/`} target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline" onClick={e => e.stopPropagation()}>
-            {username}
-          </a>
-          {' '}Premium pre-owned vehicles. BC-wide. 🏎️✨ #whip4you #luxurycars
-        </p>
-        <a
-          href={permalink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[11px] text-gray-400 hover:text-[#D4AF37] transition-colors block"
-          onClick={e => e.stopPropagation()}
-        >
-          View on Instagram ↗
         </a>
       </div>
     </div>

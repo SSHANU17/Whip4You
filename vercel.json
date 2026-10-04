@@ -8,7 +8,7 @@
       "destination": "https://whip4-you-be.vercel.app/api/sitemap.xml"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

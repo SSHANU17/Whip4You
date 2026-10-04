@@ -19,29 +19,26 @@ const HOME_BODY_TYPES = [
   { name: 'Truck', size: 'lg', image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=400' }
 ];
 
-// ─── Infinite Auto-Scrolling Marquee (rAF-based, no CSS animation conflict) ──
+// ─── Infinite Auto-Scrolling Marquee (rAF-based, smooth drag & click handling) ──
 const InstagramMarquee: React.FC<{ track: string[] }> = ({ track }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef(false);
-  const dragging = useRef(false);
+  const isDragging = useRef(false);
   const dragStartX = useRef(0);
   const dragStartScroll = useRef(0);
+  const hasMoved = useRef(false);
   const animRef = useRef<number>(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  // Keep pausedRef in sync so the rAF loop reads the latest value without re-subscribing
-  useEffect(() => { pausedRef.current = isPaused; }, [isPaused]);
+  const isHoveredRef = useRef(false);
 
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
 
-    const SPEED = 0.55; // px per frame (~33px/s @ 60fps)
+    const SPEED = 0.15; // px per frame (~9px/s @ 60fps, reduced by 75% for relaxed browsing)
 
     const step = () => {
-      if (!pausedRef.current && container) {
+      // Auto-scroll runs whenever the user is not actively dragging or hovering
+      if (!isDragging.current && !isHoveredRef.current && container) {
         container.scrollLeft += SPEED;
-        // Seamless loop: when we reach the halfway point, jump back to 0
         const half = container.scrollWidth / 2;
         if (container.scrollLeft >= half) {
           container.scrollLeft -= half;
@@ -54,40 +51,58 @@ const InstagramMarquee: React.FC<{ track: string[] }> = ({ track }) => {
     return () => cancelAnimationFrame(animRef.current);
   }, []);
 
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== 'mouse' || e.button !== 0) return;
-    dragging.current = true;
+  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    isDragging.current = true;
+    hasMoved.current = false;
     dragStartX.current = e.clientX;
     dragStartScroll.current = scrollRef.current?.scrollLeft ?? 0;
-    setIsPaused(true);
-    e.currentTarget.setPointerCapture(e.pointerId);
   };
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragging.current || !scrollRef.current) return;
-    scrollRef.current.scrollLeft = dragStartScroll.current - (e.clientX - dragStartX.current);
+
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    const diff = e.clientX - dragStartX.current;
+    if (Math.abs(diff) > 5) {
+      hasMoved.current = true;
+    }
+    scrollRef.current.scrollLeft = dragStartScroll.current - diff;
   };
-  const onPointerUp = () => {
-    dragging.current = false;
-    setTimeout(() => setIsPaused(false), 800);
+
+  const onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    isDragging.current = false;
+    // If the user just clicked without dragging, let child click events trigger normally
   };
 
   return (
     <div
       ref={scrollRef}
-      className="w-full overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing select-none"
+      className="w-full overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing select-none ig-scroller"
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setTimeout(() => setIsPaused(false), 1500)}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={() => {
+        isDragging.current = false;
+        isHoveredRef.current = false;
+      }}
+      onTouchStart={() => {
+        isDragging.current = true;
+      }}
+      onTouchEnd={() => {
+        isDragging.current = false;
+      }}
       aria-label="Instagram post carousel"
       role="region"
     >
       <div className="flex gap-5 py-6 px-4 w-max">
         {track.map((url, i) => (
-          <InstagramCard key={`${url}-${i}`} postUrl={url} />
+          <InstagramCard 
+            key={`${url}-${i}`} 
+            postUrl={url} 
+            onHoverChange={(hovered) => {
+              isHoveredRef.current = hovered;
+            }}
+          />
         ))}
       </div>
     </div>

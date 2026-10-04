@@ -14,6 +14,7 @@ interface IGMedia {
 
 interface InstagramCardProps {
   postUrl: string;
+  onHoverChange?: (hovered: boolean) => void;
 }
 
 // ─── Cache ───────────────────────────────────────────────────────────────────
@@ -182,7 +183,7 @@ const ChevronRightIcon = () => (
 
 // ─── Card ────────────────────────────────────────────────────────────────────
 
-function InstagramCard({ postUrl }: InstagramCardProps) {
+function InstagramCard({ postUrl, onHoverChange }: InstagramCardProps) {
   const target = extractTarget(postUrl);
   const permalink = target?.permalink || postUrl;
 
@@ -223,6 +224,7 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
 
   const handleMouseEnter = () => {
     setIsHovered(true);
+    onHoverChange?.(true);
     const v = videoRef.current;
     if (v && activeVideo) {
       v.muted = false;
@@ -233,6 +235,7 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
 
   const handleMouseLeave = () => {
     setIsHovered(false);
+    onHoverChange?.(false);
     const v = videoRef.current;
     if (v) { v.muted = true; setIsMuted(true); }
   };
@@ -250,7 +253,8 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
 
   const onCardClick = (e: React.MouseEvent) => {
     // If user clicked interactive controls (mute button, next/prev arrows, author links), don't trigger full card redirect
-    if ((e.target as HTMLElement).closest('button, a')) return;
+    const targetEl = e.target as HTMLElement;
+    if (targetEl.closest('button, a')) return;
     window.open(permalink, '_blank', 'noopener,noreferrer');
   };
 

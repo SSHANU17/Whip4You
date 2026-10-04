@@ -6,11 +6,14 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   '/': { title: 'Whip4You | Used Cars in Surrey, BC', description: 'Shop inspected pre-owned cars, SUVs, trucks and vans at Whip4You in Surrey, British Columbia. Browse inventory and apply for vehicle financing.' },
   '/inventory': { title: 'Used Vehicle Inventory | Surrey, BC | Whip4You', description: 'Browse available used cars, SUVs, trucks and vans for sale in Surrey and across the Lower Mainland, British Columbia.' },
   '/finance': { title: 'Auto Financing in Surrey, BC | Whip4You', description: 'Explore vehicle financing options in Surrey, BC. Apply online for financing on quality pre-owned vehicles at Whip4You.' },
-  '/calculator': { title: 'Car Loan Calculator | Whip4You Surrey', description: 'Estimate your car loan payments with the Whip4You vehicle payment calculator in Surrey, British Columbia.' },
+  '/apply': { title: 'Online Credit Application | Whip4You Surrey', description: 'Apply for fast, secure vehicle financing and credit pre-approval with Whip4You in Surrey and Langley, BC.' },
+  '/calculator': { title: 'Car Loan Calculator | Whip4You Surrey', description: 'Estimate your monthly, bi-weekly and weekly car payments with the Whip4You payment calculator in Surrey, British Columbia.' },
+  '/trade-in': { title: 'Trade-In Appraisal & Vehicle Value | Whip4You Surrey', description: 'Get a credible market trade-in appraisal for your vehicle based on real auction and market data at Whip4You.' },
+  '/car-finder': { title: 'Car Finder Concierge | Whip4You Surrey, BC', description: 'Looking for a specific make, model or trim? Let our concierge team locate your vehicle across wholesale networks in BC.' },
   '/about': { title: 'About Whip4You | Surrey Used Car Dealership', description: 'Learn about Whip4You, a pre-owned vehicle dealership serving Surrey, Langley and the Lower Mainland of British Columbia.' },
-  '/contact': { title: 'Contact Whip4You | Surrey, BC', description: 'Contact the Whip4You vehicle sales team in Surrey, British Columbia, to ask about inventory, financing or a trade-in.' },
-  '/privacy': { title: 'Privacy Policy | Whip4You', description: 'Read the Whip4You privacy policy.' },
-  '/admin': { title: 'Admin | Whip4You', description: 'Whip4You administration.' },
+  '/contact': { title: 'Contact Whip4You | Surrey & Langley, BC', description: 'Contact the Whip4You vehicle sales and concierge team in Surrey and Langley, British Columbia.' },
+  '/privacy': { title: 'Privacy Policy | Whip4You', description: 'Read the Whip4You customer data and privacy policy.' },
+  '/admin': { title: 'Admin Portal | Whip4You', description: 'Whip4You administration portal.' },
 };
 
 export default function RouteMeta() {

@@ -32,12 +32,21 @@ h1, h2, h3, .brand-font { font-family: 'Cinzel', serif; letter-spacing: .1em; }
 .bg-gray-950 h1, .bg-gray-950 h2, .bg-gray-950 h3, .bg-gray-950 h4,
 .text-white { color: #ffffff !important; }
 
-.bg-white .text-gray-400, .bg-white .text-zinc-400,
-.bg-gray-50 .text-gray-400, .bg-gray-50 .text-zinc-400,
-.bg-zinc-50 .text-gray-400, .bg-zinc-50 .text-zinc-400,
-.bg-off-white .text-gray-400, .bg-off-white .text-zinc-400 { color: #52525b; }
-.bg-white [class~="text-[#D4AF37]"], .bg-gray-50 [class~="text-[#D4AF37]"],
-.bg-zinc-50 [class~="text-[#D4AF37]"], .bg-off-white [class~="text-[#D4AF37]"] { color: #765700; }
+.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400,
+.bg-off-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400,
+.bg-gray-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400,
+.bg-zinc-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400 { color: #52525b; }
+
+.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"],
+.bg-gray-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"],
+.bg-zinc-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"],
+.bg-off-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"] { color: #765700; }
+
+.bg-black [class~="text-[#D4AF37]"],
+.bg-zinc-950 [class~="text-[#D4AF37]"],
+.bg-zinc-900 [class~="text-[#D4AF37]"],
+.bg-black .text-gold,
+.bg-zinc-950 .text-gold { color: #D4AF37 !important; }
 
 /* Ensure high contrast accessible placeholders across all inputs */
 ::placeholder {

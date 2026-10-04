@@ -17,15 +17,43 @@ img, video { max-width: 100%; }
 }
 h1, h2, h3, .brand-font { font-family: 'Cinzel', serif; letter-spacing: .1em; }
 .bg-white, .bg-gray-50, .bg-off-white, .bg-zinc-50, .bg-zinc-100 { color: #18181b; }
-.bg-white h1, .bg-white h2, .bg-white h3, .bg-white h4, .bg-white h5, .bg-white h6,
-.bg-gray-50 h1, .bg-gray-50 h2, .bg-gray-50 h3, .bg-gray-50 h4,
-.bg-off-white h1, .bg-off-white h2, .bg-off-white h3 { color: #18181b !important; }
+/* Only target headings that are direct or contextual children within light containers, NOT inside nested dark containers like .bg-black or .bg-zinc-950 */
+.bg-white > h1, .bg-white > h2, .bg-white > h3, .bg-white > h4, .bg-white > h5, .bg-white > h6,
+.bg-gray-50 > h1, .bg-gray-50 > h2, .bg-gray-50 > h3, .bg-gray-50 > h4,
+.bg-off-white > h1, .bg-off-white > h2, .bg-off-white > h3,
+.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900):not(.bg-gray-950) > h1,
+.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900):not(.bg-gray-950) > h2,
+.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900):not(.bg-gray-950) > h3 { color: #18181b; }
+
+/* Ensure any heading inside a dark container or with explicit text-white is always pure white with 21:1 contrast */
+.bg-black h1, .bg-black h2, .bg-black h3, .bg-black h4,
+.bg-zinc-950 h1, .bg-zinc-950 h2, .bg-zinc-950 h3, .bg-zinc-950 h4,
+.bg-zinc-900 h1, .bg-zinc-900 h2, .bg-zinc-900 h3, .bg-zinc-900 h4,
+.bg-gray-950 h1, .bg-gray-950 h2, .bg-gray-950 h3, .bg-gray-950 h4,
+.text-white { color: #ffffff !important; }
+
 .bg-white .text-gray-400, .bg-white .text-zinc-400,
 .bg-gray-50 .text-gray-400, .bg-gray-50 .text-zinc-400,
 .bg-zinc-50 .text-gray-400, .bg-zinc-50 .text-zinc-400,
 .bg-off-white .text-gray-400, .bg-off-white .text-zinc-400 { color: #52525b; }
 .bg-white [class~="text-[#D4AF37]"], .bg-gray-50 [class~="text-[#D4AF37]"],
 .bg-zinc-50 [class~="text-[#D4AF37]"], .bg-off-white [class~="text-[#D4AF37]"] { color: #765700; }
+
+/* Ensure high contrast accessible placeholders across all inputs */
+::placeholder {
+  color: #71717a !important; /* zinc-500, > 4.5:1 on light backgrounds */
+  opacity: 1 !important;
+}
+.bg-black ::placeholder,
+.bg-zinc-950 ::placeholder,
+.bg-zinc-900 ::placeholder {
+  color: #a1a1aa !important; /* zinc-400, > 7:1 on black backgrounds */
+}
+
+/* Ensure labels inside forms on light backgrounds are dark and crisp */
+.bg-white label, .bg-off-white label, .bg-gray-50 label, .bg-zinc-50 label {
+  color: #3f3f46;
+}
 .display-font { font-family: 'Outfit', sans-serif; letter-spacing: -.02em; }
 .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #F1D592 50%, #D4AF37 100%); }
 .gold-text { background: linear-gradient(135deg, #D4AF37 0%, #F1D592 50%, #D4AF37 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }

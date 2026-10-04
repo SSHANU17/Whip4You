@@ -174,8 +174,8 @@ const Finance: React.FC = () => {
         <div className="absolute top-0 right-0 w-96 h-96 gold-gradient opacity-10 rounded-full blur-3xl -mr-48 -mt-48"></div>
         <div className="container mx-auto px-4 sm:px-6 text-center">
           <span className="text-[#D4AF37] font-bold uppercase tracking-[0.4em] mb-4 block">Stress-Free Funding</span>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 brand-font italic">Easy Financing</h1>
-          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 brand-font italic text-white">Easy Financing</h1>
+          <p className="text-base sm:text-lg md:text-xl text-zinc-300 max-w-2xl mx-auto leading-relaxed">
             Starting from <span className="text-[#D4AF37] font-bold">5.99% APR</span>. We work with all credit situations to get you behind the wheel today.
           </p>
         </div>

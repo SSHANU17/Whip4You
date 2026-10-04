@@ -76,8 +76,6 @@ const InstagramMarquee: React.FC<{ track: string[] }> = ({ track }) => {
       ref={scrollRef}
       className="w-full overflow-x-auto overflow-y-hidden cursor-grab active:cursor-grabbing select-none"
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => { if (!dragging.current) setIsPaused(false); }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -96,6 +94,11 @@ const InstagramMarquee: React.FC<{ track: string[] }> = ({ track }) => {
   );
 };
 
+const DEFAULT_INSTAGRAM_POSTS = [
+  'https://www.instagram.com/p/DcVGp7ClBTl/',
+  'https://www.instagram.com/reel/DbzFOMKvbnw/'
+];
+
 const Home: React.FC = () => {
 
   const navigate = useNavigate();
@@ -111,9 +114,10 @@ const Home: React.FC = () => {
   });
   const [configLoaded, setConfigLoaded] = useState(() => config !== null);
 
-  const instagramPosts: string[] = Array.isArray(config?.instagramPosts)
+  const configuredPosts: string[] = Array.isArray(config?.instagramPosts)
     ? config.instagramPosts.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
     : [];
+  const instagramPosts: string[] = configuredPosts.length > 0 ? configuredPosts : DEFAULT_INSTAGRAM_POSTS;
 
   useEffect(() => {
     api.getConfig()
@@ -184,7 +188,7 @@ const Home: React.FC = () => {
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
                   />
                 </div>
-                <h3 className="font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] text-zinc-500 group-hover:text-white text-center">{type.name}</h3>
+                <h3 className="font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[11px] text-zinc-200 group-hover:text-[#D4AF37] transition-colors text-center">{type.name}</h3>
               </div>
             ))}
           </div>

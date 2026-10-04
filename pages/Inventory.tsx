@@ -350,7 +350,7 @@ const Inventory: React.FC = () => {
       <div className="bg-black text-white py-10 md:py-16 mb-6 md:mb-10">
         <div className="container mx-auto px-4 sm:px-6">
           <h1 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 brand-font italic text-white">Browse Inventory</h1>
-          <p className="text-gray-400">Discover your perfect match from our premium inspected vehicles.</p>
+          <p className="text-zinc-300 text-sm md:text-base">Discover your perfect match from our premium inspected vehicles.</p>
         </div>
       </div>
 

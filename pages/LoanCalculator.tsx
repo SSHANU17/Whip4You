@@ -55,8 +55,8 @@ const LoanCalculator: React.FC = () => {
       <div className="bg-black text-white py-12 sm:py-16 mb-6 sm:mb-10 text-center relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 gold-gradient opacity-10 rounded-full blur-3xl -mr-48 -mt-48"></div>
         <div className="container mx-auto px-6 relative z-10">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 brand-font italic">Loan Architect</h1>
-          <p className="text-gray-400 font-light tracking-widest text-xs uppercase">Structure your premium financing</p>
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 brand-font italic text-white">Loan Architect</h1>
+          <p className="text-zinc-300 font-light tracking-widest text-xs uppercase">Structure your premium financing</p>
         </div>
       </div>
 

@@ -248,9 +248,16 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
 
   const username = media?.username || 'whip4you';
 
+  const onCardClick = (e: React.MouseEvent) => {
+    // If user clicked interactive controls (mute button, next/prev arrows, author links), don't trigger full card redirect
+    if ((e.target as HTMLElement).closest('button, a')) return;
+    window.open(permalink, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div
-      className="insta-card-wrapper"
+      className="insta-card-wrapper cursor-pointer"
+      onClick={onCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -302,12 +309,15 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
                 ref={videoRef}
                 src={activeVideo}
                 poster={slide.displayUrl ?? undefined}
-                autoPlay loop muted playsInline preload="auto"
-                onClick={toggleMute}
-                className="w-full h-full object-cover cursor-pointer"
+                autoPlay
+                loop
+                muted={isMuted}
+                playsInline
+                preload="auto"
+                className="w-full h-full object-cover"
               />
             ) : (
-              <a href={permalink} target="_blank" rel="noopener noreferrer" className="block w-full h-full" draggable={false}>
+              <div className="w-full h-full">
                 <img
                   src={slide.displayUrl || ''}
                   alt={`${username} post`}
@@ -315,7 +325,7 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
                   className="w-full h-full object-cover"
                   draggable={false}
                 />
-              </a>
+              </div>
             )}
 
             {/* Mute pill for videos */}
@@ -323,7 +333,7 @@ function InstagramCard({ postUrl }: InstagramCardProps) {
               <button
                 onClick={toggleMute}
                 aria-label={isMuted ? 'Unmute' : 'Mute'}
-                className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center text-white backdrop-blur-sm hover:bg-black/80 transition-colors z-10"
+                className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-black/70 flex items-center justify-center text-white backdrop-blur-sm hover:bg-black transition-colors z-10"
               >
                 {isMuted ? <VolumeOffIcon /> : <VolumeOnIcon />}
               </button>

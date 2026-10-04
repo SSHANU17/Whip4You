@@ -16,31 +16,42 @@ img, video { max-width: 100%; }
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px !important; }
 }
 h1, h2, h3, .brand-font { font-family: 'Cinzel', serif; letter-spacing: .1em; }
-.bg-white, .bg-gray-50, .bg-off-white, .bg-zinc-50, .bg-zinc-100 { color: #18181b; }
-/* Only target headings that are direct or contextual children within light containers, NOT inside nested dark containers like .bg-black or .bg-zinc-950 */
-.bg-white > h1, .bg-white > h2, .bg-white > h3, .bg-white > h4, .bg-white > h5, .bg-white > h6,
-.bg-gray-50 > h1, .bg-gray-50 > h2, .bg-gray-50 > h3, .bg-gray-50 > h4,
-.bg-off-white > h1, .bg-off-white > h2, .bg-off-white > h3,
-.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900):not(.bg-gray-950) > h1,
-.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900):not(.bg-gray-950) > h2,
-.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900):not(.bg-gray-950) > h3 { color: #18181b; }
-
-/* Ensure any heading inside a dark container or with explicit text-white is always pure white with 21:1 contrast */
-.bg-black h1, .bg-black h2, .bg-black h3, .bg-black h4,
-.bg-zinc-950 h1, .bg-zinc-950 h2, .bg-zinc-950 h3, .bg-zinc-950 h4,
-.bg-zinc-900 h1, .bg-zinc-900 h2, .bg-zinc-900 h3, .bg-zinc-900 h4,
-.bg-gray-950 h1, .bg-gray-950 h2, .bg-gray-950 h3, .bg-gray-950 h4,
+/* Ensure explicit text color utilities always respect their intended design */
 .text-white { color: #ffffff !important; }
+.text-black { color: #18181b !important; }
+.text-zinc-900 { color: #18181b !important; }
+.text-zinc-800 { color: #27272a !important; }
+.text-zinc-700 { color: #3f3f46 !important; }
 
-.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400,
-.bg-off-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400,
-.bg-gray-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400,
-.bg-zinc-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) .text-gray-400 { color: #52525b; }
+/* Light containers */
+.bg-white, .bg-gray-50, .bg-off-white, .bg-zinc-50, .bg-zinc-100 { color: #18181b; }
 
-.bg-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"],
-.bg-gray-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"],
-.bg-zinc-50 :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"],
-.bg-off-white :not(.bg-black):not(.bg-zinc-950):not(.bg-zinc-900) [class~="text-[#D4AF37]"] { color: #765700; }
+/* Headings inside light containers default to dark text (#18181b), unless explicitly marked with text-white or nested inside a dark banner */
+.bg-white :is(h1, h2, h3, h4, h5, h6):not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *):not(.text-white),
+.bg-gray-50 :is(h1, h2, h3, h4, h5, h6):not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *):not(.text-white),
+.bg-off-white :is(h1, h2, h3, h4, h5, h6):not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *):not(.text-white),
+.bg-zinc-50 :is(h1, h2, h3, h4, h5, h6):not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *):not(.text-white),
+.bg-zinc-100 :is(h1, h2, h3, h4, h5, h6):not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *):not(.text-white) {
+  color: #18181b;
+}
+
+/* Headings inside dark containers default to white text (#ffffff), unless explicitly marked with text-black or nested inside a light card */
+.bg-black :is(h1, h2, h3, h4, h5, h6):not(.bg-white *):not(.bg-gray-50 *):not(.bg-off-white *):not(.bg-zinc-50 *):not(.bg-zinc-100 *):not(.text-black):not(.text-zinc-900),
+.bg-zinc-950 :is(h1, h2, h3, h4, h5, h6):not(.bg-white *):not(.bg-gray-50 *):not(.bg-off-white *):not(.bg-zinc-50 *):not(.bg-zinc-100 *):not(.text-black):not(.text-zinc-900),
+.bg-zinc-900 :is(h1, h2, h3, h4, h5, h6):not(.bg-white *):not(.bg-gray-50 *):not(.bg-off-white *):not(.bg-zinc-50 *):not(.bg-zinc-100 *):not(.text-black):not(.text-zinc-900),
+.bg-gray-950 :is(h1, h2, h3, h4, h5, h6):not(.bg-white *):not(.bg-gray-50 *):not(.bg-off-white *):not(.bg-zinc-50 *):not(.bg-zinc-100 *):not(.text-black):not(.text-zinc-900) {
+  color: #ffffff;
+}
+
+.bg-white :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) .text-gray-400,
+.bg-off-white :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) .text-gray-400,
+.bg-gray-50 :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) .text-gray-400,
+.bg-zinc-50 :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) .text-gray-400 { color: #52525b; }
+
+.bg-white :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) [class~="text-[#D4AF37]"],
+.bg-gray-50 :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) [class~="text-[#D4AF37]"],
+.bg-zinc-50 :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) [class~="text-[#D4AF37]"],
+.bg-off-white :not(.bg-black *):not(.bg-zinc-950 *):not(.bg-zinc-900 *) [class~="text-[#D4AF37]"] { color: #765700; }
 
 .bg-black [class~="text-[#D4AF37]"],
 .bg-zinc-950 [class~="text-[#D4AF37]"],

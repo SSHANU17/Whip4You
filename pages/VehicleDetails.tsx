@@ -318,8 +318,8 @@ const VehicleDetails: React.FC = () => {
             <div className="space-y-6 lg:sticky lg:top-40">
               <div className="bg-white p-6 sm:p-8 md:p-10 rounded-[32px] md:rounded-[40px] shadow-2xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 gold-gradient opacity-5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                <h1 className="text-2xl sm:text-3xl font-bold mb-2 brand-font text-black flex items-center justify-between gap-2 sm:gap-4">
-                  <span className="min-w-0 break-words">{vehicle.year} {vehicle.make} {vehicle.model}</span>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2 brand-font text-black flex items-center justify-between gap-2 sm:gap-4" style={{ color: '#18181b' }}>
+                  <span className="min-w-0 break-words">{vehicle.year} {capitalizeWords(vehicle.make)} {capitalizeWords(vehicle.model)}</span>
                   {vehicle.status === 'Sold' && (
                     <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex-shrink-0">
                       Sold

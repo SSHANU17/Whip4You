@@ -535,7 +535,7 @@ const Inventory: React.FC = () => {
                     <div className="p-5 sm:p-6 flex flex-col flex-1">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
                         <Link to={`/vehicle/${v._id || v.id}`} className="hover:text-[#D4AF37] transition-colors min-w-0">
-                          <h3 className="text-xl font-bold text-black">{v.year} {v.make} {v.model}</h3>
+                          <h3 className="text-xl font-bold text-black" style={{ color: '#18181b' }}>{v.year} {capitalizeWords(v.make)} {capitalizeWords(v.model)}</h3>
                           <p className="text-sm text-gray-700 font-medium">{v.trim}</p>
                         </Link>
                         <span className="text-xl sm:text-2xl font-bold text-[#D4AF37] brand-font">
@@ -638,8 +638,8 @@ const Inventory: React.FC = () => {
                     {vehicles.filter(v => compareIds.includes(v._id || v.id)).map(v => (
                       <th key={v._id || v.id} className="p-8 w-1/4 border-r border-gray-100">
                         <img src={v.images[0]} loading="lazy" className="w-full h-32 object-cover rounded-xl mb-4 shadow-sm" alt={`${v.year} ${v.make} ${v.model}`} />
-                        <h4 className="font-bold text-lg text-zinc-900">{v.year} {v.make}</h4>
-                        <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">{v.model} {v.trim}</p>
+                        <h4 className="font-bold text-lg text-zinc-900" style={{ color: '#18181b' }}>{v.year} {capitalizeWords(v.make)}</h4>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">{capitalizeWords(v.model)} {v.trim}</p>
                         <p className="text-[#D4AF37] font-bold text-xl mt-2 brand-font">
                           {v.showPrice === false ? <a href={`tel:${config?.contactPhone?.replace(/\D/g, '') || '17789706007'}`} className="underline hover:text-[#D4AF37]" onClick={(e)=>e.stopPropagation()}>Call for Price</a> : (typeof v.price === 'number' ? `$${v.price.toLocaleString()}` : v.price)}
                         </p>
